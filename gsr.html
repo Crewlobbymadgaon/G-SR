@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>G&SR of Konkan Railway — Book</title>
+  <meta name="description" content="G&SR of Konkan Railway — Progressive Web Book with lazy-loaded chapters, offline caching and global search." />
+  <style>
+    :root{--bg:#f7f9fb;--card:#fff;--kr-blue:#0b63d6;--accent-2:#0b9cff;--muted:#666}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#111}
+    header{position:fixed;top:0;left:0;right:0;z-index:1400;background:linear-gradient(90deg,var(--kr-blue),var(--accent-2));color:#fff;padding:10px 12px;display:flex;align-items:center;gap:12px;height:56px}
+    .brand{font-weight:800;font-size:1rem;color:#fff;text-align:center;width:100%}
+    .icon-btn{background:transparent;border:1px solid rgba(255,255,255,.16);color:#fff;padding:8px;border-radius:10px;cursor:pointer;font-size:16px}
+    .icon-btn.small{padding:6px;border-radius:8px}
+    /* popup search box below header */
+    #searchPopup{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:min(920px,calc(100% - 32px));max-height:60vh;background:var(--card);border-radius:10px;box-shadow:0 12px 30px rgba(10,20,40,.12);z-index:1405;padding:8px;display:none;overflow:auto}
+    #searchPopup.open{display:block}
+    #popupSearchInput{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:1rem}
+    .search-results{margin-top:8px}
+    .search-row{display:flex;align-items:flex-start;justify-content:space-between;padding:8px;border-radius:8px}
+    .search-row .meta{flex:1;padding-right:8px;cursor:pointer}
+    .search-row .go{border:none;background:transparent;font-size:18px;cursor:pointer}
+    main{padding:12px;display:flex;gap:16px;align-items:flex-start;padding-top:92px}
+    .toc-drawer{position:fixed;left:0;top:92px;bottom:0;width:320px;background:var(--card);box-shadow:2px 0 18px rgba(10,20,40,.12);transform:translateX(-110%);transition:transform .22s ease;z-index:1301;padding:12px;overflow:auto}
+    .toc-drawer.open{transform:translateX(0)}
+    .toc-overlay{position:fixed;inset:92px 0 0 0;background:rgba(0,0,0,0.25);z-index:1300;display:none}
+    .toc-overlay.visible{display:block}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-list li{padding:6px;border-radius:8px}
+    .toc-list a{color:var(--kr-blue);text-decoration:none;font-weight:600;display:block;padding:6px;cursor:pointer}
+    .toc-list a.active{background:linear-gradient(90deg,#eef6ff,#f8fbff);border-radius:6px}
+    .page-wrap{flex:1;margin-left:0;transition:margin-left .18s ease}
+    .content{max-width:980px;margin:auto}
+    .home-screen{background:linear-gradient(180deg,#fff,#f4f8ff);padding:24px;border-radius:12px;margin-bottom:12px;text-align:center}
+    .chapter{background:var(--card);padding:14px;border-radius:12px;margin-bottom:12px}
+    .chapter-body{min-height:60px}
+    /* sticky footer */
+    #siteFooter{position:fixed;left:0;right:0;bottom:0;background:var(--card);box-shadow:0 -6px 18px rgba(10,20,40,.04);z-index:1500}
+    main{padding-bottom:92px} /* space for footer */
+    @media (max-width:900px){ .toc-drawer{width:84%;max-width:380px} }
+    @media (min-width:1100px){ .toc-drawer{left:12px;top:92px} }
+    button[disabled]{opacity:.45;cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <button id="btnToc" class="icon-btn" aria-label="Menu (table of contents)">☰</button>
+    </div>
+
+    <div class="brand">G&SR of Konkan Railway</div>
+
+    <div class="header-right" id="navButtons">
+      <div class="search-toggle">
+        <button id="btnSearch" class="icon-btn small" aria-label="Open search">🔍</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- popup search below header -->
+  <div id="searchPopup" role="dialog" aria-hidden="true">
+    <input id="popupSearchInput" placeholder="Search book (type and press Enter)..." aria-label="Search book">
+    <div id="popupResults" class="search-results"></div>
+  </div>
+
+  <!-- overlay -->
+  <div id="tocOverlay" class="toc-overlay" aria-hidden="true"></div>
+
+  <!-- TOC -->
+  <nav id="tocDrawer" class="toc-drawer" aria-label="Table of contents" role="navigation" aria-hidden="true">
+    <h2 style="margin-top:0">Table of Contents</h2>
+    <ul id="tocList" class="toc-list" role="menu" aria-label="Chapters"></ul>
+    <hr>
+    <div style="font-size:.9rem;color:var(--muted)">Tap any item to jump. Use footer arrows for Prev/Next.</div>
+  </nav>
+
+  <main>
+    <div class="page-wrap" id="pageWrap">
+      <div class="content">
+
+        <!-- HOME -->
+        <section id="home" class="home-screen" aria-hidden="false">
+          <h1 style="margin:0 0 8px">Book Cover — G&SR of Konkan Railway</h1>
+          <p style="margin:6px 0;color:var(--muted)">Placeholder cover. Replace with your image/text.</p>
+          <p style="margin-top:10px;"><button class="icon-btn" id="openBook">Open Book</button></p>
+        </section>
+
+        <!-- Chapters - note: each section contains a .chapter-body where remote content will load -->
+        <article id="chapters" aria-hidden="true">
+          <!-- For each chapter include a .chapter-body placeholder. The remote HTML will be injected there -->
+          <section class="chapter" id="ch1" data-title="Chapter 1 — Introduction">
+            <h3 tabindex="0">Chapter 1 — Introduction</h3>
+            <div class="chapter-body" data-loaded="false"></div>
+            <p><button class="icon-btn" data-prev="home">← Home</button> <button class="icon-btn" data-next="ch2">Next →</button></p>
+          </section>
+
+          <section class="chapter" id="ch2" data-title="Chapter 2 — Definitions & Interpretations">
+            <h3 tabindex="0">Chapter 2 — Definitions &amp; Interpretations</h3>
+            <div class="chapter-body" data-loaded="false"></div>
+            <p><button class="icon-btn" data-prev="ch1">←</button> <button class="icon-btn" data-next="ch3">Next →</button></p>
+          </section>
+
+          <!-- ... add sections up to ch18 and appendix same way ... -->
+          <section class="chapter" id="appendix" data-title="Appendix — Reference Material">
+            <h3 tabindex="0">Appendix — Reference Material</h3>
+            <div class="chapter-body" data-loaded="false"></div>
+            <p><button class="icon-btn" data-prev="ch18">←</button></p>
+          </section>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer id="siteFooter" aria-hidden="false">
+    <div style="display:flex;gap:10px;align-items:center;justify-content:center;padding:8px 12px">
+      <button id="footBack" class="icon-btn" style="background:transparent;border:1px solid rgba(0,0,0,0.08);color:#111;">◀</button>
+      <button id="footForward" class="icon-btn" style="background:transparent;border:1px solid rgba(0,0,0,0.08);color:#111;">▶</button>
+    </div>
+    <div style="text-align:center;color:var(--muted);font-size:.85rem;padding-bottom:8px">© Konkan Railway — G&SR.</div>
+  </footer>
+
+  <script>
+    /***********************
+      Configuration
+    ***********************/
+    const CHAPTERS_DIR = 'chapters'; // folder where per-chapter HTML files live
+    const SEARCH_INDEX = 'search-index.json'; // path to search index
+    const SW_FILE = 'sw.js';
+
+    /***********************
+      Basic UI elements
+    ***********************/
+    const tocList = document.getElementById('tocList');
+    const chapters = Array.from(document.querySelectorAll('.chapter'));
+    const tocDrawer = document.getElementById('tocDrawer');
+    const btnToc = document.getElementById('btnToc');
+    const tocOverlay = document.getElementById('tocOverlay');
+    const btnSearch = document.getElementById('btnSearch');
+    const popup = document.getElementById('searchPopup');
+    const popupInput = document.getElementById('popupSearchInput');
+    const popupResults = document.getElementById('popupResults');
+    const openBookBtn = document.getElementById('openBook');
+    const footBack = document.getElementById('footBack');
+    const footForward = document.getElementById('footForward');
+
+    // state
+    let currentIndex = -1; // -1 = home
+    let searchIndex = null; // loaded search index JSON
+    let ignoreObserver = false;
+
+    /***********************
+      Populate TOC
+    ***********************/
+    chapters.forEach((ch, i) => {
+      const title = ch.dataset.title || ch.querySelector('h3')?.innerText || `Chapter ${i+1}`;
+      const li = document.createElement('li');
+      li.innerHTML = `<a data-target="${ch.id}">${i+1}. ${title}</a>`;
+      tocList.appendChild(li);
+    });
+
+    /***********************
+      TOC open/close behavior
+    ***********************/
+    function openToc(){
+      tocDrawer.classList.add('open');
+      tocOverlay.classList.add('visible');
+      tocDrawer.setAttribute('aria-hidden','false');
+      tocOverlay.setAttribute('aria-hidden','false');
+      if(window.innerWidth >= 900) tocDrawer.classList.add('desktop-open');
+    }
+    function closeToc(){
+      tocDrawer.classList.remove('open','desktop-open');
+      tocOverlay.classList.remove('visible');
+      tocDrawer.setAttribute('aria-hidden','true');
+      tocOverlay.setAttribute('aria-hidden','true');
+    }
+    tocDrawer.addEventListener('click', e => e.stopPropagation());
+    btnToc.addEventListener('click', e => { e.stopPropagation(); if(tocDrawer.classList.contains('open')) closeToc(); else openToc(); });
+    tocOverlay.addEventListener('click', closeToc);
+    window.addEventListener('keydown', e => { if(e.key === 'Escape'){ if(tocDrawer.classList.contains('open')) closeToc(); if(popup.classList.contains('open')) closeSearch(); } });
+
+    /***********************
+      Lazy-load chapter HTML
+      - Each <section id="chX"> contains a <div class="chapter-body"> placeholder
+      - When loading, the placeholder.innerHTML is replaced with the fetched HTML
+      - We set data-loaded="true" so we don't re-fetch
+    ***********************/
+    async function loadChapterContent(chId){
+      const section = document.getElementById(chId);
+      if(!section) return;
+      const body = section.querySelector('.chapter-body');
+      if(!body) return;
+      if(body.dataset.loaded === 'true') return; // already loaded
+
+      const url = `${CHAPTERS_DIR}/${chId}.html`;
+      try {
+        const res = await fetch(url, {cache: 'no-cache'});
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        // insert HTML
+        body.innerHTML = html;
+        body.dataset.loaded = 'true';
+
+        // after content loads, re-run any code that needs to attach listeners inside (e.g., anchors)
+        // For example make internal anchor links scroll into view:
+        body.querySelectorAll('a[href^="#"]').forEach(a=>{
+          a.addEventListener('click', (ev)=>{ ev.preventDefault(); const target = a.getAttribute('href').replace('#',''); if(target){ navigateTo(target); } });
+        });
+
+        // let the Service Worker know (it will cache fetch responses automatically in our sw.js)
+      } catch(err){
+        console.error('Failed to load chapter', chId, err);
+        body.innerHTML = `<div style="color:var(--muted)">Unable to load chapter content (${err.message}).</div>`;
+      }
+    }
+
+    /***********************
+      Navigation helpers
+    ***********************/
+    function showHome(){ document.getElementById('home').setAttribute('aria-hidden','false'); document.getElementById('chapters').setAttribute('aria-hidden','true'); setActiveTOC(null); }
+    function hideHome(){ document.getElementById('home').setAttribute('aria-hidden','true'); document.getElementById('chapters').setAttribute('aria-hidden','false'); }
+    function showChapters(){ hideHome(); }
+
+    function setActiveTOC(id){
+      document.querySelectorAll('#tocList a.active').forEach(a=>a.classList.remove('active'));
+      if(!id) return;
+      const a = document.querySelector(`#tocList a[data-target="${id}"]`);
+      if(a){ a.classList.add('active'); const li = a.closest('li'); if(li) li.scrollIntoView({block:'nearest'}); }
+    }
+
+    // navigateTo: ensure chapter content is loaded, then scroll & pushState
+    async function navigateTo(id, opts={skipHistory:false}){
+      // if navigating to home
+      if(id === 'home'){
+        if(!opts.skipHistory) history.pushState({},'', '#home');
+        showHome();
+        currentIndex = -1;
+        updateFooterButtons();
+        return;
+      }
+
+      // if navigating to a chapter section
+      const idx = chapters.findIndex(c => c.id === id);
+      if(idx === -1) return;
+      currentIndex = idx;
+      // ensure content loaded before scrolling so IntersectionObserver works and content exists
+      await loadChapterContent(id);
+      const el = document.getElementById(id);
+      if(!el) return;
+      // scroll then update history
+      el.scrollIntoView({behavior:'smooth', block:'start'});
+      if(!opts.skipHistory) history.pushState({},'', '#'+id);
+      showChapters();
+      if(window.innerWidth >= 900) tocDrawer.classList.add('desktop-open');
+      setActiveTOC(id);
+      updateFooterButtons();
+    }
+
+    /***********************
+      Footer nav behavior (enabled/disabled rather than hidden)
+    ***********************/
+    function updateFooterButtons(){
+      const idx = currentIndex;
+      if(idx === -1){
+        footBack.disabled = true;
+        footForward.disabled = false;
+        footBack.onclick = ()=>{}; // no-op
+        footForward.onclick = ()=>{ currentIndex = 0; navigateTo(chapters[0].id); };
+      } else {
+        footBack.disabled = false;
+        footForward.disabled = false;
+        footBack.onclick = ()=>{ if(idx > 0){ currentIndex = idx - 1; navigateTo(chapters[currentIndex].id); } else { currentIndex = -1; navigateTo('home'); } };
+        if(idx < chapters.length - 1) footForward.onclick = ()=>{ currentIndex = idx + 1; navigateTo(chapters[currentIndex].id); };
+        else footForward.onclick = ()=>{ currentIndex = -1; navigateTo('home'); };
+      }
+    }
+
+    /***********************
+      Inline prev/next buttons (these are present in each section)
+    ***********************/
+    document.addEventListener('click', (e)=>{
+      const b = e.target.closest('[data-next]');
+      if(b){ const id = b.dataset.next; const idx = chapters.findIndex(c=>c.id===id); if(idx !== -1){ currentIndex = idx; navigateTo(id); } }
+      const p = e.target.closest('[data-prev]');
+      if(p){ const id = p.dataset.prev; if(id === 'home'){ currentIndex = -1; navigateTo('home'); } else { const idx = chapters.findIndex(c=>c.id===id); if(idx !== -1){ currentIndex = idx; navigateTo(id); } } }
+    });
+
+    /***********************
+      IntersectionObserver to keep URL/TOC/active state in sync when user scrolls
+      Only triggers when chapter is 60% visible.
+    ***********************/
+    const observer = new IntersectionObserver((entries)=>{
+      if(ignoreObserver) return;
+      let best = null;
+      entries.forEach(en=>{
+        if(en.intersectionRatio >= 0.6) best = en.target;
+      });
+      if(best){
+        const id = best.id;
+        const idx = chapters.findIndex(c => c.id === id);
+        if(idx !== -1 && idx !== currentIndex){
+          currentIndex = idx;
+          setActiveTOC(id);
+          history.replaceState({},'', '#'+id);
+          updateFooterButtons();
+        }
+      }
+    }, { threshold: [0.6] });
+
+    // observe chapters (they exist statically even if their body is empty)
+    chapters.forEach(ch => observer.observe(ch));
+
+    /***********************
+      Global Search: load search-index.json and use it for fast searching
+      Format of search-index.json: array of objects:
+        [{ "id": "ch1", "title":"Chapter 1 — Intro", "text": "plain text of chapter (no html)", "snippet": "short snippet" }, ...]
+    ***********************/
+    async function loadSearchIndex(){
+      try {
+        const r = await fetch(SEARCH_INDEX, {cache: 'no-cache'});
+        if(!r.ok) throw new Error(r.statusText);
+        searchIndex = await r.json();
+        console.log('Search index loaded:', searchIndex.length, 'items');
+      } catch(err){
+        console.warn('Failed to load search index:', err);
+        searchIndex = null;
+      }
+    }
+
+    // perform simple substring search on preloaded index (case-insensitive)
+    function searchIndexQuery(q){
+      if(!searchIndex) return [];
+      q = (q||'').trim().toLowerCase();
+      if(!q) return [];
+      const results = [];
+      for(const item of searchIndex){
+        const hay = (item.title + ' ' + (item.text||'')).toLowerCase();
+        const idx = hay.indexOf(q);
+        if(idx !== -1){
+          results.push({
+            id: item.id,
+            title: item.title,
+            snippet: item.snippet || (item.text.substr(Math.max(0, idx-40), 160) + '...')
+          });
+        }
+      }
+      return results;
+    }
+
+    // Search popup UI wiring: when user clicks result, ensure chapter is loaded then open it
+    function showSearchResults(results){
+      popupResults.innerHTML = '';
+      if(results.length === 0){ popupResults.innerHTML = '<div style="padding:.6rem;color:var(--muted)">No results</div>'; return; }
+      results.forEach(r=>{
+        const row = document.createElement('div');
+        row.className = 'search-row';
+        row.innerHTML = `<div class="meta"><strong style="color:var(--kr-blue)">${escapeHtml(r.title)}</strong><div style="color:var(--muted);font-size:.95rem">${escapeHtml(r.snippet)}</div></div><div><button class="go" title="Open">▶</button></div>`;
+        row.querySelector('.meta').addEventListener('click', async ()=>{ await openSearchResult(r.id); });
+        row.querySelector('.go').addEventListener('click', async ()=>{ await openSearchResult(r.id); });
+        popupResults.appendChild(row);
+      });
+    }
+    async function openSearchResult(chId){
+      closeSearch();
+      // if chapter not loaded, load it first
+      await loadChapterContent(chId);
+      const idx = chapters.findIndex(c => c.id === chId);
+      if(idx !== -1){ currentIndex = idx; navigateTo(chId); }
+      closeToc();
+    }
+
+    // escape helper for safe HTML insertion
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // popup search handlers
+    function openSearch(){ popup.classList.add('open'); popup.setAttribute('aria-hidden','false'); popupInput.focus(); document.addEventListener('click', onDocClickForSearch); }
+    function closeSearch(){ popup.classList.remove('open'); popup.setAttribute('aria-hidden','true'); popupResults.innerHTML=''; popupInput.value=''; document.removeEventListener('click', onDocClickForSearch); }
+    function toggleSearch(){ if(popup.classList.contains('open')) closeSearch(); else openSearch(); }
+    function onDocClickForSearch(e){ if(e.target.closest('#searchPopup') || e.target.closest('#btnSearch')) return; closeSearch(); }
+
+    btnSearch.addEventListener('click', (e)=>{ e.stopPropagation(); toggleSearch(); });
+    popupInput.addEventListener('input', (e)=>{ const q = e.target.value; if(searchIndex){ const res = searchIndexQuery(q); showSearchResults(res); } else { /* fallback: partial DOM search on loaded chapters only */ domSearch(q); } });
+    popupInput.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeSearch(); if(e.key === 'Enter'){ const first = popupResults.querySelector('.search-row'); if(first){ first.querySelector('.meta').click(); } } });
+
+    // fallback DOM search (searches only loaded chapter DOM)
+    function domSearch(q){
+      popupResults.innerHTML = '';
+      q = (q||'').trim().toLowerCase();
+      if(!q) return;
+      let found = 0;
+      chapters.forEach(ch=>{
+        const body = ch.querySelector('.chapter-body');
+        if(body && body.dataset.loaded === 'true'){
+          const hay = (ch.dataset.title + ' ' + body.innerText).toLowerCase();
+          if(hay.includes(q)){
+            found++;
+            const idx = hay.indexOf(q);
+            const snippet = (body.innerText || '').substr(Math.max(0, idx-40), 160) + '...';
+            const row = document.createElement('div');
+            row.className = 'search-row';
+            row.innerHTML = `<div class="meta"><strong style="color:var(--kr-blue)">${escapeHtml(ch.dataset.title)}</strong><div style="color:var(--muted);font-size:.95rem">${escapeHtml(snippet)}</div></div><div><button class="go" title="Open">▶</button></div>`;
+            row.querySelector('.meta').addEventListener('click', ()=>{ currentIndex = chapters.findIndex(c=>c.id===ch.id); navigateTo(ch.id); closeSearch(); });
+            row.querySelector('.go').addEventListener('click', ()=>{ currentIndex = chapters.findIndex(c=>c.id===ch.id); navigateTo(ch.id); closeSearch(); });
+            popupResults.appendChild(row);
+          }
+        }
+      });
+      if(found === 0) popupResults.innerHTML = '<div style="padding:.6rem;color:var(--muted)">No results</div>';
+    }
+
+    /***********************
+      Hash / load handling & footer wiring
+    ***********************/
+    function onHashOrLoad(){
+      const h = (location.hash || '').replace('#','');
+      if(!h || h==='home'){ currentIndex = -1; showHome(); updateFooterButtons(); return; }
+      const idx = chapters.findIndex(c=>c.id===h);
+      if(idx !== -1){
+        currentIndex = idx;
+        showChapters();
+        navigateTo(chapters[idx].id, {skipHistory:true});
+      }
+    }
+    window.addEventListener('popstate', onHashOrLoad);
+    window.addEventListener('hashchange', onHashOrLoad);
+
+    openBookBtn.addEventListener('click', ()=>{ currentIndex = 0; navigateTo(chapters[0].id); });
+
+    function updateFooterButtons(){ // same logic as before (enable/disable)
+      const idx = currentIndex;
+      if(idx === -1){
+        footBack.disabled = true;
+        footForward.disabled = false;
+        footBack.onclick = ()=>{};
+        footForward.onclick = ()=>{ currentIndex = 0; navigateTo(chapters[0].id); };
+      } else {
+        footBack.disabled = false;
+        footForward.disabled = false;
+        footBack.onclick = ()=>{ if(idx>0){ currentIndex = idx-1; navigateTo(chapters[currentIndex].id); } else { currentIndex = -1; navigateTo('home'); } };
+        if(idx < chapters.length - 1) footForward.onclick = ()=>{ currentIndex = idx+1; navigateTo(chapters[currentIndex].id); };
+        else footForward.onclick = ()=>{ currentIndex = -1; navigateTo('home'); };
+      }
+    }
+
+    /***********************
+      Service Worker registration
+      - sw.js should live at the same folder level as index.html
+    ***********************/
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register(SW_FILE).then(reg=>{
+        console.log('Service Worker registered:', reg.scope);
+      }).catch(err=>{
+        console.warn('SW registration failed:', err);
+      });
+    }
+
+    /***********************
+      Utility: escape and init
+    ***********************/
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // initialize search index and UI
+    (async function init(){
+      await loadSearchIndex(); // optional; if fails we fallback to DOM search on loaded chapters
+      updateFooterButtons();
+      onHashOrLoad();
+    })();
+  </script>
+</body>
+</html>
