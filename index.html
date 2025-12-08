@@ -4,8 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>G&SR — Konkan Railway (Offline Book)</title>
-  <link rel="manifest" href="/manifest.json">
+
+  <!-- IMPORTANT for GitHub Pages project site -->
+  <!-- Adjust the base to your repository name so leading-relative paths resolve correctly -->
+  <base href="/G-SR/">
+
+  <!-- Manifest (relative to base) -->
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b63d6">
+
   <style>
     :root{--bg:#f6f9ff;--card:#fff;--kr:#0b63d6;--kr2:#0b9cff;--muted:#6b7280}
     *{box-sizing:border-box}
@@ -37,10 +44,11 @@
     .toc-list a{text-decoration:none;color:#071033;display:block;padding:6px;font-weight:600}
     #reader .chapter{background:var(--card);padding:16px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.05)}
     footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05)}
-    .nav-small button{background:#fff;border:1px solid #ddd;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700}
+    .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
     @media(max-width:640px){ .cover-image{height:540px} }
   </style>
 </head>
+
 <body>
   <header>
     <button id="btnMenu" class="menu-btn" aria-label="Open TOC"><span class="hamburger"><span></span><span></span><span></span></span></button>
@@ -54,12 +62,12 @@
   </nav>
 
   <main>
-    <!-- Image cover using your WebP assets -->
+    <!-- IMAGE COVER -->
     <section id="cover" class="cover-image" role="main" aria-labelledby="coverTitle" tabindex="-1">
       <img
-        srcset="/assets/cover-800.webp 800w, /assets/cover-1200.webp 1200w, /assets/cover-1600.webp 1600w"
+        srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
         sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 800px"
-        src="/assets/cover-1200.webp"
+        src="assets/cover-1200.webp"
         alt="G&SR Konkan Railway — Book cover"
         decoding="async"
         loading="eager"
@@ -90,254 +98,245 @@
     <div class="nav-small"><button id="nextBtn">▶</button></div>
   </footer>
 
-<script>
-/* ---------- CONFIG ---------- */
-const CHAPTERS = [
-  {id:'ch1', title:'Chapter 1 — Introduction'},
-  {id:'ch2', title:'Chapter 2 — Definitions & Interpretations'},
-  {id:'ch3', title:'Chapter 3 — Personnel & Duties'},
-  {id:'ch4', title:'Chapter 4 — Signalling'},
-  {id:'ch5', title:'Chapter 5 — Block Working'},
-  {id:'ch6', title:'Chapter 6 — Train Operations'},
-  {id:'ch7', title:'Chapter 7 — Speed Restrictions'},
-  {id:'ch8', title:'Chapter 8 — Signalling Failures'},
-  {id:'ch9', title:'Chapter 9 — Block Instruments & Communication'},
-  {id:'ch10', title:'Chapter 10 — Shunting & Yard Working'},
-  {id:'ch11', title:'Chapter 11 — Working Rules for Trains'},
-  {id:'ch12', title:'Chapter 12 — Safety & Emergency Procedures'},
-  {id:'ch13', title:'Chapter 13 — Working of Level Crossings'},
-  {id:'ch14', title:'Chapter 14 — Tunnels & Special Sections'},
-  {id:'ch15', title:'Chapter 15 — Electrical & Signalling Maintenance'},
-  {id:'ch16', title:'Chapter 16 — Training & Competency'},
-  {id:'ch17', title:'Chapter 17 — Record Keeping & Reporting'},
-  {id:'ch18', title:'Chapter 18 — Annexures & Forms'},
-  {id:'appendix', title:'Appendix — Reference Material'}
-];
+  <script>
+    /* ---------- Configuration ---------- */
+    const CHAPTERS = [
+      {id:'ch1', title:'Chapter 1 — Introduction'},
+      {id:'ch2', title:'Chapter 2 — Definitions & Interpretations'},
+      {id:'ch3', title:'Chapter 3 — Personnel & Duties'},
+      {id:'ch4', title:'Chapter 4 — Signalling'},
+      {id:'ch5', title:'Chapter 5 — Block Working'},
+      {id:'ch6', title:'Chapter 6 — Train Operations'},
+      {id:'ch7', title:'Chapter 7 — Speed Restrictions'},
+      {id:'ch8', title:'Chapter 8 — Signalling Failures'},
+      {id:'ch9', title:'Chapter 9 — Block Instruments & Communication'},
+      {id:'ch10', title:'Chapter 10 — Shunting & Yard Working'},
+      {id:'ch11', title:'Chapter 11 — Working Rules for Trains'},
+      {id:'ch12', title:'Chapter 12 — Safety & Emergency Procedures'},
+      {id:'ch13', title:'Chapter 13 — Working of Level Crossings'},
+      {id:'ch14', title:'Chapter 14 — Tunnels & Special Sections'},
+      {id:'ch15', title:'Chapter 15 — Electrical & Signalling Maintenance'},
+      {id:'ch16', title:'Chapter 16 — Training & Competency'},
+      {id:'ch17', title:'Chapter 17 — Record Keeping & Reporting'},
+      {id:'ch18', title:'Chapter 18 — Annexures & Forms'},
+      {id:'appendix', title:'Appendix — Reference Material'}
+    ];
 
-const VISITED_FLAG = 'gkr_had_started_reading'; // set only after user opens any chapter
-const LAST_READ_KEY = 'gkr_last_read';
-const SCROLL_PREFIX = 'gkr_scroll_';
+    const VISITED_FLAG = 'gkr_had_started_reading'; // only set when user opens a chapter
+    const LAST_READ_KEY = 'gkr_last_read';
+    const SCROLL_PREFIX = 'gkr_scroll_';
 
-let currentIndex = -1;
-let cache = {};
-let scrollSaver = {timer:null, lastSaved:0, id:null, onScroll:null};
+    let currentIndex = -1;
+    let cache = {};
+    let scrollSaver = { timer: null, lastSaved: 0, id: null, onScroll: null };
 
-/* ---------- DOM refs ---------- */
-const tocList = document.getElementById('tocList');
-const btnMenu = document.getElementById('btnMenu');
-const tocDrawer = document.getElementById('tocDrawer');
-const openBookBtn = document.getElementById('openBook');
-const prefetchBtn = document.getElementById('prefetchBtn');
-const clearResumeBtn = document.getElementById('clearResume');
-const reader = document.getElementById('reader');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
+    /* ---------- DOM refs ---------- */
+    const tocList = document.getElementById('tocList');
+    const btnMenu = document.getElementById('btnMenu');
+    const tocDrawer = document.getElementById('tocDrawer');
+    const openBookBtn = document.getElementById('openBook');
+    const prefetchBtn = document.getElementById('prefetchBtn');
+    const clearResumeBtn = document.getElementById('clearResume');
+    const reader = document.getElementById('reader');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
-/* ---------- Populate TOC ---------- */
-(function populateTOC(){
-  CHAPTERS.forEach((c,i)=>{
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = '#'+c.id;
-    a.textContent = `${i+1}. ${c.title}`;
-    a.addEventListener('click', (e)=>{ e.preventDefault(); openChapterByIndex(i); closeTOC(); });
-    li.appendChild(a);
-    tocList.appendChild(li);
-  });
-})();
+    /* ---------- Populate TOC ---------- */
+    (function populateTOC(){
+      CHAPTERS.forEach((c,i)=>{
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + c.id;
+        a.textContent = `${i+1}. ${c.title}`;
+        a.addEventListener('click', (e)=>{ e.preventDefault(); openChapterByIndex(i); closeTOC(); });
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    })();
 
-/* ---------- Menu toggle ---------- */
-btnMenu.addEventListener('click', ()=>{
-  const open = tocDrawer.classList.toggle('open');
-  btnMenu.classList.toggle('open', open);
-  btnMenu.setAttribute('aria-expanded', String(open));
-  tocDrawer.setAttribute('aria-hidden', String(!open));
-  if(open) setTimeout(()=>{ const first = tocDrawer.querySelector('a'); if(first) first.focus(); }, 80);
-});
-function closeTOC(){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); btnMenu.setAttribute('aria-expanded','false'); tocDrawer.setAttribute('aria-hidden','true'); }
+    /* ---------- TOC toggle ---------- */
+    btnMenu.addEventListener('click', ()=>{
+      const open = tocDrawer.classList.toggle('open');
+      btnMenu.classList.toggle('open', open);
+      btnMenu.setAttribute('aria-expanded', String(open));
+      tocDrawer.setAttribute('aria-hidden', String(!open));
+      if(open) setTimeout(()=>{ const first = tocDrawer.querySelector('a'); if(first) first.focus(); }, 80);
+    });
+    function closeTOC(){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); btnMenu.setAttribute('aria-expanded','false'); tocDrawer.setAttribute('aria-hidden','true'); }
 
-/* ---------- UI actions ---------- */
-openBookBtn.addEventListener('click', ()=> {
-  // Mark that user started reading when they explicitly open a chapter
-  // Then open chapter 1
-  localStorage.setItem(VISITED_FLAG, '1');
-  openChapterByIndex(0);
-});
-prefetchBtn.addEventListener('click', ()=> {
-  prefetchChapter(0).then(()=> alert('Prefetch attempted (browser/SW may cache).')).catch(()=> alert('Prefetch failed.'));
-});
-clearResumeBtn.addEventListener('click', ()=>{
-  localStorage.removeItem(LAST_READ_KEY);
-  CHAPTERS.forEach(c => localStorage.removeItem(SCROLL_PREFIX + c.id));
-  localStorage.removeItem(VISITED_FLAG);
-  alert('Resume cleared. Next load will show cover.');
-});
-prevBtn.addEventListener('click', ()=> { if(currentIndex > 0) openChapterByIndex(currentIndex - 1); else if(currentIndex === 0) goCover(); });
-nextBtn.addEventListener('click', ()=> { if(currentIndex < CHAPTERS.length - 1) openChapterByIndex(currentIndex + 1); });
+    /* ---------- UI actions ---------- */
+    openBookBtn.addEventListener('click', ()=> {
+      // when user explicitly opens the book we mark they started reading
+      localStorage.setItem(VISITED_FLAG, '1');
+      openChapterByIndex(0);
+    });
+    prefetchBtn.addEventListener('click', ()=> {
+      prefetchChapter(0).then(()=> alert('Prefetch attempted (browser/SW may cache).')).catch(()=> alert('Prefetch failed.'));
+    });
+    clearResumeBtn.addEventListener('click', ()=>{
+      localStorage.removeItem(LAST_READ_KEY);
+      CHAPTERS.forEach(c => localStorage.removeItem(SCROLL_PREFIX + c.id));
+      localStorage.removeItem(VISITED_FLAG);
+      alert('Resume cleared. Next load will show cover.');
+    });
 
-/* ---------- Chapter loading / rendering ---------- */
-async function openChapterByIndex(i){
-  if(i < 0 || i >= CHAPTERS.length) return;
-  currentIndex = i;
-  const id = CHAPTERS[i].id;
-  // mark started reading
-  localStorage.setItem(VISITED_FLAG, '1');
-  await loadChapter(id);
-  saveLastRead(i, id);
-  history.pushState({id, index:i}, '', '#' + id);
-}
+    prevBtn.addEventListener('click', ()=> { if(currentIndex > 0) openChapterByIndex(currentIndex - 1); else if(currentIndex === 0) goCover(); });
+    nextBtn.addEventListener('click', ()=> { if(currentIndex < CHAPTERS.length - 1) openChapterByIndex(currentIndex + 1); });
 
-async function loadChapter(id){
-  if(cache[id]) { renderChapter(cache[id], id); return; }
-  try {
-    showLoader();
-    const res = await fetch(`/chapters/${id}.html`, { cache: 'force-cache' });
-    if(!res.ok) throw new Error('Fetch error');
-    const text = await res.text();
-    cache[id] = text;
-    renderChapter(text, id);
-  } catch (e) {
-    console.warn('loadChapter failed', e);
-    reader.innerHTML = `<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">Unable to load chapter. You may be offline and the chapter is not cached yet.</p></div>`;
-  } finally { hideLoader(); }
-}
-
-function renderChapter(html, id){
-  reader.innerHTML = `<div class="chapter">${html}</div>`;
-  // restore scroll position if any
-  restoreScroll(id);
-  // attach scroll saver so position is continuously stored
-  attachScrollSaver(id);
-  // accessibility: focus
-  const el = reader.querySelector('.chapter');
-  if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
-}
-
-/* ---------- Loader helpers ---------- */
-function showLoader(){
-  if(!document.getElementById('loader')){
-    const d = document.createElement('div');
-    d.id = 'loader'; d.style.marginTop='12px'; d.style.color = 'var(--muted)'; d.textContent = 'Loading...';
-    reader.appendChild(d);
-  }
-}
-function hideLoader(){ const l=document.getElementById('loader'); if(l) l.remove(); }
-
-/* ---------- Prefetch ---------- */
-async function prefetchChapter(i){
-  if(i<0||i>=CHAPTERS.length) return;
-  const id = CHAPTERS[i].id;
-  await fetch(`/chapters/${id}.html`, { cache: 'force-cache' });
-}
-
-/* ---------- Cover (home) ---------- */
-function goCover(){
-  currentIndex = -1;
-  // cover is in DOM; restore placeholder inside reader
-  const placeholder = document.getElementById('placeholder');
-  reader.innerHTML = placeholder ? placeholder.outerHTML : '<div class="chapter"><h2>Welcome</h2></div>';
-  detachScrollSaver();
-  history.replaceState({}, '', '/');
-}
-
-/* ---------- Resume storage (local) ---------- */
-function saveLastRead(index, id){
-  try { localStorage.setItem(LAST_READ_KEY, JSON.stringify({ index: Number(index), id: String(id), ts: Date.now() })); } catch(e){ console.warn(e); }
-}
-function loadLastRead(){ try { const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
-
-function saveChapterScroll(chId, pos){ try { localStorage.setItem(SCROLL_PREFIX + chId, String(Math.floor(pos))); } catch(e){} }
-function loadChapterScroll(chId){ try { const raw = localStorage.getItem(SCROLL_PREFIX + chId); return raw ? Number(raw) || 0 : 0; } catch(e){ return 0; } }
-
-function restoreScroll(id){
-  const s = loadChapterScroll(id) || 0;
-  if(s > 0) setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
-  else window.scrollTo({ top: 0, behavior: 'auto' });
-}
-
-/* ---------- Scroll saver (throttled) ---------- */
-function attachScrollSaver(chapterId){
-  detachScrollSaver();
-  scrollSaver.id = chapterId;
-  const saveNow = (pos) => { saveChapterScroll(chapterId, pos); scrollSaver.lastSaved = Date.now(); };
-  const onScroll = () => {
-    const now = Date.now();
-    if(now - scrollSaver.lastSaved > 800) saveNow(window.scrollY || 0);
-    clearTimeout(scrollSaver.timer);
-    scrollSaver.timer = setTimeout(()=> saveNow(window.scrollY || 0), 700);
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
-  scrollSaver.onScroll = onScroll;
-}
-function detachScrollSaver(){
-  if(scrollSaver.onScroll) window.removeEventListener('scroll', scrollSaver.onScroll);
-  if(scrollSaver.timer) { clearTimeout(scrollSaver.timer); scrollSaver.timer = null; }
-  scrollSaver.onScroll = null; scrollSaver.id = null; scrollSaver.lastSaved = 0;
-}
-
-/* ---------- Restore-on-load (corrected logic) ----------
-   Behavior:
-    - If user has NOT yet started reading (VISITED_FLAG absent), show cover.
-    - If user HAS started reading and we have a saved last-read, restore that chapter + scroll.
-    - Register service worker.
------------------------------------------------ */
-window.addEventListener('load', () => {
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw.js').catch(()=>console.warn('SW failed')); }
-
-  try {
-    const hadStarted = localStorage.getItem(VISITED_FLAG); // present only if user opened a chapter before
-    const last = loadLastRead();
-
-    if(!hadStarted){
-      // user hasn't started reading yet -> show cover first
-      goCover();
-      return;
+    /* ---------- Chapter loading/rendering ---------- */
+    async function openChapterByIndex(i){
+      if(i < 0 || i >= CHAPTERS.length) return;
+      currentIndex = i;
+      const id = CHAPTERS[i].id;
+      // ensure flag (user started reading)
+      localStorage.setItem(VISITED_FLAG, '1');
+      await loadChapter(id);
+      saveLastRead(i, id);
+      history.pushState({id, index: i}, '', '#' + id);
     }
 
-    // user had started reading previously
-    if(last && last.id){
-      const idx = (typeof last.index === 'number' && last.index >= 0) ? last.index : CHAPTERS.findIndex(c=>c.id === last.id);
-      if(idx !== -1){
-        // open saved chapter (no extra history entry)
-        openChapterByIndex(idx).then(()=> {
-          history.replaceState({id: CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
-        }).catch(()=> { goCover(); });
-        return;
+    async function loadChapter(id){
+      if(cache[id]) { renderChapter(cache[id], id); return; }
+      try {
+        showLoader();
+        const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
+        if(!res.ok) throw new Error('Fetch error: ' + res.status);
+        const text = await res.text();
+        cache[id] = text;
+        renderChapter(text, id);
+      } catch (e) {
+        console.warn('loadChapter error', e);
+        reader.innerHTML = `<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">Unable to load chapter. You may be offline and this chapter is not cached yet.</p></div>`;
+      } finally { hideLoader(); }
+    }
+
+    function renderChapter(html, id){
+      reader.innerHTML = `<div class="chapter">${html}</div>`;
+      restoreScroll(id);
+      attachScrollSaver(id);
+      const el = reader.querySelector('.chapter');
+      if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
+    }
+
+    function showLoader(){
+      if(!document.getElementById('loader')){
+        const d = document.createElement('div');
+        d.id = 'loader'; d.style.marginTop='12px'; d.style.color='var(--muted)'; d.textContent='Loading...';
+        reader.appendChild(d);
       }
     }
+    function hideLoader(){ const l = document.getElementById('loader'); if(l) l.remove(); }
 
-    // fallback: show cover
-    goCover();
-  } catch(e){
-    console.warn('restore error', e);
-    goCover();
-  }
-});
+    /* ---------- Prefetch ---------- */
+    async function prefetchChapter(i){
+      if(i < 0 || i >= CHAPTERS.length) return;
+      const id = CHAPTERS[i].id;
+      await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
+    }
 
-/* ---------- History/back handling ---------- */
-window.addEventListener('popstate', (ev) => {
-  if(!ev.state){ goCover(); return; }
-  const { id, index } = ev.state;
-  if(typeof index === 'number' && index >= 0) openChapterByIndex(index);
-  else if(id){
-    const idx = CHAPTERS.findIndex(c=>c.id === id);
-    if(idx >= 0) openChapterByIndex(idx);
-  }
-});
+    /* ---------- Cover / go home ---------- */
+    function goCover(){
+      currentIndex = -1;
+      const placeholder = document.getElementById('placeholder');
+      reader.innerHTML = placeholder ? placeholder.outerHTML : '<div class="chapter"><h2>Welcome</h2></div>';
+      detachScrollSaver();
+      history.replaceState({}, '', './');
+    }
 
-/* ---------- Misc UX: close TOC on outside click, keyboard shortcuts ---------- */
-document.addEventListener('click', (e) => {
-  if(!tocDrawer.classList.contains('open')) return;
-  if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
-  closeTOC();
-});
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape') closeTOC();
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); }
-});
+    /* ---------- Resume localStorage ---------- */
+    function saveLastRead(index, id){
+      try { localStorage.setItem(LAST_READ_KEY, JSON.stringify({ index:Number(index), id:String(id), ts: Date.now() })); } catch(e){ console.warn('saveLastRead failed', e); }
+    }
+    function loadLastRead(){ try { const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
 
-/* ---------- small util ---------- */
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-</script>
+    function saveChapterScroll(chId, pos){ try { localStorage.setItem(SCROLL_PREFIX + chId, String(Math.floor(pos))); } catch(e){} }
+    function loadChapterScroll(chId){ try { const raw = localStorage.getItem(SCROLL_PREFIX + chId); return raw ? Number(raw) || 0 : 0; } catch(e){ return 0; } }
+
+    function restoreScroll(id){
+      const s = loadChapterScroll(id) || 0;
+      if(s > 0) setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
+      else window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    /* ---------- Scroll saver (throttled) ---------- */
+    function attachScrollSaver(chapterId){
+      detachScrollSaver();
+      scrollSaver.id = chapterId;
+      const saveNow = (pos)=> { saveChapterScroll(chapterId, pos); scrollSaver.lastSaved = Date.now(); };
+      const onScroll = ()=> {
+        const now = Date.now();
+        if(now - scrollSaver.lastSaved > 800) saveNow(window.scrollY || 0);
+        clearTimeout(scrollSaver.timer);
+        scrollSaver.timer = setTimeout(()=> saveNow(window.scrollY || 0), 700);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      scrollSaver.onScroll = onScroll;
+    }
+    function detachScrollSaver(){
+      if(scrollSaver.onScroll) window.removeEventListener('scroll', scrollSaver.onScroll);
+      if(scrollSaver.timer) { clearTimeout(scrollSaver.timer); scrollSaver.timer = null; }
+      scrollSaver.onScroll = null; scrollSaver.id = null; scrollSaver.lastSaved = 0;
+    }
+
+    /* ---------- Restore-on-load logic (corrected) ---------- */
+    window.addEventListener('load', () => {
+      // register SW using relative path (works with project pages)
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('sw.js').catch(()=>console.warn('SW registration failed'));
+      }
+
+      try {
+        const hadStarted = localStorage.getItem(VISITED_FLAG); // only set after user opens a chapter
+        const last = loadLastRead();
+
+        if(!hadStarted){
+          // user hasn't started reading yet -> show cover
+          goCover();
+          return;
+        }
+
+        // user had started reading previously -> try to restore last-read
+        if(last && last.id){
+          const idx = (typeof last.index === 'number' && last.index >= 0) ? last.index : CHAPTERS.findIndex(c=>c.id === last.id);
+          if(idx !== -1){
+            openChapterByIndex(idx).then(()=> {
+              history.replaceState({id:CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
+            }).catch(()=> goCover());
+            return;
+          }
+        }
+
+        // fallback to cover
+        goCover();
+      } catch(e){
+        console.warn('restore error', e);
+        goCover();
+      }
+    });
+
+    /* ---------- Back handling ---------- */
+    window.addEventListener('popstate', (ev) => {
+      if(!ev.state){ goCover(); return; }
+      const { id, index } = ev.state;
+      if(typeof index === 'number' && index >= 0) openChapterByIndex(index);
+      else if(id){
+        const idx = CHAPTERS.findIndex(c=>c.id === id);
+        if(idx >= 0) openChapterByIndex(idx);
+      }
+    });
+
+    /* ---------- UX helpers ---------- */
+    document.addEventListener('click', (e)=> {
+      if(!tocDrawer.classList.contains('open')) return;
+      if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
+      closeTOC();
+    });
+    document.addEventListener('keydown', (e)=> {
+      if(e.key === 'Escape') closeTOC();
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); }
+    });
+
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  </script>
 </body>
 </html>
