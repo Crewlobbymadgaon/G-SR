@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>G&SR — Konkan Railway (Offline Book)</title>
 
-  <!-- Use relative manifest (works with /G-SR/ when you set <base> externally) -->
+  <!-- manifest (relative) -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b63d6">
 
@@ -26,27 +26,35 @@
     .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
     main{padding:88px 16px 120px;max-width:980px;margin:0 auto;min-height:320px}
-    /* Cover (centered image). When hidden, chapters fill this area */
+    /* Cover centered image; hidden when a chapter is open */
     #cover { width:100%; border-radius:16px; overflow:hidden; height:420px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
     #cover img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* Reader area (hidden when cover is visible) */
-    #reader { margin-top:18px; }
+    /* Reader area (hidden when cover visible) */
+    #reader { margin-top:18px; display:none; }
 
     .chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); min-height:200px; }
 
-    /* TOC drawer */
-    #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:300px;max-width:90vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
+    /* TOC drawer (title changed below in HTML) */
+    #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
     #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
+    .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
     .toc-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
-    .toc-list a{text-decoration:none;color:#071033;display:block;padding:8px;font-weight:600}
+    .toc-list a{text-decoration:none;color:#05204a;display:block;padding:8px;border-radius:8px;font-weight:600}
+    .toc-list a:hover{background:rgba(11,99,214,0.04)}
 
     footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05)}
     .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
 
+    /* small helpers for the sample chapter content */
+    .chapter h2{margin-top:0}
+    .rule-list{margin-left:1.1rem;color:#0b63d6;font-weight:600}
+    .rule-list li{margin:10px 0;font-size:1.05rem}
+
     @media(max-width:640px){
       #cover{height:520px}
       main{padding:84px 12px 140px}
+      #tocDrawer{width:86vw}
     }
   </style>
 </head>
@@ -57,13 +65,14 @@
     <div style="width:44px;height:44px;"></div>
   </header>
 
-  <nav id="tocDrawer" aria-hidden="true" aria-label="Table of contents">
-    <h3>Contents</h3>
+  <!-- TOC with requested title -->
+  <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
+    <div class="toc-title">ARRANGEMENT OF RULES</div>
     <ul id="tocList" class="toc-list" role="list"></ul>
   </nav>
 
   <main>
-    <!-- COVER: just the image, nothing below it while cover is visible -->
+    <!-- Cover: only the image -->
     <section id="cover" aria-hidden="false" role="img" aria-label="Book cover image">
       <img
         srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
@@ -75,9 +84,9 @@
       />
     </section>
 
-    <!-- READER: will replace the cover when a chapter is opened -->
-    <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
-      <!-- Chapter content will be injected here. -->
+    <!-- Reader: initially hidden; will replace cover when a chapter opens -->
+    <section id="reader" aria-live="polite" tabindex="-1">
+      <!-- injected content appears here -->
     </section>
   </main>
 
@@ -87,27 +96,38 @@
   </footer>
 
 <script>
-/* ---------- CONFIG ---------- */
+/* ---------- Configuration + core ---------- */
+/*
+ Items at top of the menu to match your image:
+  - Notification (id: notif)
+  - Resolution (id: res)
+  - Documents Accompanying (id: docs)
+ Then Chapter I (ch1) with PRELIMINARY entries (1.01, 1.02, 1.03)
+*/
 const CHAPTERS = [
-  {id:'ch1', title:'Chapter 1 — Introduction'},
-  {id:'ch2', title:'Chapter 2 — Definitions & Interpretations'},
-  {id:'ch3', title:'Chapter 3 — Personnel & Duties'},
-  {id:'ch4', title:'Chapter 4 — Signalling'},
-  {id:'ch5', title:'Chapter 5 — Block Working'},
-  {id:'ch6', title:'Chapter 6 — Train Operations'},
-  {id:'ch7', title:'Chapter 7 — Speed Restrictions'},
-  {id:'ch8', title:'Chapter 8 — Signalling Failures'},
-  {id:'ch9', title:'Chapter 9 — Block Instruments & Communication'},
-  {id:'ch10', title:'Chapter 10 — Shunting & Yard Working'},
-  {id:'ch11', title:'Chapter 11 — Working Rules for Trains'},
-  {id:'ch12', title:'Chapter 12 — Safety & Emergency Procedures'},
-  {id:'ch13', title:'Chapter 13 — Working of Level Crossings'},
-  {id:'ch14', title:'Chapter 14 — Tunnels & Special Sections'},
-  {id:'ch15', title:'Chapter 15 — Electrical & Signalling Maintenance'},
-  {id:'ch16', title:'Chapter 16 — Training & Competency'},
-  {id:'ch17', title:'Chapter 17 — Record Keeping & Reporting'},
-  {id:'ch18', title:'Chapter 18 — Annexures & Forms'},
-  {id:'appendix', title:'Appendix — Reference Material'}
+  { id: 'notif', title: 'Notification' },
+  { id: 'res', title: 'Resolution' },
+  { id: 'docs', title: 'Documents Accompanying' },
+  { id: 'ch1', title: 'CHAPTER I — PRELIMINARY' },
+  // rest of book
+  { id: 'ch2', title: 'Chapter 2 — Definitions & Interpretations' },
+  { id: 'ch3', title: 'Chapter 3 — Personnel & Duties' },
+  { id: 'ch4', title: 'Chapter 4 — Signalling' },
+  { id: 'ch5', title: 'Chapter 5 — Block Working' },
+  { id: 'ch6', title: 'Chapter 6 — Train Operations' },
+  { id: 'ch7', title: 'Chapter 7 — Speed Restrictions' },
+  { id: 'ch8', title: 'Chapter 8 — Signalling Failures' },
+  { id: 'ch9', title: 'Chapter 9 — Block Instruments & Communication' },
+  { id: 'ch10', title: 'Chapter 10 — Shunting & Yard Working' },
+  { id: 'ch11', title: 'Chapter 11 — Working Rules for Trains' },
+  { id: 'ch12', title: 'Chapter 12 — Safety & Emergency Procedures' },
+  { id: 'ch13', title: 'Chapter 13 — Working of Level Crossings' },
+  { id: 'ch14', title: 'Chapter 14 — Tunnels & Special Sections' },
+  { id: 'ch15', title: 'Chapter 15 — Electrical & Signalling Maintenance' },
+  { id: 'ch16', title: 'Chapter 16 — Training & Competency' },
+  { id: 'ch17', title: 'Chapter 17 — Record Keeping & Reporting' },
+  { id: 'ch18', title: 'Chapter 18 — Annexures & Forms' },
+  { id: 'appendix', title: 'Appendix — Reference Material' }
 ];
 
 const VISITED_FLAG = 'gkr_had_started_reading';
@@ -115,8 +135,68 @@ const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 
 let currentIndex = -1;
-let cache = {};
+let cache = {}; // dynamic cache for fetched or preloaded fragments
 let scrollSaver = { timer: null, lastSaved: 0, id: null, onScroll: null };
+
+/* ---------- Preload sample fragments for quick testing ----------
+   These avoid needing separate files for the first items.
+   You may replace or remove these and create /chapters/*.html files later.
+*/
+cache['notif'] = `
+  <article class="chapter-content" data-title="Notification">
+    <h2>Notification</h2>
+    <p>This section contains notifications relevant to the General &amp; Subsidiary Rules for Konkan Railway.</p>
+    <p style="color:var(--muted)">(Sample content — replace with official notification text.)</p>
+  </article>
+`;
+
+cache['res'] = `
+  <article class="chapter-content" data-title="Resolution">
+    <h2>Resolution</h2>
+    <p>Resolutions and official orders affecting the application of the rules.</p>
+    <p style="color:var(--muted)">(Sample content — replace with real resolutions.)</p>
+  </article>
+`;
+
+cache['docs'] = `
+  <article class="chapter-content" data-title="Documents Accompanying">
+    <h2>Documents Accompanying</h2>
+    <p>List of documents, forms and annexures that accompany these rules.</p>
+    <ul>
+      <li>Form A — Register</li>
+      <li>Form B — Report</li>
+      <li>Annexure I — Contact List</li>
+    </ul>
+    <p style="color:var(--muted)">(Sample list — edit as required.)</p>
+  </article>
+`;
+
+/* CHAPTER 1 sample matching the image layout (ARRANGEMENT OF RULES -> CHAPTER I -> PRELIMINARY) */
+cache['ch1'] = `
+  <article class="chapter-content" data-title="Chapter 1 — Preliminary">
+    <h2>CHAPTER I</h2>
+    <h3>PRELIMINARY</h3>
+
+    <p style="margin-top:12px">Arrangement of rules for quick reference:</p>
+    <ul class="rule-list">
+      <li>1.01 Short title and commencement</li>
+      <li>1.02 Definitions</li>
+      <li>1.03 Classification of Stations</li>
+    </ul>
+
+    <h4 style="margin-top:18px">1.01 Short title and commencement</h4>
+    <p>This rule states the short title of the book and the date on which it comes into force.</p>
+
+    <h4 style="margin-top:12px">1.02 Definitions</h4>
+    <p>Definitions of terms used in this volume. Example terms include "Train", "Block section", "Loco pilot".</p>
+
+    <h4 style="margin-top:12px">1.03 Classification of Stations</h4>
+    <p>Stations are classified for working and operational purposes. The classification depends on traffic handled and signaling arrangements.</p>
+
+    <hr style="margin-top:18px">
+    <p style="font-size:.95rem;color:var(--muted)">End of sample CHAPTER I. Replace this with the official G&SR text.</p>
+  </article>
+`;
 
 /* ---------- DOM refs ---------- */
 const tocList = document.getElementById('tocList');
@@ -127,14 +207,18 @@ const reader = document.getElementById('reader');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
-/* ---------- Populate TOC ---------- */
+/* ---------- Populate TOC (uses CHAPTERS array) ---------- */
 (function populateTOC(){
   CHAPTERS.forEach((c,i)=>{
     const li = document.createElement('li');
     const a = document.createElement('a');
-    a.href = '#'+c.id;
+    a.href = '#' + c.id;
     a.textContent = `${i+1}. ${c.title}`;
-    a.addEventListener('click', (e)=>{ e.preventDefault(); markStartedAndOpen(i); closeTOC(); });
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      markStartedAndOpen(i);
+      closeTOC();
+    });
     li.appendChild(a);
     tocList.appendChild(li);
   });
@@ -150,7 +234,7 @@ btnMenu.addEventListener('click', ()=>{
 });
 function closeTOC(){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); btnMenu.setAttribute('aria-expanded','false'); tocDrawer.setAttribute('aria-hidden','true'); }
 
-/* ---------- Footer nav ---------- */
+/* ---------- Footer navigation ---------- */
 prevBtn.addEventListener('click', ()=>{
   if(currentIndex > 0) openChapterByIndex(currentIndex - 1);
   else if(currentIndex === 0) showCover();
@@ -158,24 +242,28 @@ prevBtn.addEventListener('click', ()=>{
 nextBtn.addEventListener('click', ()=>{
   if(currentIndex === -1){
     // from cover: forward arrow opens Chapter 1 (and mark started)
-    markStartedAndOpen(0);
+    markStartedAndOpen(3); // index 3 is ch1 in CHAPTERS array above
   } else if(currentIndex < CHAPTERS.length - 1){
     openChapterByIndex(currentIndex + 1);
   }
 });
 
-/* ---------- Mark started then open ---------- */
+/* ---------- Helpers ---------- */
 function markStartedAndOpen(index){
   localStorage.setItem(VISITED_FLAG, '1');
   openChapterByIndex(index);
 }
 
-/* ---------- Chapter loading / rendering (chapter replaces cover) ---------- */
+/* ---------- Chapter load and rendering ----------
+   If a fragment is preloaded in cache[] it will be used.
+   Otherwise the code will attempt to fetch `chapters/{id}.html`.
+*/
 async function openChapterByIndex(i){
   if(i < 0 || i >= CHAPTERS.length) return;
   currentIndex = i;
   const id = CHAPTERS[i].id;
-  localStorage.setItem(VISITED_FLAG, '1'); // user has started reading
+  // mark started
+  localStorage.setItem(VISITED_FLAG, '1');
   await loadChapter(id);
   saveLastRead(i, id);
   history.pushState({id, index: i}, '', '#' + id);
@@ -185,34 +273,32 @@ async function loadChapter(id){
   if(cache[id]) { renderChapter(cache[id], id); return; }
   try {
     showLoader();
+    // attempt to fetch chapters/{id}.html as fallback
     const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-    if(!res.ok) throw new Error('Fetch failed: ' + res.status);
+    if(!res.ok) throw new Error('Fetch failed ' + res.status);
     const text = await res.text();
     cache[id] = text;
     renderChapter(text, id);
   } catch (e) {
     console.warn('loadChapter error', e);
-    renderChapter(`<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">Unable to load chapter. You may be offline and this chapter is not cached yet.</p></div>`, id);
+    const fallback = `<div class="chapter"><h2>Missing chapter</h2><p style="color:var(--muted)">This chapter fragment is not available. Create <code>chapters/${id}.html</code> or replace the sample content in the index.</p></div>`;
+    renderChapter(fallback, id);
   } finally { hideLoader(); }
 }
 
 function renderChapter(html, id){
-  // hide cover and show reader (chapter replaces cover visually)
+  // hide cover and show reader: chapter replaces the cover visually
   coverEl.style.display = 'none';
   reader.style.display = 'block';
   reader.innerHTML = `<div class="chapter">${html}</div>`;
-  // restore scroll and attach saver
   restoreScroll(id);
   attachScrollSaver(id);
-  // focus for accessibility
   const el = reader.querySelector('.chapter');
   if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
 }
 
-/* ---------- Show cover (home) ---------- */
 function showCover(){
   currentIndex = -1;
-  // show cover, hide reader content, clear reader
   coverEl.style.display = 'flex';
   reader.style.display = 'none';
   reader.innerHTML = '';
@@ -230,7 +316,7 @@ function showLoader(){
 }
 function hideLoader(){ const l = document.getElementById('loader'); if(l) l.remove(); }
 
-/* ---------- Resume storage ---------- */
+/* ---------- Resume using localStorage ---------- */
 function saveLastRead(index, id){
   try { localStorage.setItem(LAST_READ_KEY, JSON.stringify({ index:Number(index), id:String(id), ts: Date.now() })); } catch(e){ console.warn('saveLastRead', e); }
 }
@@ -265,16 +351,15 @@ function detachScrollSaver(){
   scrollSaver.onScroll = null; scrollSaver.id = null; scrollSaver.lastSaved = 0;
 }
 
-/* ---------- Prefetch (silent) ---------- */
+/* ---------- Prefetch silent ---------- */
 async function prefetchChapter(i){
   if(i < 0 || i >= CHAPTERS.length) return;
   const id = CHAPTERS[i].id;
   await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
 }
 
-/* ---------- Restore-on-load ---------- */
+/* ---------- Restore-on-load behavior ---------- */
 window.addEventListener('load', () => {
-  // register service worker using relative path so it works on project pages
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(()=>console.warn('SW registration failed'));
   }
@@ -284,23 +369,22 @@ window.addEventListener('load', () => {
     const last = loadLastRead();
 
     if(!hadStarted){
-      // user hasn't started reading -> show cover
+      // show cover until user opens a chapter
       showCover();
       return;
     }
 
-    // user had started reading previously -> restore last-read if present
+    // if user had started reading earlier, restore last-read
     if(last && last.id){
       const idx = (typeof last.index === 'number' && last.index >= 0) ? last.index : CHAPTERS.findIndex(c=>c.id === last.id);
       if(idx !== -1){
         openChapterByIndex(idx).then(()=> {
-          history.replaceState({id: CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
+          history.replaceState({id:CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
         }).catch(()=> showCover());
         return;
       }
     }
 
-    // fallback
     showCover();
   } catch(e){
     console.warn('restore error', e);
@@ -319,7 +403,7 @@ window.addEventListener('popstate', (ev) => {
   }
 });
 
-/* ---------- UX helpers ---------- */
+/* ---------- Misc UX ---------- */
 document.addEventListener('click', (e)=> {
   if(!tocDrawer.classList.contains('open')) return;
   if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
