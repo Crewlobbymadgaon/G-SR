@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>G&SR — Konkan Railway (Offline Book)</title>
 
-  <!-- manifest (relative) -->
+  <!-- Use relative manifest (works with /G-SR/ when you set <base> externally) -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b63d6">
 
@@ -25,24 +25,34 @@
     .menu-btn.open .hamburger span:nth-child(2){opacity:0}
     .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-    main{padding:88px 16px 120px;max-width:980px;margin:0 auto}
-    .cover-image{width:100%;border-radius:16px;overflow:hidden;height:420px;position:relative;background:#111;box-shadow:0 12px 30px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
-    .cover-image img{width:100%;height:100%;object-fit:cover;display:block}
+    main{padding:88px 16px 120px;max-width:980px;margin:0 auto;min-height:320px}
+    /* Cover (centered image). When hidden, chapters fill this area */
+    #cover { width:100%; border-radius:16px; overflow:hidden; height:420px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
+    #cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* Reader area (hidden when cover is visible) */
+    #reader { margin-top:18px; }
+
+    .chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); min-height:200px; }
+
+    /* TOC drawer */
     #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:300px;max-width:90vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
     #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
     .toc-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
     .toc-list a{text-decoration:none;color:#071033;display:block;padding:8px;font-weight:600}
-    #reader .chapter{background:var(--card);padding:16px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.05)}
+
     footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05)}
     .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
-    @media(max-width:640px){ .cover-image{height:520px} }
+
+    @media(max-width:640px){
+      #cover{height:520px}
+      main{padding:84px 12px 140px}
+    }
   </style>
 </head>
 <body>
   <header>
-    <button id="btnMenu" class="menu-btn" aria-label="Open TOC">
-      <span class="hamburger"><span></span><span></span><span></span></span>
-    </button>
+    <button id="btnMenu" class="menu-btn" aria-label="Open TOC"><span class="hamburger"><span></span><span></span><span></span></span></button>
     <div class="brand">G&SR — Konkan Railway</div>
     <div style="width:44px;height:44px;"></div>
   </header>
@@ -53,8 +63,8 @@
   </nav>
 
   <main>
-    <!-- Cover image only -->
-    <section id="cover" class="cover-image" role="main" aria-labelledby="coverTitle" tabindex="-1">
+    <!-- COVER: just the image, nothing below it while cover is visible -->
+    <section id="cover" aria-hidden="false" role="img" aria-label="Book cover image">
       <img
         srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
         sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 800px"
@@ -65,9 +75,10 @@
       />
     </section>
 
-    <div id="reader" aria-live="polite">
-      <!-- intentionally empty: user sees cover only until they open a chapter -->
-    </div>
+    <!-- READER: will replace the cover when a chapter is opened -->
+    <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
+      <!-- Chapter content will be injected here. -->
+    </section>
   </main>
 
   <footer>
@@ -76,7 +87,7 @@
   </footer>
 
 <script>
-/* ---------- Config ---------- */
+/* ---------- CONFIG ---------- */
 const CHAPTERS = [
   {id:'ch1', title:'Chapter 1 — Introduction'},
   {id:'ch2', title:'Chapter 2 — Definitions & Interpretations'},
@@ -99,7 +110,7 @@ const CHAPTERS = [
   {id:'appendix', title:'Appendix — Reference Material'}
 ];
 
-const VISITED_FLAG = 'gkr_had_started_reading'; // set only when user opens a chapter
+const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 
@@ -111,6 +122,7 @@ let scrollSaver = { timer: null, lastSaved: 0, id: null, onScroll: null };
 const tocList = document.getElementById('tocList');
 const btnMenu = document.getElementById('btnMenu');
 const tocDrawer = document.getElementById('tocDrawer');
+const coverEl = document.getElementById('cover');
 const reader = document.getElementById('reader');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
@@ -122,7 +134,6 @@ const nextBtn = document.getElementById('nextBtn');
     const a = document.createElement('a');
     a.href = '#'+c.id;
     a.textContent = `${i+1}. ${c.title}`;
-    // clicking a toc item marks user started and opens that chapter
     a.addEventListener('click', (e)=>{ e.preventDefault(); markStartedAndOpen(i); closeTOC(); });
     li.appendChild(a);
     tocList.appendChild(li);
@@ -139,33 +150,32 @@ btnMenu.addEventListener('click', ()=>{
 });
 function closeTOC(){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); btnMenu.setAttribute('aria-expanded','false'); tocDrawer.setAttribute('aria-hidden','true'); }
 
-/* ---------- Footer navigation ---------- */
+/* ---------- Footer nav ---------- */
 prevBtn.addEventListener('click', ()=>{
   if(currentIndex > 0) openChapterByIndex(currentIndex - 1);
-  else if(currentIndex === 0) goCover();
+  else if(currentIndex === 0) showCover();
 });
 nextBtn.addEventListener('click', ()=>{
   if(currentIndex === -1){
-    // from cover, forward arrow opens Chapter 1 and mark started
+    // from cover: forward arrow opens Chapter 1 (and mark started)
     markStartedAndOpen(0);
   } else if(currentIndex < CHAPTERS.length - 1){
     openChapterByIndex(currentIndex + 1);
   }
 });
 
-/* ---------- Helper to mark started then open ---------- */
+/* ---------- Mark started then open ---------- */
 function markStartedAndOpen(index){
-  localStorage.setItem(VISITED_FLAG, '1'); // user has started reading
+  localStorage.setItem(VISITED_FLAG, '1');
   openChapterByIndex(index);
 }
 
-/* ---------- Chapter load/render ---------- */
+/* ---------- Chapter loading / rendering (chapter replaces cover) ---------- */
 async function openChapterByIndex(i){
   if(i < 0 || i >= CHAPTERS.length) return;
   currentIndex = i;
   const id = CHAPTERS[i].id;
-  // ensure started flag set
-  localStorage.setItem(VISITED_FLAG, '1');
+  localStorage.setItem(VISITED_FLAG, '1'); // user has started reading
   await loadChapter(id);
   saveLastRead(i, id);
   history.pushState({id, index: i}, '', '#' + id);
@@ -176,26 +186,43 @@ async function loadChapter(id){
   try {
     showLoader();
     const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-    if(!res.ok) throw new Error('Fetch failed ' + res.status);
+    if(!res.ok) throw new Error('Fetch failed: ' + res.status);
     const text = await res.text();
     cache[id] = text;
     renderChapter(text, id);
   } catch (e) {
     console.warn('loadChapter error', e);
-    reader.innerHTML = `<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">Unable to load chapter. You may be offline and this chapter is not cached yet.</p></div>`;
+    renderChapter(`<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">Unable to load chapter. You may be offline and this chapter is not cached yet.</p></div>`, id);
   } finally { hideLoader(); }
 }
 
 function renderChapter(html, id){
+  // hide cover and show reader (chapter replaces cover visually)
+  coverEl.style.display = 'none';
+  reader.style.display = 'block';
   reader.innerHTML = `<div class="chapter">${html}</div>`;
+  // restore scroll and attach saver
   restoreScroll(id);
   attachScrollSaver(id);
+  // focus for accessibility
   const el = reader.querySelector('.chapter');
   if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
 }
 
+/* ---------- Show cover (home) ---------- */
+function showCover(){
+  currentIndex = -1;
+  // show cover, hide reader content, clear reader
+  coverEl.style.display = 'flex';
+  reader.style.display = 'none';
+  reader.innerHTML = '';
+  detachScrollSaver();
+  history.replaceState({}, '', './');
+}
+
+/* ---------- Loader helpers ---------- */
 function showLoader(){
-  if(!document.getElementById('loader')){
+  if(reader && !document.getElementById('loader')){
     const d = document.createElement('div');
     d.id = 'loader'; d.style.marginTop='12px'; d.style.color='var(--muted)'; d.textContent='Loading...';
     reader.appendChild(d);
@@ -203,23 +230,7 @@ function showLoader(){
 }
 function hideLoader(){ const l = document.getElementById('loader'); if(l) l.remove(); }
 
-/* ---------- Prefetch (silent) ---------- */
-async function prefetchChapter(i){
-  if(i < 0 || i >= CHAPTERS.length) return;
-  const id = CHAPTERS[i].id;
-  await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-}
-
-/* ---------- Cover (home) ---------- */
-function goCover(){
-  currentIndex = -1;
-  // reader left empty (cover is separate)
-  reader.innerHTML = '';
-  detachScrollSaver();
-  history.replaceState({}, '', './');
-}
-
-/* ---------- Resume localStorage ---------- */
+/* ---------- Resume storage ---------- */
 function saveLastRead(index, id){
   try { localStorage.setItem(LAST_READ_KEY, JSON.stringify({ index:Number(index), id:String(id), ts: Date.now() })); } catch(e){ console.warn('saveLastRead', e); }
 }
@@ -230,11 +241,8 @@ function loadChapterScroll(chId){ try { const raw = localStorage.getItem(SCROLL_
 
 function restoreScroll(id){
   const s = loadChapterScroll(id) || 0;
-  if(s > 0){
-    setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
-  } else {
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }
+  if(s > 0) setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
+  else setTimeout(()=> window.scrollTo({ top: 0, behavior: 'auto' }), 60);
 }
 
 /* ---------- Scroll saver (throttled) ---------- */
@@ -257,39 +265,52 @@ function detachScrollSaver(){
   scrollSaver.onScroll = null; scrollSaver.id = null; scrollSaver.lastSaved = 0;
 }
 
+/* ---------- Prefetch (silent) ---------- */
+async function prefetchChapter(i){
+  if(i < 0 || i >= CHAPTERS.length) return;
+  const id = CHAPTERS[i].id;
+  await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
+}
+
 /* ---------- Restore-on-load ---------- */
 window.addEventListener('load', () => {
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>console.warn('SW registration failed')); }
+  // register service worker using relative path so it works on project pages
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>console.warn('SW registration failed'));
+  }
 
   try {
     const hadStarted = localStorage.getItem(VISITED_FLAG);
     const last = loadLastRead();
 
     if(!hadStarted){
-      // not started reading -> show cover
-      goCover();
+      // user hasn't started reading -> show cover
+      showCover();
       return;
     }
 
-    // had started reading previously -> restore last-read if present
+    // user had started reading previously -> restore last-read if present
     if(last && last.id){
       const idx = (typeof last.index === 'number' && last.index >= 0) ? last.index : CHAPTERS.findIndex(c=>c.id === last.id);
       if(idx !== -1){
-        openChapterByIndex(idx).then(()=> { history.replaceState({id:CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id); }).catch(()=> goCover());
+        openChapterByIndex(idx).then(()=> {
+          history.replaceState({id: CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
+        }).catch(()=> showCover());
         return;
       }
     }
 
-    goCover();
+    // fallback
+    showCover();
   } catch(e){
     console.warn('restore error', e);
-    goCover();
+    showCover();
   }
 });
 
-/* ---------- Back handling ---------- */
+/* ---------- History/back handling ---------- */
 window.addEventListener('popstate', (ev) => {
-  if(!ev.state){ goCover(); return; }
+  if(!ev.state){ showCover(); return; }
   const { id, index } = ev.state;
   if(typeof index === 'number' && index >= 0) openChapterByIndex(index);
   else if(id){
