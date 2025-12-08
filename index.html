@@ -4,380 +4,351 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>G&SR — Konkan Railway (Offline Book)</title>
-  <meta name="description" content="G&SR of Konkan Railway — Offline web book. Cover-first UX with TOC." />
+
+  <!-- Manifest -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0b63d6">
 
   <style>
     :root{
-      --bg:#f6f9ff; --card:#ffffff; --kr:#0b63d6; --kr-2:#0b9cff;
-      --muted:#6b7280; --radius:14px; --glass: rgba(255,255,255,0.6);
+      --bg:#f6f9ff; --card:#ffffff;
+      --kr:#0b63d6; --kr2:#0b9cff;
+      --muted:#6b7280;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;color:#071033;background:var(--bg);-webkit-font-smoothing:antialiased}
-    a{color:inherit}
+    body,html{margin:0;padding:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
 
-    /* header */
+    /* Header */
     header{
-      position:fixed;left:0;right:0;top:0;height:64px;padding:10px 14px;display:flex;align-items:center;gap:12px;
-      background:linear-gradient(90deg,var(--kr),var(--kr-2));color:#fff;z-index:1200;
-      box-shadow:0 4px 18px rgba(11,99,214,0.14);
+      position:fixed;left:0;right:0;top:0;height:64px;
+      display:flex;align-items:center;gap:12px;
+      padding:10px 14px;
+      background:linear-gradient(90deg,var(--kr),var(--kr2));
+      color:#fff;z-index:1200;box-shadow:0 4px 18px rgba(0,0,0,0.14);
     }
-    .brand{font-weight:800;font-size:1.05rem;flex:1;text-align:center;letter-spacing:.2px}
+    .brand{flex:1;text-align:center;font-weight:800;font-size:1.05rem}
 
-    /* stylish menu button (animated hamburger -> X) */
-    .menu-btn{
-      --size:44px;
-      width:var(--size);height:var(--size);display:inline-grid;place-items:center;border-radius:10px;
-      background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);cursor:pointer;padding:8px;
-      transition:transform .18s ease, background .18s ease;
+    /* Menu button (hamburger → X animation) */
+    .menu-btn{width:44px;height:44px;display:grid;place-items:center;
+      border-radius:10px;cursor:pointer;background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.15);
     }
-    .menu-btn:active{transform:scale(.98)}
-    .hamburger{
-      width:22px;height:16px;position:relative;display:inline-block;
-    }
+    .hamburger{width:22px;height:16px;position:relative}
     .hamburger span{
-      position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;display:block;
-      transition:transform .24s cubic-bezier(.2,.9,.2,1),opacity .18s ease,top .24s cubic-bezier(.2,.9,.2,1);
+      position:absolute;left:0;right:0;height:2px;background:#fff;
+      transition:.24s; border-radius:2px;
     }
     .hamburger span:nth-child(1){top:0}
     .hamburger span:nth-child(2){top:7px}
     .hamburger span:nth-child(3){top:14px}
+
     .menu-btn.open .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
     .menu-btn.open .hamburger span:nth-child(2){opacity:0}
     .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-    /* layout */
     main{padding:88px 16px 120px;max-width:980px;margin:0 auto}
-    .cover{
-      background:linear-gradient(180deg,#fff,#eef6ff);
-      border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(11,63,120,0.06);
-      display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;
+
+    /* COVER */
+    .cover-image{
+      width:100%;border-radius:16px;overflow:hidden;
+      height:400px;position:relative;
+      background:#111;box-shadow:0 12px 30px rgba(0,0,0,0.14);
+      display:flex;align-items:center;justify-content:center;
     }
-    .cover h1{margin:0;font-size:1.6rem;color:#05204a}
-    .cover p{margin:0;color:var(--muted)}
-    .open-btn{
-      margin-top:8px;padding:10px 16px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--kr),var(--kr-2));
-      color:#fff;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(11,99,214,0.18)
+    .cover-image img{width:100%;height:100%;object-fit:cover}
+
+    .cover-overlay{
+      position:absolute;left:0;right:0;top:0;bottom:0;
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;background:rgba(0,0,0,0.25);
+      backdrop-filter:blur(4px);
     }
-    .meta-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:.95rem}
+    .cover-card{
+      max-width:70ch;text-align:center;color:#fff;
+      padding:20px;border-radius:12px;
+      background:rgba(0,0,0,0.35);
+    }
+    .cover-card h1{margin:0 0 10px;font-size:1.6rem}
+    .cover-card p{margin:0 0 14px}
+
+    .cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .cover-open{
+      background:linear-gradient(90deg,var(--kr),var(--kr2));
+      border:0;color:#fff;font-weight:700;
+      padding:10px 16px;border-radius:12px;cursor:pointer;
+      box-shadow:0 8px 20px rgba(0,0,0,0.22);
+    }
+    .cover-prefetch{
+      border:1px solid rgba(255,255,255,.4);
+      padding:10px 14px;border-radius:12px;
+      background:#fff;color:var(--kr);font-weight:700;cursor:pointer;
+    }
+    .cover-clear{
+      background:transparent;border:0;color:#fff;text-decoration:underline;cursor:pointer;
+    }
 
     /* TOC drawer */
     #tocDrawer{
-      position:fixed;left:12px;top:84px;bottom:100px;width:320px;max-width:86vw;background:var(--card);
-      border-radius:12px;padding:12px 10px;box-shadow:0 18px 40px rgba(7,16,40,0.12);transform:translateY(-8px);
-      opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:1300;
+      position:fixed;left:12px;top:84px;bottom:100px;
+      width:300px;max-width:90vw;
+      background:var(--card);border-radius:14px;
+      padding:12px;box-shadow:0 18px 40px rgba(0,0,0,0.15);
+      opacity:0;pointer-events:none;transform:translateY(-10px);
+      transition:.25s;z-index:1300;
     }
     #tocDrawer.open{opacity:1;pointer-events:auto;transform:translateY(0)}
-    #tocDrawer h2{margin:6px 0 8px;font-size:1rem}
     .toc-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
-    .toc-list li{padding:8px;border-radius:10px;margin:4px 0}
-    .toc-list a{display:block;text-decoration:none;color:#05204a;font-weight:600;padding:4px 6px}
-    .toc-list a:focus{outline:3px solid rgba(11,99,214,0.12);border-radius:8px}
+    .toc-list a{text-decoration:none;color:#071033;font-weight:600;display:block;padding:6px}
 
-    /* reader viewport */
-    #reader{margin-top:18px}
-    .chapter{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(7,16,40,0.04)}
-    .chapter h2{margin-top:0}
-    #resultsArea{display:none;margin-top:10px}
+    /* Reader */
+    #reader .chapter{
+      background:var(--card);padding:16px;border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.05);
+    }
 
-    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);
-      display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(7,16,40,0.03)}
-    .nav-small{background:#fff;border-radius:10px;padding:6px 8px;border:1px solid rgba(7,16,40,0.04)}
-    .nav-small button{border:0;background:transparent;cursor:pointer;font-weight:700}
-
-    /* responsive */
-    @media (max-width:880px){
-      .brand{font-size:.98rem}
-      #tocDrawer{left:6px;right:6px;width:auto;top:76px;bottom:110px}
-      main{padding:84px 12px 140px}
+    footer{
+      position:fixed;left:0;right:0;bottom:0;
+      display:flex;justify-content:center;align-items:center;gap:16px;
+      padding:12px;background:#fff;
+      box-shadow:0 -6px 18px rgba(0,0,0,0.05);
+    }
+    .nav-small button{
+      background:#fff;border:1px solid #ccc;
+      padding:6px 10px;border-radius:8px;
+      cursor:pointer;font-weight:700;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <button id="btnMenu" class="menu-btn" aria-label="Open table of contents" aria-expanded="false">
-      <span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
-    </button>
+<header>
+  <button id="btnMenu" class="menu-btn" aria-label="Open TOC"><span class="hamburger"><span></span><span></span><span></span></span></button>
+  <div class="brand">G&SR — Konkan Railway</div>
+  <div style="width:44px;height:44px;"></div>
+</header>
 
-    <div class="brand" aria-live="polite">G&SR — Konkan Railway</div>
+<!-- TOC -->
+<nav id="tocDrawer">
+  <h3>Contents</h3>
+  <ul id="tocList" class="toc-list"></ul>
+</nav>
 
-    <!-- right side small placeholder (can add search / install) -->
-    <div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06)"></div>
-  </header>
+<main>
 
-  <!-- TOC drawer -->
-  <nav id="tocDrawer" aria-hidden="true" aria-label="Table of contents">
-    <h2>Contents</h2>
-    <ul id="tocList" class="toc-list" role="list"></ul>
-    <div style="margin-top:8px;color:var(--muted);font-size:.92rem">Tap an item to open. Chapters are loaded on demand and cached for offline use.</div>
-  </nav>
+  <!-- IMAGE COVER -->
+  <section id="cover" class="cover-image">
+    <img
+      srcset="/assets/cover-800.webp 800w, /assets/cover-1200.webp 1200w, /assets/cover-1600.webp 1600w"
+      sizes="(max-width: 640px) 95vw, (max-width: 980px) 90vw, 800px"
+      src="/assets/cover-1200.webp"
+      alt="G&SR Konkan Railway — Book Cover" loading="eager"
+    >
 
-  <main>
-    <!-- Cover (first view) -->
-    <section id="cover" class="cover" role="main" aria-labelledby="coverTitle">
-      <h1 id="coverTitle">G&SR — Konkan Railway</h1>
-      <p class="meta-row">Official Guide & Special Rules — Offline Web Edition</p>
-      <p style="max-width:70ch;margin-top:10px;color:var(--muted)">This lightweight shell opens instantly to the cover. Tap "Open Book" or use the menu to jump to chapters. Chapters are fetched lazily and cached by the service worker.</p>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button id="openBook" class="open-btn" aria-label="Open book">Open Book</button>
-        <button id="prefetchBtn" class="open-btn" style="background:#fff;color:var(--kr);font-weight:700;border:1px solid rgba(11,99,214,0.08)">Prefetch First</button>
+    <div class="cover-overlay">
+      <div class="cover-card">
+        <h1>General & Subsidiary Rules — Konkan Railway</h1>
+        <p>Official Offline Edition — Works fully without internet</p>
+        <div class="cta-row">
+          <button id="openBook" class="cover-open">Open Book</button>
+          <button id="prefetchBtn" class="cover-prefetch">Prefetch First</button>
+          <button id="clearResume" class="cover-clear">Clear Resume</button>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- search/ results (hidden by default) -->
-    <div id="resultsArea" role="region" aria-live="polite"></div>
+  <div id="reader">
+    <div class="chapter" id="placeholder">
+      <h2>Welcome</h2>
+      <p style="color:var(--muted)">Tap “Open Book” or choose from the menu.</p>
+    </div>
+  </div>
 
-    <!-- Reader viewport: chapters are injected here -->
-    <section id="reader" aria-live="polite">
-      <!-- placeholder when no chapter loaded -->
-      <div class="chapter" id="placeholder">
-        <h2>Welcome</h2>
-        <p style="color:var(--muted)">Open a chapter from the menu, or press "Open Book" to start from Chapter 1. While offline, previously opened chapters remain available thanks to the service worker.</p>
-      </div>
-    </section>
-  </main>
+</main>
 
-  <footer>
-    <div class="nav-small"><button id="prevBtn" aria-label="Previous">◀</button></div>
-    <div style="color:var(--muted);font-size:.95rem">© Konkan Railway — G&SR</div>
-    <div class="nav-small"><button id="nextBtn" aria-label="Next">▶</button></div>
-  </footer>
+<footer>
+  <div class="nav-small"><button id="prevBtn">◀</button></div>
+  <div class="nav-small"><button id="nextBtn">▶</button></div>
+</footer>
 
-  <script>
-    /* ---- Basic app: populate TOC, handle cover-first UX, lazy-load chapters, register SW ---- */
+<script>
+/* ================================
+   CHAPTER LIST
+================================= */
+const CHAPTERS = [
+  {id:'ch1', title:'Chapter 1 — Introduction'},
+  {id:'ch2', title:'Chapter 2 — Definitions & Interpretations'},
+  {id:'ch3', title:'Chapter 3 — Personnel & Duties'},
+  {id:'ch4', title:'Chapter 4 — Signalling'},
+  {id:'ch5', title:'Chapter 5 — Block Working'},
+  {id:'ch6', title:'Chapter 6 — Train Operations'},
+  {id:'ch7', title:'Chapter 7 — Speed Restrictions'},
+  {id:'ch8', title:'Chapter 8 — Signalling Failures'},
+  {id:'ch9', title:'Chapter 9 — Block Instruments & Communication'},
+  {id:'ch10', title:'Chapter 10 — Shunting & Yard Working'},
+  {id:'ch11', title:'Chapter 11 — Working Rules for Trains'},
+  {id:'ch12', title:'Chapter 12 — Safety & Emergency Procedures'},
+  {id:'ch13', title:'Chapter 13 — Working of Level Crossings'},
+  {id:'ch14', title:'Chapter 14 — Tunnels & Special Sections'},
+  {id:'ch15', title:'Chapter 15 — Electrical & Signalling Maintenance'},
+  {id:'ch16', title:'Chapter 16 — Training & Competency'},
+  {id:'ch17', title:'Chapter 17 — Record Keeping & Reporting'},
+  {id:'ch18', title:'Chapter 18 — Annexures & Forms'},
+  {id:'appendix', title:'Appendix — Reference Material'}
+];
 
-    // small list of chapters; adjust titles / count or generate dynamically
-    const CHAPTERS = [
-      { id: 'ch1', title: 'Chapter 1 — Introduction' },
-      { id: 'ch2', title: 'Chapter 2 — Definitions & Interpretations' },
-      { id: 'ch3', title: 'Chapter 3 — Personnel & Duties' },
-      { id: 'ch4', title: 'Chapter 4 — Signalling' },
-      { id: 'ch5', title: 'Chapter 5 — Block Working' },
-      { id: 'ch6', title: 'Chapter 6 — Train Operations' },
-      { id: 'ch7', title: 'Chapter 7 — Speed Restrictions' },
-      { id: 'ch8', title: 'Chapter 8 — Signalling Failures' },
-      { id: 'ch9', title: 'Chapter 9 — Block Instruments & Communication' },
-      { id: 'ch10', title: 'Chapter 10 — Shunting & Yard Working' },
-      { id: 'ch11', title: 'Chapter 11 — Working Rules for Trains' },
-      { id: 'ch12', title: 'Chapter 12 — Safety & Emergency Procedures' },
-      { id: 'ch13', title: 'Chapter 13 — Working of Level Crossings' },
-      { id: 'ch14', title: 'Chapter 14 — Tunnels & Special Sections' },
-      { id: 'ch15', title: 'Chapter 15 — Electrical & Signalling Maintenance' },
-      { id: 'ch16', title: 'Chapter 16 — Training & Competency' },
-      { id: 'ch17', title: 'Chapter 17 — Record Keeping & Reporting' },
-      { id: 'ch18', title: 'Chapter 18 — Annexures & Forms' },
-      { id: 'appendix', title: 'Appendix — Reference Material' }
-    ];
+let currentIndex = -1;
+let cache = {};
 
-    // refs
-    const tocList = document.getElementById('tocList');
-    const btnMenu = document.getElementById('btnMenu');
-    const tocDrawer = document.getElementById('tocDrawer');
-    const openBook = document.getElementById('openBook');
-    const prefetchBtn = document.getElementById('prefetchBtn');
-    const reader = document.getElementById('reader');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const placeholder = document.getElementById('placeholder');
-    const menuBtnInner = btnMenu;
+/* Resume Storage Keys */
+const LAST_READ_KEY = "gkr_last_read";
+const SCROLL_KEY_PREFIX = "gkr_scroll_";
 
-    // state
-    let currentIndex = -1; // -1 = cover
-    let cache = {}; // track loaded chapters in-memory (also cached by service worker)
+/* ================================
+   POPULATE TOC
+================================= */
+const tocList = document.getElementById('tocList');
+CHAPTERS.forEach((c,i)=>{
+  const li=document.createElement('li');
+  const a=document.createElement('a');
+  a.textContent=`${i+1}. ${c.title}`;
+  a.href='#'+c.id;
+  a.onclick=(e)=>{e.preventDefault(); openChapterByIndex(i); closeTOC();};
+  li.appendChild(a);
+  tocList.appendChild(li);
+});
 
-    // populate TOC
-    CHAPTERS.forEach((c, i) => {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = '#' + c.id;
-      a.textContent = `${i+1}. ${c.title}`;
-      a.dataset.index = i;
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        openChapterByIndex(i);
-        closeTOC();
-      });
-      li.appendChild(a);
-      tocList.appendChild(li);
-    });
+/* ================================
+   MENU TOGGLE
+================================= */
+const btnMenu = document.getElementById('btnMenu');
+const tocDrawer = document.getElementById('tocDrawer');
+btnMenu.onclick=()=>{
+  tocDrawer.classList.toggle('open');
+  btnMenu.classList.toggle('open');
+};
+function closeTOC(){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); }
 
-    // menu toggle (animated)
-    btnMenu.addEventListener('click', ()=>{
-      const open = tocDrawer.classList.toggle('open');
-      btnMenu.classList.toggle('open', open);
-      btnMenu.setAttribute('aria-expanded', String(open));
-      tocDrawer.setAttribute('aria-hidden', String(!open));
-      if(open) { // focus first link
-        setTimeout(()=>{ const first = tocDrawer.querySelector('a'); if(first) first.focus(); }, 80);
-      } else {
-        btnMenu.focus();
-      }
-    });
+/* ================================
+   OPEN BOOK
+================================= */
+document.getElementById('openBook').onclick=()=> openChapterByIndex(0);
+document.getElementById('prefetchBtn').onclick=()=> prefetchChapter(0);
+document.getElementById('clearResume').onclick=()=>{
+  localStorage.removeItem(LAST_READ_KEY);
+  CHAPTERS.forEach(c=>localStorage.removeItem(SCROLL_KEY_PREFIX+c.id));
+  alert("Resume cleared");
+};
 
-    function closeTOC(){
-      tocDrawer.classList.remove('open');
-      btnMenu.classList.remove('open');
-      btnMenu.setAttribute('aria-expanded','false');
-      tocDrawer.setAttribute('aria-hidden','true');
-    }
+/* ================================
+   NAV BUTTONS
+================================= */
+document.getElementById('prevBtn').onclick=()=>{
+  if(currentIndex>0) openChapterByIndex(currentIndex-1);
+  else goCover();
+};
+document.getElementById('nextBtn').onclick=()=>{
+  if(currentIndex<CHAPTERS.length-1) openChapterByIndex(currentIndex+1);
+};
 
-    // open book (first chapter)
-    openBook.addEventListener('click', ()=>{ openChapterByIndex(0); });
+/* ================================
+   OPEN A CHAPTER
+================================= */
+const reader = document.getElementById('reader');
 
-    // prefetch first chapter (useful to warm cache)
-    prefetchBtn.addEventListener('click', ()=>{
-      prefetchChapter(0).then(()=> alert('First chapter prefetched (cached).')).catch(()=> alert('Prefetch failed (maybe offline).'));
-    });
+async function openChapterByIndex(i){
+  if(i<0||i>=CHAPTERS.length) return;
+  currentIndex=i;
+  const id = CHAPTERS[i].id;
+  await loadChapter(id);
+  saveLastRead(i,id);
+  history.pushState({id,index:i},"","#"+id);
+}
 
-    // navigation Prev / Next
-    prevBtn.addEventListener('click', ()=>{
-      if(currentIndex > 0) openChapterByIndex(currentIndex - 1);
-      else if(currentIndex === 0) goCover();
-    });
-    nextBtn.addEventListener('click', ()=>{
-      if(currentIndex < CHAPTERS.length - 1) openChapterByIndex(currentIndex + 1);
-    });
+async function loadChapter(id){
+  if(cache[id]) return renderChapter(cache[id],id);
 
-    function goCover(){
-      currentIndex = -1;
-      placeholder.scrollIntoView({behavior: 'smooth', block: 'start'});
-      // ensure cover visible: we assume the cover section is in the DOM above reader
-      document.getElementById('cover').focus?.();
-      updateFooter();
-    }
+  const res = await fetch(`/chapters/${id}.html`,{cache:"force-cache"});
+  if(!res.ok){ reader.innerHTML="<p>Error loading chapter</p>"; return; }
+  const html = await res.text();
+  cache[id]=html;
+  renderChapter(html,id);
+}
 
-    function updateFooter(){
-      prevBtn.disabled = (currentIndex === -1);
-      nextBtn.disabled = (currentIndex === -1 || currentIndex >= CHAPTERS.length - 1);
-      prevBtn.style.opacity = prevBtn.disabled ? '.45' : '1';
-      nextBtn.style.opacity = nextBtn.disabled ? '.45' : '1';
-    }
+function renderChapter(html,id){
+  reader.innerHTML=`<div class="chapter">${html}</div>`;
+  restoreScroll(id);
+  attachScrollSaver(id);
+}
 
-    // load chapter by index
-    async function openChapterByIndex(i){
-      if(i < 0 || i >= CHAPTERS.length) return;
-      currentIndex = i;
-      const chap = CHAPTERS[i];
-      await loadChapter(chap.id);
-      updateFooter();
-      // update history hash
-      history.pushState({id:chap.id, index:i}, '', '#' + chap.id);
-    }
+/* ================================
+   COVER PAGE
+================================= */
+function goCover(){
+  currentIndex=-1;
+  reader.innerHTML=document.getElementById('placeholder').outerHTML;
+}
 
-    // load chapter HTML fragment from /chapters/{id}.html
-    async function loadChapter(id){
-      // if already loaded in-memory, show immediately
-      if(cache[id]){
-        renderChapter(cache[id], id);
-        return;
-      }
-      try{
-        showLoader();
-        const url = `/chapters/${id}.html`;
-        const res = await fetch(url, {cache:'force-cache'});
-        if(!res.ok) throw new Error('Fetch failed');
-        const text = await res.text();
-        cache[id] = text;
-        renderChapter(text, id);
-      }catch(e){
-        showError('Unable to load chapter. You may be offline and this chapter is not cached yet.');
-      }finally{
-        hideLoader();
-      }
-    }
+/* ================================
+   RESUME FUNCTIONS
+================================= */
+function saveLastRead(index,id){
+  localStorage.setItem(LAST_READ_KEY,JSON.stringify({index,id,ts:Date.now()}));
+}
+function loadLastRead(){
+  const raw=localStorage.getItem(LAST_READ_KEY);
+  return raw?JSON.parse(raw):null;
+}
 
-    function renderChapter(html, id){
-      // sanitize/assume trusted content (these are your files)
-      reader.innerHTML = '';
-      const wrapper = document.createElement('div');
-      wrapper.className = 'chapter';
-      // if the chapter fragment already contains a top-level element like <article>, prefer it
-      // but for simplicity we inject the returned HTML
-      wrapper.innerHTML = html || `<h2>${id}</h2><p>No content.</p>`;
-      reader.appendChild(wrapper);
-      // focus the new content for accessibility
-      wrapper.setAttribute('tabindex','-1');
-      wrapper.focus();
-    }
+function saveScroll(id,scroll){
+  localStorage.setItem(SCROLL_KEY_PREFIX+id,scroll);
+}
+function restoreScroll(id){
+  const saved = Number(localStorage.getItem(SCROLL_KEY_PREFIX+id)||0);
+  if(saved>0){ setTimeout(()=>{ window.scrollTo(0,saved); },60); }
+}
 
-    function showLoader(){
-      // small inline loader: add 'Loading...' under reader if absent
-      if(!document.getElementById('loader')){
-        const d = document.createElement('div');
-        d.id = 'loader'; d.style.marginTop = '12px'; d.style.color = 'var(--muted)';
-        d.textContent = 'Loading chapter…';
-        reader.appendChild(d);
-      }
-    }
-    function hideLoader(){ const l = document.getElementById('loader'); if(l) l.remove(); }
+/* Save scroll continuously */
+let scrollTimer=null;
+function attachScrollSaver(id){
+  window.onscroll=()=>{
+    clearTimeout(scrollTimer);
+    scrollTimer=setTimeout(()=>{
+      saveScroll(id,window.scrollY);
+    },400);
+  };
+}
 
-    function showError(msg){
-      reader.innerHTML = `<div class="chapter"><h2>Error</h2><p style="color:var(--muted)">${msg}</p></div>`;
-    }
+/* ================================
+   PREFETCH
+================================= */
+async function prefetchChapter(i){
+  const id=CHAPTERS[i].id;
+  fetch(`/chapters/${id}.html`,{cache:"force-cache"});
+  alert("Chapter prefetched");
+}
 
-    // prefetch (useful when user is idle)
-    async function prefetchChapter(i){
-      if(i < 0 || i >= CHAPTERS.length) return;
-      const id = CHAPTERS[i].id;
-      if(cache[id]) return Promise.resolve();
-      const url = `/chapters/${id}.html`;
-      const res = await fetch(url, {cache:'force-cache'});
-      if(!res.ok) throw new Error('prefetch failed');
-      const text = await res.text();
-      cache[id] = text;
-    }
+/* ================================
+   RESTORE ON LOAD
+================================= */
+window.onload=()=>{
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("/sw.js");
+  }
+  const last = loadLastRead();
+  if(last && last.id){
+    const idx = CHAPTERS.findIndex(c=>c.id===last.id);
+    if(idx>=0) openChapterByIndex(idx);
+  }
+};
 
-    // try idle prefetch for first chapter
-    if('requestIdleCallback' in window){
-      requestIdleCallback(()=> prefetchChapter(0).catch(()=>{}));
-    } else {
-      setTimeout(()=> prefetchChapter(0).catch(()=>{}), 3500);
-    }
+/* Back button handling */
+window.onpopstate=(e)=>{
+  if(!e.state){ goCover(); return; }
+  const {id,index}=e.state;
+  if(index>=0) openChapterByIndex(index);
+};
+</script>
 
-    // service worker registration
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('/sw.js').then(reg=>{
-        console.log('SW registered', reg);
-      }).catch(err=>{
-        console.warn('SW failed', err);
-      });
-    }
-
-    // handle back/forward
-    window.addEventListener('popstate', (ev)=>{
-      const state = ev.state;
-      if(!state){
-        goCover(); return;
-      }
-      if(state.id){
-        const idx = state.index ?? CHAPTERS.findIndex(c=>c.id===state.id);
-        if(typeof idx === 'number' && idx >=0) openChapterByIndex(idx);
-      }
-    });
-
-    // keyboard: Esc closes toc
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape'){
-        closeTOC();
-      }
-    });
-
-    // clicking outside drawer closes it (for small screens)
-    document.addEventListener('click', (e)=>{
-      if(!tocDrawer.classList.contains('open')) return;
-      if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
-      closeTOC();
-    });
-
-    // init: show cover
-    goCover();
-    updateFooter();
-
-    // expose a small keyboard shortcut: Ctrl/Cmd+M to toggle menu
-    document.addEventListener('keydown', (e)=>{
-      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase() === 'm'){ e.preventDefault(); btnMenu.click(); }
-    });
-  </script>
 </body>
 </html>
