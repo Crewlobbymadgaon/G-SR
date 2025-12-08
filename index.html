@@ -83,22 +83,29 @@
   </footer>
 
 <script>
-/* ---------- Keys & helpers ---------- */
+/* ---------------------------
+  Keys & storage
+----------------------------*/
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 
-/* ---------- TOC structure ---------- */
+/* ---------------------------
+  TOC structure (uses actual fragment filenames)
+  Note: fragment ids below map to files: chapters/{id}.html
+----------------------------*/
 const TOC = [
-  { type: 'fragment', id: 'notif', label: 'Notification' },
-  { type: 'fragment', id: 'res', label: 'Resolution' },
-  { type: 'fragment', id: 'docs', label: 'Documents Accompanying' },
+  { type: 'fragment', id: 'notification', label: 'Notification' },                     // chapters/notification.html
+  { type: 'fragment', id: 'resolution', label: 'Resolution' },                         // chapters/resolution.html
+  { type: 'fragment', id: 'documents_accompanying', label: 'Documents Accompanying' }, // chapters/documents_accompanying.html
+
   { type: 'chapter', id: 'ch1', label: 'CHAPTER I — PRELIMINARY', children: [
       { anchor:'s101', label:'1.01 Short title and commencement' },
       { anchor:'s102', label:'1.02 Definitions' },
       { anchor:'s103', label:'1.03 Classification of Stations' }
     ]
   },
+
   { type:'chapter', id:'ch2', label:'Chapter 2 — Definitions & Interpretations' },
   { type:'chapter', id:'ch3', label:'Chapter 3 — Personnel & Duties' },
   { type:'chapter', id:'ch4', label:'Chapter 4 — Signalling' },
@@ -119,7 +126,9 @@ const TOC = [
   { type:'chapter', id:'appendix', label:'Appendix — Reference Material' }
 ];
 
-/* ---------- Flattened order (used by forward/back) ---------- */
+/* ---------------------------
+  Flattened order for forward/back (includes anchors)
+----------------------------*/
 const FLAT = [];
 TOC.forEach(item=>{
   if(item.type === 'fragment') FLAT.push({ kind:'fragment', id:item.id });
@@ -138,28 +147,13 @@ const reader = document.getElementById('reader');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
-/* ---------- runtime state ---------- */
 let currentFlatIndex = -1;
-let cache = {}; // in-memory HTML cache
+let cache = {}; // html cache to avoid refetching
 
-/* ---------- preload small samples so first items open immediately ---------- */
-cache['notif'] = `<article class="chapter-content"><h2>Notification</h2><p>Sample notification content — replace with official text.</p></article>`;
-cache['res']   = `<article class="chapter-content"><h2>Resolution</h2><p>Sample resolution content — replace with official text.</p></article>`;
-cache['docs']  = `<article class="chapter-content"><h2>Documents Accompanying</h2><p>List of forms and annexures.</p></article>`;
-cache['ch1']   = `
-  <article class="chapter-content">
-    <h2>CHAPTER I</h2>
-    <h3>PRELIMINARY</h3>
-    <h4 id="s101">1.01 Short title and commencement</h4>
-    <p>Text for 1.01 — short title and commencement.</p>
-    <h4 id="s102">1.02 Definitions</h4>
-    <p>Definitions of terms used in this volume.</p>
-    <h4 id="s103">1.03 Classification of Stations</h4>
-    <p>Classification summary.</p>
-  </article>
-`;
+/* ---------- Optional: preload ch1 if you want immediate anchor scrolling (safe fallback) ---------- */
+cache['ch1'] = null; // leave null so file is fetched if present
 
-/* ---------- build TOC (no serial numbers) ---------- */
+/* ---------- Build TOC (no numbers) ---------- */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
@@ -186,7 +180,7 @@ function buildTOC(){
 }
 buildTOC();
 
-/* ---------- TOC open/close ---------- */
+/* ---------- Menu toggle ---------- */
 btnMenu.addEventListener('click', ()=>{
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
@@ -200,9 +194,8 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* ---------- open handlers ---------- */
+/* ---------- Open handlers ---------- */
 async function openFromTOC(item){
-  // item.type === 'fragment' or 'chapter'
   tocDrawer.classList.remove('open');
   btnMenu.classList.remove('open');
   if(item.type === 'fragment'){
@@ -219,34 +212,9 @@ async function openAnchor(chapterId, anchorId){
   await openChapter(chapterId, anchorId);
 }
 
-/* open fragment: use cache or fetch fallback */
-async function openFragment(id){
-  const html = await getHtmlFor(id);
-  renderInReader(html);
-  currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
-  saveLastRead({ kind:'fragment', id });
-}
-
-/* open chapter (with optional anchor) */
-async function openChapter(chId, anchor=null){
-  const html = await getHtmlFor(chId);
-  renderInReader(html);
-  // after render, scroll to anchor if provided
-  if(anchor){
-    setTimeout(()=> {
-      const el = document.getElementById(anchor);
-      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-    }, 140);
-    currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
-    saveLastRead({ kind:'chapter', id:chId, anchor });
-  } else {
-    currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
-    saveLastRead({ kind:'chapter', id:chId, anchor: null });
-  }
-}
-
-/* fetch or return cached HTML (prefers in-memory cache) */
-async function getHtmlFor(id){
+/* ---------- Fetch helpers (return cached if present, else fetch chapters/{id}.html) ---------- */
+async function getHtml(id){
+  // prefer cached html if available and non-null
   if(cache[id]) return cache[id];
   try{
     const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
@@ -255,49 +223,66 @@ async function getHtmlFor(id){
       cache[id] = t;
       return t;
     }
-  }catch(e){ /* ignore */ }
-  // fallback placeholder
-  return `<article class="chapter-content"><h2>${id}</h2><p style="color:var(--muted)">Missing chapters/${id}.html — create this file to replace the placeholder.</p></article>`;
+  }catch(e){}
+  // fallback placeholder if not found
+  return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* render content into reader and hide cover */
+/* ---------- Open fragment/chapter/anchor ---------- */
+async function openFragment(id){
+  const html = await getHtml(id);
+  renderInReader(html);
+  currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
+  saveLastRead({ kind:'fragment', id });
+}
+
+async function openChapter(chId, anchor=null){
+  const html = await getHtml(chId);
+  renderInReader(html);
+  if(anchor){
+    setTimeout(()=> {
+      const el = document.getElementById(anchor);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 150);
+    currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
+    saveLastRead({ kind:'chapter', id:chId, anchor });
+  } else {
+    currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
+    saveLastRead({ kind:'chapter', id:chId, anchor: null });
+  }
+}
+
+/* ---------- Render & show ---------- */
 function renderInReader(html){
   coverEl.style.display = 'none';
   reader.style.display = 'block';
   reader.innerHTML = `<div class="chapter">${html}</div>`;
-  // focus for accessibility
   const el = reader.querySelector('.chapter');
-  if(el) { el.setAttribute('tabindex','-1'); el.focus(); }
+  if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
 }
 
-/* ---------- cover / show home ---------- */
+/* ---------- Show cover ---------- */
 function showCover(){
   currentFlatIndex = -1;
   coverEl.style.display = 'flex';
   reader.style.display = 'none';
   reader.innerHTML = '';
+  detachScrollSaver();
   history.replaceState({}, '', './');
 }
 
-/* ---------- forward/back navigation using FLAT ---------- */
+/* ---------- Forward / Back (flattened FLAT array) ---------- */
 nextBtn.addEventListener('click', ()=>{
   if(currentFlatIndex === -1){
-    if(FLAT.length > 0){
-      openFlatItem(FLAT[0], 0);
-    }
+    if(FLAT.length > 0) openFlatItem(FLAT[0], 0);
     return;
   }
-  if(currentFlatIndex < FLAT.length - 1){
-    openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
-  }
+  if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
 });
 
 prevBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex > 0){
-    openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
-  } else {
-    showCover();
-  }
+  if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
+  else showCover();
 });
 
 function openFlatItem(it, idx){
@@ -307,18 +292,13 @@ function openFlatItem(it, idx){
   else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor);
 }
 
-/* ---------- resume (last-read) ---------- */
-function saveLastRead(obj){
-  try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){}
-}
-function loadLastRead(){
-  try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
-}
+/* ---------- Resume (save/load last-read) ---------- */
+function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
+function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* ---------- scroll saver (per chapter) ---------- */
+/* ---------- Scroll saver (per chapter) ---------- */
 let scrollSaver = { timer:null, lastSaved:0, id:null, onScroll:null };
-
 function attachScrollSaver(chapterId){
   detachScrollSaver();
   if(!chapterId) return;
@@ -333,14 +313,11 @@ function attachScrollSaver(chapterId){
   window.addEventListener('scroll', onScroll, { passive:true });
   scrollSaver.onScroll = onScroll;
 }
-
 function detachScrollSaver(){
   if(scrollSaver.onScroll) window.removeEventListener('scroll', scrollSaver.onScroll);
   if(scrollSaver.timer){ clearTimeout(scrollSaver.timer); scrollSaver.timer = null; }
   scrollSaver.onScroll = null; scrollSaver.id = null; scrollSaver.lastSaved = 0;
 }
-
-/* restore scroll for a chapter (if saved) */
 function restoreScrollIfAny(chId){
   try{
     const raw = localStorage.getItem(SCROLL_PREFIX + chId);
@@ -350,55 +327,38 @@ function restoreScrollIfAny(chId){
   }catch(e){}
 }
 
-/* After rendering chapter, attach scroll saver. Hook into open actions by modifying renderInReader or openChapter — we'll call attach where appropriate. 
-   (Callers openFragment/openChapter call saveLastRead and renderInReader; to enable scroll saving/restore for chapters, attach call below.)
-*/
+/* Hook to attach scroll saver after render (for chapters only) */
 const originalRender = renderInReader;
 renderInReader = function(html){
   originalRender(html);
-  // attempt to find chapter id (from currentFlatIndex in FLAT)
-  const item = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-  if(item && item.kind === 'chapter'){
-    attachScrollSaver(item.id);
-    restoreScrollIfAny(item.id);
-  } else {
-    detachScrollSaver();
-  }
+  const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
+  if(it && it.kind === 'chapter'){ attachScrollSaver(it.id); restoreScrollIfAny(it.id); }
+  else detachScrollSaver();
 };
 
-/* ---------- service worker registration (optional) ---------- */
+/* ---------- service worker register + restore last-read ---------- */
 window.addEventListener('load', ()=>{
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(()=>console.warn('sw registration failed'));
-  }
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>console.warn('sw failed')); }
 
-  // restore last-read if user had started earlier
   try{
     const hadStarted = localStorage.getItem(VISITED_FLAG);
     const last = loadLastRead();
-    if(!hadStarted){
-      showCover();
-      return;
-    }
+    if(!hadStarted){ showCover(); return; }
     if(last){
-      // try restoring last-read
       if(last.kind === 'fragment'){ openFragment(last.id); setFlatIndexFromLast(last); return; }
       if(last.kind === 'chapter'){ openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
     }
     showCover();
-  }catch(e){
-    console.warn(e);
-    showCover();
-  }
+  }catch(e){ console.warn(e); showCover(); }
 });
 
-/* helper to set currentFlatIndex from last record */
+/* set currentFlatIndex from last record */
 function setFlatIndexFromLast(last){
   for(let i=0;i<FLAT.length;i++){
     const it = FLAT[i];
-    if(last.kind === 'fragment' && it.kind==='fragment' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind==='chapter' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind==='anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; }
+    if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; }
+    if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; }
+    if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; }
   }
 }
 
@@ -410,11 +370,12 @@ window.addEventListener('popstate', (ev)=>{
   else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null);
 });
 
-/* ---------- utility: open flat item by index (exposed) ---------- */
-function openFlatIndex(idx){ if(idx>=0 && idx<FLAT.length) openFlatItem(FLAT[idx], idx); }
+/* ---------- UX helpers ---------- */
+document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
+document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') tocDrawer.classList.remove('open'); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* expose minimal functions for debugging in console */
-window._GSR = { TOC, FLAT, openFlatIndex };
+/* expose for debugging */
+window._GSR = { TOC, FLAT, openFragment, openChapter, openFlatItem };
 
 </script>
 </body>
