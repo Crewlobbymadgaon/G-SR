@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>G&SR — Konkan Railway (Offline Book)</title>
 
-  <!-- If you host as project site under /G-SR/, add a <base href="/G-SR/"> above this line.
-       Otherwise leave base out. (Prefer to leave out if you already use relative paths.) -->
+  <!-- manifest (relative) -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b63d6">
 
@@ -27,7 +26,6 @@
     .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
     main{padding:88px 16px 120px;max-width:980px;margin:0 auto}
-    /* Cover image only (no overlay controls) */
     .cover-image{width:100%;border-radius:16px;overflow:hidden;height:420px;position:relative;background:#111;box-shadow:0 12px 30px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
     .cover-image img{width:100%;height:100%;object-fit:cover;display:block}
     #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:300px;max-width:90vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
@@ -42,7 +40,9 @@
 </head>
 <body>
   <header>
-    <button id="btnMenu" class="menu-btn" aria-label="Open TOC"><span class="hamburger"><span></span><span></span><span></span></span></button>
+    <button id="btnMenu" class="menu-btn" aria-label="Open TOC">
+      <span class="hamburger"><span></span><span></span><span></span></span>
+    </button>
     <div class="brand">G&SR — Konkan Railway</div>
     <div style="width:44px;height:44px;"></div>
   </header>
@@ -53,8 +53,8 @@
   </nav>
 
   <main>
-    <!-- COVER: only the image is visible. No overlay text or buttons. -->
-    <section id="cover" class="cover-image" role="main" aria-labelledby="coverTitle" tabindex="-1" aria-hidden="false">
+    <!-- Cover image only -->
+    <section id="cover" class="cover-image" role="main" aria-labelledby="coverTitle" tabindex="-1">
       <img
         srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
         sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 800px"
@@ -66,10 +66,7 @@
     </section>
 
     <div id="reader" aria-live="polite">
-      <div class="chapter" id="placeholder" tabindex="-1">
-        <h2>Welcome</h2>
-        <p style="color:var(--muted)">Use the forward arrow (▶) to open Chapter 1, or open a chapter from the menu.</p>
-      </div>
+      <!-- intentionally empty: user sees cover only until they open a chapter -->
     </div>
   </main>
 
@@ -125,6 +122,7 @@ const nextBtn = document.getElementById('nextBtn');
     const a = document.createElement('a');
     a.href = '#'+c.id;
     a.textContent = `${i+1}. ${c.title}`;
+    // clicking a toc item marks user started and opens that chapter
     a.addEventListener('click', (e)=>{ e.preventDefault(); markStartedAndOpen(i); closeTOC(); });
     li.appendChild(a);
     tocList.appendChild(li);
@@ -166,6 +164,8 @@ async function openChapterByIndex(i){
   if(i < 0 || i >= CHAPTERS.length) return;
   currentIndex = i;
   const id = CHAPTERS[i].id;
+  // ensure started flag set
+  localStorage.setItem(VISITED_FLAG, '1');
   await loadChapter(id);
   saveLastRead(i, id);
   history.pushState({id, index: i}, '', '#' + id);
@@ -203,7 +203,7 @@ function showLoader(){
 }
 function hideLoader(){ const l = document.getElementById('loader'); if(l) l.remove(); }
 
-/* ---------- Prefetch helper (not shown in UI) ---------- */
+/* ---------- Prefetch (silent) ---------- */
 async function prefetchChapter(i){
   if(i < 0 || i >= CHAPTERS.length) return;
   const id = CHAPTERS[i].id;
@@ -213,13 +213,13 @@ async function prefetchChapter(i){
 /* ---------- Cover (home) ---------- */
 function goCover(){
   currentIndex = -1;
-  const placeholder = document.getElementById('placeholder');
-  reader.innerHTML = placeholder ? placeholder.outerHTML : '<div class="chapter"><h2>Welcome</h2></div>';
+  // reader left empty (cover is separate)
+  reader.innerHTML = '';
   detachScrollSaver();
   history.replaceState({}, '', './');
 }
 
-/* ---------- Resume storage ---------- */
+/* ---------- Resume localStorage ---------- */
 function saveLastRead(index, id){
   try { localStorage.setItem(LAST_READ_KEY, JSON.stringify({ index:Number(index), id:String(id), ts: Date.now() })); } catch(e){ console.warn('saveLastRead', e); }
 }
@@ -230,11 +230,14 @@ function loadChapterScroll(chId){ try { const raw = localStorage.getItem(SCROLL_
 
 function restoreScroll(id){
   const s = loadChapterScroll(id) || 0;
-  if(s > 0) setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
-  else window.scrollTo({ top: 0, behavior: 'auto' );
+  if(s > 0){
+    setTimeout(()=> window.scrollTo({ top: s, behavior: 'auto' }), 60);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
 }
 
-/* ---------- Scroll saver ---------- */
+/* ---------- Scroll saver (throttled) ---------- */
 function attachScrollSaver(chapterId){
   detachScrollSaver();
   scrollSaver.id = chapterId;
@@ -256,7 +259,6 @@ function detachScrollSaver(){
 
 /* ---------- Restore-on-load ---------- */
 window.addEventListener('load', () => {
-  // register SW using relative path
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>console.warn('SW registration failed')); }
 
   try {
@@ -269,13 +271,11 @@ window.addEventListener('load', () => {
       return;
     }
 
-    // had started reading -> try to restore last-read
+    // had started reading previously -> restore last-read if present
     if(last && last.id){
       const idx = (typeof last.index === 'number' && last.index >= 0) ? last.index : CHAPTERS.findIndex(c=>c.id === last.id);
       if(idx !== -1){
-        openChapterByIndex(idx).then(()=> {
-          history.replaceState({id: CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id);
-        }).catch(()=> goCover());
+        openChapterByIndex(idx).then(()=> { history.replaceState({id:CHAPTERS[idx].id, index: idx}, '', '#' + CHAPTERS[idx].id); }).catch(()=> goCover());
         return;
       }
     }
@@ -287,7 +287,7 @@ window.addEventListener('load', () => {
   }
 });
 
-/* ---------- popstate/back ---------- */
+/* ---------- Back handling ---------- */
 window.addEventListener('popstate', (ev) => {
   if(!ev.state){ goCover(); return; }
   const { id, index } = ev.state;
