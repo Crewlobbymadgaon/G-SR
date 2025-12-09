@@ -101,15 +101,6 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 /* small utils */
 .hidden{display:none !important}
 .small-muted{color:#6b7280;font-size:0.95rem}
-
-/* SEARCH: spinner + active result */
-.search-spinner{
-  width:18px;height:18px;border-radius:50%;border:3px solid rgba(0,0,0,0.08);border-top-color:rgba(0,0,0,0.35);
-  animation: spin 820ms linear infinite; margin-left:8px; display:inline-block;
-}
-@keyframes spin{ to { transform: rotate(360deg); } }
-.search-item.active{ outline: 2px solid rgb(11,99,214); background:#f0f7ff; }
-.search-snippet mark{ background: #fff59d; padding:0 2px; border-radius:2px; }
 </style>
 </head>
 <body>
@@ -123,7 +114,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
     <div class="header-center"><div class="brand">G&SR — Konkan Railway</div></div>
 
     <div class="header-right">
-      <button id="btnSearch" class="icon-btn" title="Search the book (global)" aria-expanded="false" aria-controls="searchPanel" aria-haspopup="listbox">
+      <button id="btnSearch" class="icon-btn" title="Search the book (global)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="6"></circle><path d="M21 21l-4.35-4.35"></path>
         </svg>
@@ -133,9 +124,9 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
   <!-- SEARCH PANEL (below header) -->
   <div id="searchPanel" role="search" aria-hidden="true">
-    <input id="searchInput" aria-label="Search the entire book" placeholder="Search the entire book — type to search (live)"/>
+    <input id="searchInput" placeholder="Search the entire book — type to search (live)"/>
     <div id="searchResults" aria-live="polite"></div>
-    <button id="searchClose" class="icon-btn" title="Close search" aria-label="Close search">✕</button>
+    <button id="searchClose" class="icon-btn" title="Close search">✕</button>
   </div>
 
   <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
@@ -172,12 +163,9 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
 <script>
 /* improvements:
- - persistent last query & results (stored in localStorage + memory)
- - live results while typing (debounced)
- - when reopening search, previous query & results restored
- - responsive searchPanel behavior on mobile
- - selecting a result opens page and highlights the match
- - professional indexed search with ranking and keyboard navigation
+ - highlight every occurrence in snippets (live)
+ - highlight ALL matches inside the opened page (not just the first)
+ - robust highlight removal
 */
 
 const DESKTOP_BREAK = 980;
@@ -371,7 +359,7 @@ function renderHtml(html, highlight=null){
     if(it && it.kind === 'chapter') restorePageScrollIfAny(it.id);
     pageFrame.setAttribute('tabindex','-1'); pageFrame.focus();
 
-    if(highlight && highlight.query) highlightInContainer(pageFrame, highlight.query);
+    if(highlight && highlight.query) highlightAllInContainer(pageFrame, highlight.query);
   } else {
     pageShell.style.display = 'none';
     mobileReader.style.display = 'block';
@@ -381,66 +369,99 @@ function renderHtml(html, highlight=null){
     if(it && it.kind === 'chapter') restoreWindowScrollIfAny(it.id);
     mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
 
-    if(highlight && highlight.query) highlightInContainer(document, highlight.query);
+    if(highlight && highlight.query) highlightAllInContainer(document, highlight.query);
   }
 }
 
-/* remove previous <mark class="search-highlight"> elements */
+/* remove previous <mark class="search-highlight"> elements (both page & snippet)
+   We need to replace marks with their textContent while preserving surrounding nodes.
+*/
 function removeExistingHighlights(){
   const prevs = document.querySelectorAll('mark.search-highlight');
   prevs.forEach(m => {
+    const txt = m.textContent;
     const parent = m.parentNode;
     if(!parent) return;
-    while(m.firstChild) parent.insertBefore(m.firstChild, m);
-    parent.removeChild(m);
+    parent.replaceChild(document.createTextNode(txt), m);
     parent.normalize();
   });
+
+  // Also remove any leftover mark HTML inside snippets (they are in searchResults as innerHTML)
+  // we'll sanitize the searchResults content by re-rendering snippets when needed; but ensure no marks remain in container nodes:
+  // (This step above already covers marks inside results because they are in DOM.)
 }
 
-/* legacy single-match highlight (kept for small calls) */
-function highlightInContainer(container, rawQuery){
-  if(!rawQuery) return false;
+/* highlight ALL occurrences of query inside `container` (text nodes).
+   This implementation walks text nodes and replaces matches with text+<mark> fragments.
+*/
+function highlightAllInContainer(container, rawQuery){
+  if(!rawQuery) return 0;
   const q = String(rawQuery).trim();
-  if(!q) return false;
+  if(!q) return 0;
+  // build safe regex (global, case-insensitive)
+  const esc = q.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const re = new RegExp(esc, 'ig');
+
+  // walker that accepts visible text nodes
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode(node){
       if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
       if(!parent) return NodeFilter.FILTER_REJECT;
       const tag = parent.tagName.toLowerCase();
+      // skip inside these containers
       if(tag === 'script' || tag === 'style' || tag === 'noscript' || parent.closest('#searchResults')) return NodeFilter.FILTER_REJECT;
       if(node.nodeValue.trim().length === 0) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     }
   });
 
-  const needle = q.toLowerCase();
+  let matches = 0;
+  const nodesToProcess = [];
   let n;
   while(n = walker.nextNode()){
-    const text = n.nodeValue;
-    const idx = text.toLowerCase().indexOf(needle);
-    if(idx !== -1){
-      const before = text.slice(0, idx);
-      const match = text.slice(idx, idx + needle.length);
-      const after = text.slice(idx + needle.length);
-      const parent = n.parentNode;
-      const beforeNode = document.createTextNode(before);
-      const matchNode = document.createElement('mark');
-      matchNode.className = 'search-highlight';
-      matchNode.textContent = match;
-      const afterNode = document.createTextNode(after);
-      parent.insertBefore(beforeNode, n);
-      parent.insertBefore(matchNode, n);
-      parent.insertBefore(afterNode, n);
-      parent.removeChild(n);
-      setTimeout(()=> {
-        matchNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(()=> { if(matchNode) matchNode.classList.remove('search-highlight'); }, 2200);
-      }, 120);
-      return true;
-    }
+    nodesToProcess.push(n);
   }
-  return false;
+
+  // Process nodes in order — for each text node create a DocumentFragment with marks
+  for(const textNode of nodesToProcess){
+    const text = textNode.nodeValue;
+    if(!text) continue;
+    if(!re.test(text)) continue;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0;
+    let m;
+    while((m = re.exec(text)) !== null){
+      const idx = m.index;
+      const matchText = m[0];
+      if(idx > lastIndex){
+        frag.appendChild(document.createTextNode(text.slice(lastIndex, idx)));
+      }
+      const mark = document.createElement('mark');
+      mark.className = 'search-highlight';
+      mark.textContent = matchText;
+      frag.appendChild(mark);
+      matches++;
+      lastIndex = idx + matchText.length;
+    }
+    if(lastIndex < text.length){
+      frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    }
+    // Replace the original text node
+    const parent = textNode.parentNode;
+    if(parent) parent.replaceChild(frag, textNode);
+  }
+
+  // After injecting marks, scroll first match into view (if any)
+  const first = container.querySelector('mark.search-highlight');
+  if(first){
+    try{ first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
+    // remove highlight visual pulse after a moment (keeps mark for accessibility)
+    setTimeout(()=> { if(first) first.classList.remove('search-highlight'); }, 2200);
+  }
+
+  return matches;
 }
 
 /* prev/next */
@@ -475,340 +496,34 @@ function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type=
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* ---------- SEARCH: professional upgrade (indexed, ranked, keyboard nav) ---------- */
+/* ---------- SEARCH: persistent, live, responsive ---------- */
 
-/* configuration */
-const SEARCH_MAX_RESULTS = 60;
-const INDEX_BUILD_ON_LOAD = true;
-let SEARCH_INDEX = []; // [{ id, title, text }]
-let isIndexing = false;
-let searchActiveIndex = -1; // for keyboard nav
-
-/* utility: safe escape for HTML */
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-/* small helper: create a compact preview/snippet with highlighted terms */
-function makeSnippet(text, query, radius = 80){
-  const t = text || '';
-  const q = String(query || '').trim().toLowerCase();
-  if(!q) return escapeHtml(t.slice(0, Math.min(200, t.length)));
-  const idx = t.toLowerCase().indexOf(q);
-  let start = idx >= 0 ? Math.max(0, idx - radius) : 0;
-  if(start > 0){
-    const pre = t.lastIndexOf('.', start);
-    if(pre !== -1 && pre > start - 40) start = pre + 1;
-  }
-  const slice = t.slice(start, Math.min(t.length, start + radius*2 + q.length));
-  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-  const html = escapeHtml(slice).replace(re, (m)=>`<mark class="search-highlight">${escapeHtml(m)}</mark>`);
-  return (start > 0 ? '…' : '') + html + (start + slice.length < t.length ? '…' : '');
-}
-
-/* indexing: parse cached HTML -> index text for each id */
-async function buildSearchIndex(){
-  if(isIndexing) return;
-  isIndexing = true;
-  btnSearch.dataset.indexing = '1';
-  try{
-    const ids = collectChapterIds();
-    const idx = [];
-    for(const id of ids){
-      if(!cache[id]){
-        const t = await fetchChapterRaw(id, false);
-        cache[id] = t || '';
-      }
-      const html = cache[id] || '';
-      try{
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        doc.querySelectorAll('script,style,noscript').forEach(n=>n.remove());
-        const titleEl = doc.querySelector('h1,h2') || doc.querySelector('title');
-        const title = titleEl ? (titleEl.textContent || id) : id;
-        const bodyText = doc.body ? (doc.body.textContent || '') : html.replace(/<\/?[^>]+(>|$)/g,' ');
-        const text = bodyText.replace(/\s+/g,' ').trim();
-        idx.push({ id, title: title.trim(), text });
-      }catch(e){
-        const text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ').replace(/\s+/g,' ').trim();
-        idx.push({ id, title: id, text });
-      }
-    }
-    SEARCH_INDEX = idx;
-  }finally{
-    isIndexing = false;
-    delete btnSearch.dataset.indexing;
-  }
-}
-
-/* scoring function (higher = better) */
-function scoreDocument(docText, q){
-  const needle = q.toLowerCase().trim();
-  if(!needle) return 0;
-  const lower = docText.toLowerCase();
-  let count = 0;
-  let first = -1;
-  let wordStartMatches = 0;
-  let idx = lower.indexOf(needle);
-  while(idx !== -1){
-    if(first === -1) first = idx;
-    count++;
-    const before = idx === 0 ? ' ' : lower[idx-1];
-    if(!before || /[^a-z0-9]/i.test(before)) wordStartMatches++;
-    idx = lower.indexOf(needle, idx + needle.length);
-  }
-  if(count === 0){
-    const parts = needle.split(/\s+/).filter(Boolean);
-    let fuzzCount = 0;
-    for(const p of parts){
-      if(lower.indexOf(p) !== -1) fuzzCount++;
-    }
-    if(fuzzCount === 0) return 0;
-    return 5 * fuzzCount;
-  }
-  const score = (count * 100) + (wordStartMatches * 30) - (first === -1 ? 0 : Math.floor(first / 300));
-  return score;
-}
-
-/* main search runner (uses prebuilt SEARCH_INDEX) */
-async function performSearch(q){
-  q = (q||'').trim();
-  lastQuery = q;
-  try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
-  if(!q){
-    searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
-    lastResults = [];
-    try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
-    return;
-  }
-
-  if(SEARCH_INDEX.length === 0 && !isIndexing){
-    searchResults.innerHTML = '<div class="small-muted">Indexing content — preparing search <span class="search-spinner" aria-hidden="true"></span></div>';
-    await buildSearchIndex();
-  } else if(isIndexing){
-    searchResults.innerHTML = '<div class="small-muted">Indexing content — please wait <span class="search-spinner" aria-hidden="true"></span></div>';
-    while(isIndexing) await new Promise(r => setTimeout(r, 160));
-  }
-
-  const needle = q.toLowerCase();
-  const scored = [];
-  for(const doc of SEARCH_INDEX){
-    const s = scoreDocument(doc.text, needle);
-    if(s > 0) scored.push({ id: doc.id, title: doc.title, text: doc.text, score: s });
-  }
-  scored.sort((a,b)=> b.score - a.score);
-
-  const results = scored.slice(0, SEARCH_MAX_RESULTS).map(r => {
-    return { id: r.id, title: r.title, snippet: makeSnippet(r.text, needle), score: r.score };
-  });
-
-  renderSearchResults(results);
-}
-
-/* render results (ARIA + keyboard nav ready) */
-function renderSearchResults(list){
-  lastResults = list || [];
-  try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults.slice(0, SEARCH_MAX_RESULTS))); }catch(e){}
-  searchResults.innerHTML = '';
-  searchResults.setAttribute('role','listbox');
-  searchResults.setAttribute('aria-live','polite');
-  if(!list || list.length === 0){
-    searchResults.innerHTML = '<div class="small-muted">No results</div>';
-    return;
-  }
-
-  list.forEach((r, i) => {
-    const div = document.createElement('div');
-    div.className = 'search-item';
-    div.setAttribute('role','option');
-    div.tabIndex = 0;
-    div.dataset.index = i;
-    div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.title)} <span style="font-weight:600;color:var(--muted);font-size:0.9rem;margin-left:8px;">${escapeHtml(r.id)}</span></div>
-                     <div class="search-snippet" style="margin-top:6px">${r.snippet}</div>`;
-    div.addEventListener('click', async ()=>{
-      await openFragmentOrChapterAndHighlight(r.id, lastQuery || searchInput.value);
-      closeSearchPanel();
-    });
-    div.addEventListener('keydown', (ev) => {
-      if(ev.key === 'Enter'){ ev.preventDefault(); div.click(); }
-      if(ev.key === 'ArrowDown'){ ev.preventDefault(); focusSearchItem(Math.min(list.length - 1, i + 1)); }
-      if(ev.key === 'ArrowUp'){ ev.preventDefault(); focusSearchItem(Math.max(0, i - 1)); }
-    });
-    searchResults.appendChild(div);
-  });
-
-  searchActiveIndex = -1;
-}
-
-/* focus/manage active search item */
-function focusSearchItem(idx){
-  const items = Array.from(searchResults.querySelectorAll('.search-item'));
-  if(items.length === 0) return;
-  if(searchActiveIndex >= 0 && items[searchActiveIndex]) items[searchActiveIndex].classList.remove('active');
-  searchActiveIndex = idx;
-  const target = items[idx];
-  if(target){
-    target.classList.add('active');
-    target.focus();
-    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  }
-}
-
-/* open and highlight (keeps previous behaviour but highlights ALL occurrences) */
-async function openFragmentOrChapterAndHighlight(id, query){
-  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
-  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-  if(isFragment){
-    await openFragment(id);
-  } else if(isChapter){
-    await openChapter(id, null);
-  } else {
-    await openFragment(id);
-  }
-  setTimeout(()=> {
-    if(query && query.trim()){
-      highlightAllOccurrences(isDesktop() ? pageFrame : document, query.trim());
-    }
-  }, 220);
-}
-
-/* remove existing highlights reliably */
-function removeExistingHighlights(){
-  const prevs = (isDesktop() ? pageFrame : document).querySelectorAll('mark.search-highlight');
-  prevs.forEach(m => {
-    const parent = m.parentNode;
-    if(!parent) return;
-    while(m.firstChild) parent.insertBefore(m.firstChild, m);
-    parent.removeChild(m);
-    parent.normalize();
-  });
-}
-
-/* highlight all occurrences within container */
-function highlightAllOccurrences(container, rawQuery){
-  if(!rawQuery) return 0;
-  const q = String(rawQuery).trim();
-  if(!q) return 0;
-  removeExistingHighlights();
-  const needle = q.toLowerCase();
-
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
-    acceptNode(node){
-      if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
-      const parent = node.parentElement;
-      if(!parent) return NodeFilter.FILTER_REJECT;
-      const tag = parent.tagName.toLowerCase();
-      if(['script','style','noscript'].includes(tag)) return NodeFilter.FILTER_REJECT;
-      if(parent.closest && parent.closest('#searchResults')) return NodeFilter.FILTER_REJECT;
-      if(node.nodeValue.trim().length === 0) return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
-    }
-  });
-
-  let total = 0;
-  const nodesToProcess = [];
-  let node;
-  while(node = walker.nextNode()){
-    nodesToProcess.push(node);
-  }
-
-  for(const n of nodesToProcess){
-    const text = n.nodeValue;
-    let startIndex = 0;
-    let lower = text.toLowerCase();
-    let idx = lower.indexOf(needle, startIndex);
-    if(idx === -1) continue;
-    let pos = 0;
-    const fragments = [];
-    while(idx !== -1){
-      const beforeText = text.slice(pos, idx);
-      const matchText = text.slice(idx, idx + needle.length);
-      if(beforeText) fragments.push(document.createTextNode(beforeText));
-      const mark = document.createElement('mark');
-      mark.className = 'search-highlight';
-      mark.textContent = matchText;
-      fragments.push(mark);
-      pos = idx + needle.length;
-      idx = text.toLowerCase().indexOf(needle, pos);
-      total++;
-    }
-    const afterText = text.slice(pos);
-    if(afterText) fragments.push(document.createTextNode(afterText));
-    const parent = n.parentNode;
-    fragments.forEach(f => parent.insertBefore(f, n));
-    parent.removeChild(n);
-  }
-
-  const first = (isDesktop() ? pageFrame : document).querySelector('mark.search-highlight');
-  if(first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  setTimeout(()=> {
-    const marks = (isDesktop() ? pageFrame : document).querySelectorAll('mark.search-highlight');
-    marks.forEach(m => m.classList.remove('search-highlight'));
-  }, 2600);
-
-  return total;
-}
-
-/* wire keyboard on searchInput for navigation */
-searchInput.addEventListener('keydown', (ev)=>{
-  if(ev.key === 'ArrowDown'){
-    ev.preventDefault();
-    const items = Array.from(searchResults.querySelectorAll('.search-item'));
-    if(items.length) focusSearchItem(0);
-  } else if(ev.key === 'ArrowUp'){
-    ev.preventDefault();
-    const items = Array.from(searchResults.querySelectorAll('.search-item'));
-    if(items.length) focusSearchItem(Math.max(0, (searchActiveIndex === -1 ? items.length - 1 : searchActiveIndex - 1)));
-  } else if(ev.key === 'Enter'){
-    ev.preventDefault();
-    const active = searchResults.querySelector('.search-item.active');
-    if(active) active.click();
-    else performSearch(searchInput.value);
-  } else if(ev.key === 'Escape'){
-    closeSearchPanel();
-  }
-});
-
-/* attach spinner indicator to search button (visual) */
-const originalBtnContent = btnSearch.innerHTML;
-const spinnerEl = '<span class="search-spinner" aria-hidden="true"></span>';
-const observer = new MutationObserver(()=> {
-  if(btnSearch.dataset.indexing === '1'){
-    if(!btnSearch.querySelector('.search-spinner')){
-      btnSearch.innerHTML = originalBtnContent + spinnerEl;
-    }
-  } else {
-    btnSearch.innerHTML = originalBtnContent;
-  }
-});
-observer.observe(btnSearch, { attributes: true, childList: true, subtree: true });
-
-/* on page load, try to build index in background (non-blocking) */
-if(INDEX_BUILD_ON_LOAD){
-  setTimeout(()=>{ buildSearchIndex().catch(()=>{}); }, 500);
-}
-
-/* ---------- SEARCH UI open/close + persistence (keeps previous logic) ---------- */
-
-/* OPEN / CLOSE search panel - mobile-friendly and keeps results */
+/* OPEN / CLOSE search panel - mobile-friendly and keeps results
+   Notes:
+   - do NOT set body overflow hidden on all devices (can dismiss Android keyboard).
+   - set a flag `window.__gkr_search_open` so resize handler can skip re-render while search open.
+   - use a slightly longer focus delay which improves reliability on some Android/iOS versions.
+*/
 function openSearchPanel(){
   window.__gkr_search_open = true;
+
+  // show panel
   searchPanel.style.display = 'flex';
   searchPanel.setAttribute('aria-hidden','false');
-  btnSearch.setAttribute('aria-expanded','true');
 
+  // restore previous query & results (if any)
   const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
   searchInput.value = q;
   if(q){
-    try{
-      const raw = localStorage.getItem(SEARCH_R_KEY);
-      if(raw) lastResults = JSON.parse(raw) || [];
-    }catch(e){ lastResults = []; }
     if(lastResults && lastResults.length) renderSearchResults(lastResults);
-    performSearch(q).catch(()=>{});
+    // run search but don't clear results until response
+    debouncePerformSearch(q, 0);
   } else {
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
   }
 
+  // Focus after a little longer delay for mobile reliability.
+  // (some mobile UIs need 300-600ms)
   setTimeout(()=> {
     try{
       searchInput.focus();
@@ -817,28 +532,34 @@ function openSearchPanel(){
     }catch(e){}
   }, 420);
 
+  // stop touch propagation inside panel so external handlers don't close it accidentally
   searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
   searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
 
+  // also prevent immediate resize-triggered rerender while user types: set a short lock
   window.__gkr_search_resize_lock = true;
   setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
 }
 
 function closeSearchPanel(){
   window.__gkr_search_open = false;
+
   searchPanel.style.display = 'none';
   searchPanel.setAttribute('aria-hidden','true');
-  btnSearch.setAttribute('aria-expanded','false');
 
+  // remove listeners
   searchPanel.removeEventListener('touchstart', stopTouchBubble);
   searchPanel.removeEventListener('click', stopTouchBubble);
 
+  // small safety: release resize lock if still present
   window.__gkr_search_resize_lock = false;
 }
 
+/* helper to stop touch/click event propagation inside search panel */
 function stopTouchBubble(e){
   e.stopPropagation();
 }
+
 
 /* debounce helper */
 let _debT = null;
@@ -847,7 +568,96 @@ function debouncePerformSearch(q, delay=220){
   _debT = setTimeout(()=> performSearch(q), delay);
 }
 
-/* wire search UI triggers */
+/* escape snippet HTML */
+function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* wrap occurrences inside escaped HTML snippet with <mark> (case-insensitive) */
+function highlightSnippetEscaped(escapedSnippet, q){
+  if(!q) return escapedSnippet;
+  const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const re = new RegExp(esc, 'ig');
+  return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`);
+}
+
+/* render results list with highlighted query inside snippets */
+function renderSearchResults(list){
+  lastResults = list || [];
+  try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
+  if(!list || list.length === 0){
+    searchResults.innerHTML = '<div class="small-muted">No results</div>';
+    return;
+  }
+  const q = (searchInput.value || lastQuery || '').trim();
+  searchResults.innerHTML = '';
+  list.forEach(r=>{
+    const div = document.createElement('div');
+    div.className = 'search-item';
+    // escape snippet first, then highlight occurrences of query
+    const escaped = escapeHtml(r.snippet || '');
+    const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
+    div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
+    div.onclick = async ()=> {
+      // open and highlight, but keep lastQuery intact so reopening shows it
+      await openFragmentOrChapterAndHighlight(r.id, q || searchInput.value);
+      // do NOT clear lastQuery; close panel to return to reader (user wanted to come back later)
+      closeSearchPanel();
+    };
+    searchResults.appendChild(div);
+  });
+}
+
+/* perform search (live) - ensures missing chapters fetched */
+async function performSearch(q){
+  q = (q||'').trim();
+  lastQuery = q;
+  try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
+  if(!q){ searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; lastResults = []; try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}; return; }
+  searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
+
+  const needle = q.toLowerCase();
+  const ids = collectChapterIds();
+  const results = [];
+
+  // iterate and ensure cache; for speed, try to use existing cached text when possible
+  for(const id of ids){
+    // ensure cached HTML
+    if(!cache[id]){
+      const t = await fetchChapterRaw(id, false);
+      if(t) cache[id] = t;
+      else cache[id] = ''; // avoid repeated network attempts
+    }
+    const html = cache[id] || '';
+    // naive stripping of tags
+    const text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
+    const idx = text.toLowerCase().indexOf(needle);
+    if(idx !== -1){
+      const start = Math.max(0, idx - 60);
+      const snippet = text.substring(start, idx + 120).replace(/\s+/g,' ').trim();
+      results.push({ id, snippet });
+    }
+  }
+
+  // update UI & persist results
+  renderSearchResults(results);
+}
+
+/* helper to open and highlight (opens result then highlight all matches in container) */
+async function openFragmentOrChapterAndHighlight(id, query){
+  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
+  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
+  if(isFragment){
+    await openFragment(id);
+    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
+  } else if(isChapter){
+    await openChapter(id, null);
+    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
+  } else {
+    await openFragment(id);
+    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
+  }
+}
+
+/* wire search UI */
 btnSearch.addEventListener('click', ()=> {
   if(searchPanel.style.display === 'flex') closeSearchPanel();
   else openSearchPanel();
@@ -861,7 +671,8 @@ searchInput.addEventListener('input', ()=> {
   debouncePerformSearch(searchInput.value, 160);
 });
 
-/* restore last search state */
+/* when reopening search after selecting a result, lastQuery & lastResults are used
+   (they were persisted to localStorage). Let's restore them on script load. */
 (function restoreSearchState(){
   const q = localStorage.getItem(SEARCH_Q_KEY) || '';
   lastQuery = q;
@@ -874,6 +685,14 @@ searchInput.addEventListener('input', ()=> {
 /* ---------- initial load + background updater ---------- */
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
 function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); }
+
+async function startBackgroundUpdater(){
+  if(navigator.onLine) updateAllBackground().catch(()=>{});
+  if(bgTimer) clearInterval(bgTimer);
+  bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS);
+  window.addEventListener('online', ()=> updateAllBackground().catch(()=>{}));
+}
+async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 
 window.addEventListener('load', async ()=>{
   startBackgroundUpdater();
@@ -889,7 +708,9 @@ window.addEventListener('load', async ()=>{
 });
 
 /* small helpers referenced earlier */
+function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } }
+function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 
 /* popstate/back */
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
@@ -898,21 +719,21 @@ window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; 
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* reflow on resize — but DO NOT re-render while search panel is open or during short lock */
+/* expose for debug */
+window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
+
+/* small reflow on resize — but DO NOT re-render while search panel is open or during short lock */
 let _rt = null;
 window.addEventListener('resize', ()=>{
   clearTimeout(_rt);
   _rt = setTimeout(()=> {
+    // if the search panel is open we must not re-render (keyboard may be open)
     if(window.__gkr_search_open) return;
+    // short lock to avoid re-render during immediate open/close sequences
     if(window.__gkr_search_resize_lock) return;
     if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
   }, 180);
 });
-
-/* expose for debug */
-window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
-
-/* end of script */
 </script>
 </body>
 </html>
