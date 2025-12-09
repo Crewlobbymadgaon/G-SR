@@ -16,6 +16,7 @@
       --reader-max:880px; /* comfortable line length */
       --header-h:64px;
       --footer-h:60px;
+      --page-gap:28px;
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
@@ -31,10 +32,10 @@
     .menu-btn.open .hamburger span:nth-child(2){opacity:0}
     .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-    /* main outer padding unchanged across breakpoints */
-    main{padding:calc(var(--header-h) + 16px) 16px calc(var(--footer-h) + 16px);max-width:1200px;margin:0 auto;min-height:320px;display:flex;flex-direction:column;gap:18px}
+    /* outer layout */
+    main{padding:calc(var(--header-h) + 16px) 16px calc(var(--footer-h) + 16px);max-width:1400px;margin:0 auto;min-height:320px;display:flex;flex-direction:column;gap:18px;align-items:center}
 
-    /* COVER: responsive height (keeps earlier improvements) */
+    /* COVER: responsive height */
     #cover {
       width:100%;
       border-radius:16px;
@@ -49,33 +50,61 @@
     }
     @media (max-width:640px){
       #cover { height: min(72vh, 520px); }
+      main{padding:calc(var(--header-h) + 12px) 12px calc(var(--footer-h) + 24px)}
     }
     #cover img{ width:100%; height:100%; object-fit:cover; object-position:center center; display:block; }
 
-    /* Reader container: occupies available vertical space and is independently scrollable on desktop */
+    /* READER: on desktop show single book page; on mobile keep full-width behavior */
     #reader {
-      margin-top:0;
-      display:none;
       width:100%;
-      /* On desktop we'll make reader a constrained centered column with its own scroll */
+      display:none;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    /* Reader layout for desktop: centered book page */
+    .reader-viewport {
+      width:100%;
       display:flex;
       justify-content:center;
+      align-items:flex-start;
+      gap:var(--page-gap);
     }
-    /* The inner .reader-frame holds the scrollable content */
-    .reader-frame{
+
+    /* The single book "page" */
+    .book-page {
       width:100%;
       max-width:var(--reader-max);
       background:var(--card);
       border-radius:12px;
-      box-shadow:0 8px 28px rgba(0,0,0,.06);
+      box-shadow: 0 18px 40px rgba(6,18,41,0.08);
       overflow:auto;
       padding:28px;
-      min-height:50vh;
-      max-height: calc(100vh - var(--header-h) - var(--footer-h) - 64px); /* keep reader inside viewport */
+      min-height: calc(60vh);
+      max-height: calc(100vh - var(--header-h) - var(--footer-h) - 64px);
+      transition: transform .28s ease, opacity .24s ease;
+      will-change: transform, opacity;
     }
 
-    /* Chapter content styles */
-    .chapter { background:transparent; padding:0; border-radius:0; min-height:unset; }
+    /* simple page-in animation */
+    .book-page.enter { opacity:0; transform: translateY(8px); }
+    .book-page.enter.active { opacity:1; transform: none; }
+
+    /* For smaller screens, fall back to a comfortable scrolling frame */
+    @media (max-width: 980px){
+      .reader-viewport { padding: 0; }
+      .book-page {
+        max-width: 100%;
+        border-radius: 12px;
+        padding:18px;
+        max-height: none;
+        min-height: 40vh;
+        box-shadow: 0 6px 18px rgba(0,0,0,.06);
+      }
+    }
+
+    /* Chapter content styles (justified paragraphs etc) */
+    .chapter { background:transparent; padding:0; margin:0; }
     .chapter article.chapter-content,
     .chapter .chapter-content {
       text-align:justify;
@@ -85,28 +114,31 @@
       hyphens: auto;
       -webkit-hyphens: auto;
     }
-    /* Paragraphs tuned for desktop readability */
     .chapter article.chapter-content p,
     .chapter .chapter-content p {
       margin:0 0 16px;
       text-align:justify;
       text-justify:inter-word;
-      line-height:1.75;
+      line-height:1.7;
       color:#1b2b3a;
-      font-size:18px; /* comfortable desktop size */
+      font-size:18px;
+    }
+    /* FAQ: on very narrow screens reduce type a bit */
+    @media (max-width:980px){
+      .chapter article.chapter-content p,
+      .chapter .chapter-content p { font-size:16px; line-height:1.6; }
     }
 
-    /* Headings inside fragments */
     .chapter article.chapter-content h1,
     .chapter article.chapter-content h2,
     .chapter .chapter-content h1,
     .chapter .chapter-content h2 {
       color:#05204a;
       margin:0 0 12px;
-      line-height:1.25;
+      line-height:1.2;
+      font-weight:800;
     }
 
-    /* Make images inside chapters responsive and nicely centered */
     .chapter article.chapter-content img,
     .chapter .chapter-content img {
       display:block;
@@ -116,7 +148,7 @@
       border-radius:8px;
     }
 
-    /* Signature block: italic + centered */
+    /* Signature block */
     .chapter article.chapter-content .signature,
     .chapter .chapter-content .signature {
       margin-top:24px;
@@ -125,7 +157,6 @@
       color: #05204a;
       font-weight:600;
     }
-    /* Fallback existing inline signature selector */
     .chapter article.chapter-content > div[style*="text-align:center"],
     .chapter .chapter-content > div[style*="text-align:center"] {
       margin-top:24px;
@@ -143,21 +174,36 @@
     .toc-list .toc-sub{padding-left:18px;font-weight:600;color:#0b63d6;cursor:pointer}
     .toc-list .toc-sub:hover{background:rgba(11,99,214,0.03)}
 
-    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);height:var(--footer-h);align-items:center}
+    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);height:var(--footer-h);align-items:center;z-index:1200}
     .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
 
-    /* MOBILE: preserve previous behaviour (larger font for small screens, taller cover etc) */
-    @media (max-width:980px){
-      :root{ --reader-max: 92vw; }
-      .reader-frame{ padding:18px; max-height: none; min-height: 60vh; }
-      .chapter article.chapter-content p,
-      .chapter .chapter-content p { font-size:16px; line-height:1.6; }
+    /* Desktop: show prev/next as larger clickable areas at sides (optional visual aid) */
+    @media (min-width:980px){
+      .side-nav {
+        position:fixed;
+        top: calc(var(--header-h) + 12vh);
+        bottom: calc(var(--footer-h) + 12vh);
+        width:48px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:16px;
+        z-index:1250;
+        pointer-events:none;
+      }
+      .side-nav button{
+        pointer-events:auto;
+        background:var(--card);
+        border:1px solid rgba(6,18,41,0.06);
+        width:44px;height:44px;border-radius:10px;cursor:pointer;font-weight:800;
+        box-shadow:0 6px 18px rgba(6,18,41,0.06);
+      }
+      .side-nav.left{ left:24px; }
+      .side-nav.right{ right:24px; }
     }
+
     @media(max-width:640px){
-      #cover{ height: min(72vh, 520px); }
-      main{padding:84px 12px calc(var(--footer-h) + 24px)}
       #tocDrawer{width:86vw}
-      .reader-frame{ border-radius:10px; padding:14px; }
     }
   </style>
 </head>
@@ -175,6 +221,14 @@
     <ul id="tocList" class="toc-list" role="list"></ul>
   </nav>
 
+  <!-- optional side nav for desktop (prev/next) -->
+  <div class="side-nav left" aria-hidden="true" style="display:none">
+    <button id="sidePrev" title="Previous">◀</button>
+  </div>
+  <div class="side-nav right" aria-hidden="true" style="display:none">
+    <button id="sideNext" title="Next">▶</button>
+  </div>
+
   <main>
     <section id="cover" aria-hidden="false" role="img" aria-label="Book cover image">
       <img
@@ -187,11 +241,12 @@
       />
     </section>
 
-    <!-- Reader: contains a centered scrollable frame on desktop -->
+    <!-- Reader: single-page book view on desktop; full-width on mobile -->
     <section id="reader" aria-live="polite" tabindex="-1">
-      <div class="reader-frame" id="readerFrame" role="region" aria-label="Reader content">
-        <!-- chapters will be injected here inside .chapter (same as before) -->
-        <div class="chapter"></div>
+      <div class="reader-viewport">
+        <article class="book-page" id="readerFrame" role="region" aria-label="Book page">
+          <div class="chapter"></div>
+        </article>
       </div>
     </section>
   </main>
@@ -263,14 +318,19 @@ const btnMenu = document.getElementById('btnMenu');
 const tocDrawer = document.getElementById('tocDrawer');
 const coverEl = document.getElementById('cover');
 const reader = document.getElementById('reader');
-const readerFrame = document.getElementById('readerFrame');
+const readerFrame = document.getElementById('readerFrame'); // .book-page element
+const chapterShell = readerFrame.querySelector('.chapter');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
+const sidePrev = document.getElementById('sidePrev');
+const sideNext = document.getElementById('sideNext');
+const sideLeft = document.querySelector('.side-nav.left');
+const sideRight = document.querySelector('.side-nav.right');
 
 let currentFlatIndex = -1;
 let cache = {}; // html cache to avoid refetching
 
-/* ---------- Build TOC (no numbers) ---------- */
+/* ---------- Build TOC ---------- */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
@@ -329,7 +389,7 @@ async function openAnchor(chapterId, anchorId){
   await openChapter(chapterId, anchorId);
 }
 
-/* ---------- Fetch helpers (return cached if present, else fetch chapters/{id}.html) ---------- */
+/* ---------- Fetch helpers ---------- */
 async function getHtml(id){
   if(cache[id]) return cache[id];
   try{
@@ -371,17 +431,35 @@ async function openChapter(chId, anchor=null){
 function renderInReader(html){
   coverEl.style.display = 'none';
   reader.style.display = 'flex';
-  // inject the fragment html inside .chapter (preserve wrapper for CSS)
-  const chapterShell = readerFrame.querySelector('.chapter');
+
+  // simple enter animation
+  readerFrame.classList.add('enter');
   chapterShell.innerHTML = html;
-  // reset readerFrame scroll to top or previously saved scroll for this chapter
-  // (restoreScrollIfAny will try localStorage)
+
+  // force reflow then activate
+  void readerFrame.offsetWidth;
+  readerFrame.classList.add('active');
+
+  // restore scroll for this chapter inside the book page
   const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
   if(it && it.kind === 'chapter'){ restoreScrollIfAny(it.id); attachInnerScrollSaver(it.id); }
   else detachInnerScrollSaver();
-  // focus the reader container for keyboard users
+
+  // show side nav on wide screens
+  if(window.innerWidth >= 980){
+    if(sideLeft) sideLeft.style.display = 'flex';
+    if(sideRight) sideRight.style.display = 'flex';
+  } else {
+    if(sideLeft) sideLeft.style.display = 'none';
+    if(sideRight) sideRight.style.display = 'none';
+  }
+
+  // focus the book page for keyboard users
   readerFrame.setAttribute('tabindex','-1');
   readerFrame.focus();
+
+  // cleanup animation classes after a moment
+  setTimeout(()=> { readerFrame.classList.remove('enter','active'); }, 420);
 }
 
 /* ---------- Show cover ---------- */
@@ -389,25 +467,25 @@ function showCover(){
   currentFlatIndex = -1;
   coverEl.style.display = 'flex';
   reader.style.display = 'none';
-  const chapterShell = readerFrame.querySelector('.chapter');
-  if(chapterShell) chapterShell.innerHTML = '';
+  chapterShell.innerHTML = '';
   detachInnerScrollSaver();
+  if(sideLeft) sideLeft.style.display = 'none';
+  if(sideRight) sideRight.style.display = 'none';
   history.replaceState({}, '', './');
 }
 
 /* ---------- Forward / Back (flattened FLAT array) ---------- */
-nextBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex === -1){
-    if(FLAT.length > 0) openFlatItem(FLAT[0], 0);
-    return;
-  }
+nextBtn.addEventListener('click', ()=> {
+  if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
   if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
 });
-
-prevBtn.addEventListener('click', ()=>{
+prevBtn.addEventListener('click', ()=> {
   if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
   else showCover();
 });
+
+if(sidePrev) sidePrev.addEventListener('click', ()=> prevBtn.click());
+if(sideNext) sideNext.addEventListener('click', ()=> nextBtn.click());
 
 function openFlatItem(it, idx){
   currentFlatIndex = idx;
@@ -421,7 +499,7 @@ function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.string
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* ---------- Inner scroll saver (saves scroll within the reader frame) ---------- */
+/* ---------- Inner scroll saver (saves scroll within the book page) ---------- */
 let innerScrollSaver = { timer:null, lastSaved:0, id:null, onScroll:null };
 function attachInnerScrollSaver(chapterId){
   detachInnerScrollSaver();
@@ -487,7 +565,26 @@ window.addEventListener('popstate', (ev)=>{
 
 /* ---------- UX helpers ---------- */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
-document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') tocDrawer.classList.remove('open'); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
+document.addEventListener('keydown',(e)=>{ 
+  if(e.key === 'Escape') tocDrawer.classList.remove('open'); 
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); }
+  // left/right keys navigate when reader visible
+  if(reader.style.display !== 'none'){
+    if(e.key === 'ArrowLeft') prevBtn.click();
+    if(e.key === 'ArrowRight') nextBtn.click();
+  }
+});
+
+/* adjust side-nav visibility on resize */
+window.addEventListener('resize', ()=> {
+  if(window.innerWidth >= 980){
+    if(sideLeft) sideLeft.style.display = 'flex';
+    if(sideRight) sideRight.style.display = 'flex';
+  } else {
+    if(sideLeft) sideLeft.style.display = 'none';
+    if(sideRight) sideRight.style.display = 'none';
+  }
+});
 
 /* expose for debugging */
 window._GSR = { TOC, FLAT, openFragment, openChapter, openFlatItem };
