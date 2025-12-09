@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>G&SR — Konkan Railway (Offline Book)</title>
+<title>G&SR</title>
 <meta name="theme-color" content="#0b63d6">
 <style>
 :root{
@@ -70,7 +70,6 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   #searchResults{ width:100%; border-left:none; padding-left:0; margin-top:8px; }
 }
 
-}
 #searchInput{ flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; font-size:16px; width:100%; }
 #searchResults{ max-height:50vh; overflow:auto; width:360px; border-left:1px solid #eef2ff; padding-left:12px; }
 .search-item{ padding:8px; border-radius:8px; cursor:pointer; border:1px solid transparent; margin-bottom:6px; }
@@ -166,7 +165,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 /* improvements:
  - persistent last query & results (stored in localStorage + memory)
  - live results while typing (debounced)
- - when reopening search, previous query + results restored
+ - when reopening search, previous query & results restored
  - responsive searchPanel behavior on mobile
  - selecting a result opens page and highlights the match
 */
@@ -670,17 +669,6 @@ window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBa
 /* small reflow on resize */
 let _rt=null;
 window.addEventListener('resize', ()=>{ clearTimeout(_rt); _rt=setTimeout(()=>{ if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml); }, 140); });
-
-  // ensure `SEARCH_Q_KEY` exists like in your code
-const SEARCH_Q_KEY = 'gkr_search_q';
-
-// restore lastQuery if present (keeps prior behaviour)
-let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
-let lastResults = []; // will be filled when search runs
-
-// Persist lastQuery whenever a search runs (inside performSearch you already saved it)
-// Make sure performSearch calls: localStorage.setItem(SEARCH_Q_KEY, q);
-
 </script>
 </body>
 </html>
