@@ -65,8 +65,13 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   display:none; /* hidden by default */
   touch-action: manipulation;
 }
+#searchPanel .panel-row{ display:flex; gap:8px; align-items:center; width:100%; }
+#searchPanel .left-col{ display:flex; gap:8px; align-items:center; flex:1; }
+#searchPanel .right-col{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+
 @media(max-width:640px){
   #searchPanel{ left:8px; transform:none; width: calc(100% - 16px); top: var(--header-h); padding:10px; flex-direction:column; align-items:stretch; max-height: calc(100vh - var(--header-h) - 16px); }
+  #searchPanel .panel-row{ flex-direction:column; align-items:stretch; gap:10px; }
   #searchResults{ width:100%; border-left:none; padding-left:0; margin-top:8px; }
 }
 
@@ -124,9 +129,19 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
   <!-- SEARCH PANEL (below header) -->
   <div id="searchPanel" role="search" aria-hidden="true">
-    <input id="searchInput" placeholder="Search the entire book — type to search (live)"/>
+    <div class="panel-row">
+      <div class="left-col">
+        <input id="searchInput" placeholder="Search the entire book — type to search (live)"/>
+        <button id="searchClear" class="icon-btn" title="Clear search" aria-label="Clear search">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="right-col">
+        <button id="searchClose" class="icon-btn" title="Close search" aria-label="Close search">✕</button>
+      </div>
+    </div>
+
     <div id="searchResults" aria-live="polite"></div>
-    <button id="searchClose" class="icon-btn" title="Close search">✕</button>
   </div>
 
   <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
@@ -163,9 +178,13 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
 <script>
 /* improvements:
- - highlight every occurrence in snippets (live)
- - highlight ALL matches inside the opened page (not just the first)
- - robust highlight removal
+ - persistent last query & results (stored in localStorage + memory)
+ - live results while typing (debounced)
+ - when reopening search, previous query & results restored
+ - responsive searchPanel behavior on mobile
+ - selecting a result opens page and highlights the match
+ - added CLEAR button for search (clears input + results)
+ - mobile highlighting improved (mobileChapter container + retry)
 */
 
 const DESKTOP_BREAK = 980;
@@ -235,6 +254,7 @@ const searchPanel = document.getElementById('searchPanel');
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
+const searchClear = document.getElementById('searchClear');
 
 /* state */
 let cache = {};
@@ -369,13 +389,11 @@ function renderHtml(html, highlight=null){
     if(it && it.kind === 'chapter') restoreWindowScrollIfAny(it.id);
     mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
 
-    if(highlight && highlight.query) highlightAllInContainer(document, highlight.query);
+    if(highlight && highlight.query) highlightAllInContainer(mobileChapter, highlight.query);
   }
 }
 
-/* remove previous <mark class="search-highlight"> elements (both page & snippet)
-   We need to replace marks with their textContent while preserving surrounding nodes.
-*/
+/* remove previous <mark class="search-highlight"> elements */
 function removeExistingHighlights(){
   const prevs = document.querySelectorAll('mark.search-highlight');
   prevs.forEach(m => {
@@ -385,31 +403,22 @@ function removeExistingHighlights(){
     parent.replaceChild(document.createTextNode(txt), m);
     parent.normalize();
   });
-
-  // Also remove any leftover mark HTML inside snippets (they are in searchResults as innerHTML)
-  // we'll sanitize the searchResults content by re-rendering snippets when needed; but ensure no marks remain in container nodes:
-  // (This step above already covers marks inside results because they are in DOM.)
 }
 
-/* highlight ALL occurrences of query inside `container` (text nodes).
-   This implementation walks text nodes and replaces matches with text+<mark> fragments.
-*/
+/* highlight ALL occurrences of query inside `container` (text nodes). */
 function highlightAllInContainer(container, rawQuery){
   if(!rawQuery) return 0;
   const q = String(rawQuery).trim();
   if(!q) return 0;
-  // build safe regex (global, case-insensitive)
   const esc = q.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const re = new RegExp(esc, 'ig');
 
-  // walker that accepts visible text nodes
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode(node){
       if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
       if(!parent) return NodeFilter.FILTER_REJECT;
       const tag = parent.tagName.toLowerCase();
-      // skip inside these containers
       if(tag === 'script' || tag === 'style' || tag === 'noscript' || parent.closest('#searchResults')) return NodeFilter.FILTER_REJECT;
       if(node.nodeValue.trim().length === 0) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
@@ -423,7 +432,6 @@ function highlightAllInContainer(container, rawQuery){
     nodesToProcess.push(n);
   }
 
-  // Process nodes in order — for each text node create a DocumentFragment with marks
   for(const textNode of nodesToProcess){
     const text = textNode.nodeValue;
     if(!text) continue;
@@ -448,16 +456,14 @@ function highlightAllInContainer(container, rawQuery){
     if(lastIndex < text.length){
       frag.appendChild(document.createTextNode(text.slice(lastIndex)));
     }
-    // Replace the original text node
     const parent = textNode.parentNode;
     if(parent) parent.replaceChild(frag, textNode);
   }
 
-  // After injecting marks, scroll first match into view (if any)
+  // scroll first match into view (if any)
   const first = container.querySelector('mark.search-highlight');
   if(first){
     try{ first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
-    // remove highlight visual pulse after a moment (keeps mark for accessibility)
     setTimeout(()=> { if(first) first.classList.remove('search-highlight'); }, 2200);
   }
 
@@ -480,7 +486,7 @@ function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.string
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* scroll savers (desktop pageFrame and mobile window) */
+/* scroll savers */
 let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachPageSaverIfNeeded(){ detachPageSaver(); const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null; if(!it || it.kind!=='chapter') return; pageSaver.id = it.id; pageSaver.handler = ()=> { const now = Date.now(); if(now - pageSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} clearTimeout(pageSaver.timer); pageSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700); pageSaver.lastSaved = now; }; pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true }); }
 function detachPageSaver(){ try{ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); }catch(e){} pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
@@ -498,12 +504,7 @@ function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().ca
 
 /* ---------- SEARCH: persistent, live, responsive ---------- */
 
-/* OPEN / CLOSE search panel - mobile-friendly and keeps results
-   Notes:
-   - do NOT set body overflow hidden on all devices (can dismiss Android keyboard).
-   - set a flag `window.__gkr_search_open` so resize handler can skip re-render while search open.
-   - use a slightly longer focus delay which improves reliability on some Android/iOS versions.
-*/
+/* OPEN / CLOSE search panel - mobile-friendly and keeps results */
 function openSearchPanel(){
   window.__gkr_search_open = true;
 
@@ -516,14 +517,12 @@ function openSearchPanel(){
   searchInput.value = q;
   if(q){
     if(lastResults && lastResults.length) renderSearchResults(lastResults);
-    // run search but don't clear results until response
     debouncePerformSearch(q, 0);
   } else {
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
   }
 
   // Focus after a little longer delay for mobile reliability.
-  // (some mobile UIs need 300-600ms)
   setTimeout(()=> {
     try{
       searchInput.focus();
@@ -536,7 +535,7 @@ function openSearchPanel(){
   searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
   searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
 
-  // also prevent immediate resize-triggered rerender while user types: set a short lock
+  // prevent immediate resize-triggered rerender while user types: set a short lock
   window.__gkr_search_resize_lock = true;
   setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
 }
@@ -555,11 +554,23 @@ function closeSearchPanel(){
   window.__gkr_search_resize_lock = false;
 }
 
+/* Clear search (does NOT close panel) */
+function clearSearch(){
+  searchInput.value = '';
+  lastQuery = '';
+  lastResults = [];
+  try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
+  searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
+  // remove highlights in results & page
+  removeExistingHighlights();
+  // focus back on input
+  try{ searchInput.focus(); }catch(e){}
+}
+
 /* helper to stop touch/click event propagation inside search panel */
 function stopTouchBubble(e){
   e.stopPropagation();
 }
-
 
 /* debounce helper */
 let _debT = null;
@@ -592,14 +603,11 @@ function renderSearchResults(list){
   list.forEach(r=>{
     const div = document.createElement('div');
     div.className = 'search-item';
-    // escape snippet first, then highlight occurrences of query
     const escaped = escapeHtml(r.snippet || '');
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
     div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
     div.onclick = async ()=> {
-      // open and highlight, but keep lastQuery intact so reopening shows it
       await openFragmentOrChapterAndHighlight(r.id, q || searchInput.value);
-      // do NOT clear lastQuery; close panel to return to reader (user wanted to come back later)
       closeSearchPanel();
     };
     searchResults.appendChild(div);
@@ -618,16 +626,13 @@ async function performSearch(q){
   const ids = collectChapterIds();
   const results = [];
 
-  // iterate and ensure cache; for speed, try to use existing cached text when possible
   for(const id of ids){
-    // ensure cached HTML
     if(!cache[id]){
       const t = await fetchChapterRaw(id, false);
       if(t) cache[id] = t;
-      else cache[id] = ''; // avoid repeated network attempts
+      else cache[id] = '';
     }
     const html = cache[id] || '';
-    // naive stripping of tags
     const text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
     const idx = text.toLowerCase().indexOf(needle);
     if(idx !== -1){
@@ -637,24 +642,50 @@ async function performSearch(q){
     }
   }
 
-  // update UI & persist results
   renderSearchResults(results);
 }
 
-/* helper to open and highlight (opens result then highlight all matches in container) */
+/* helper to open and highlight (opens result then highlight all matches in correct container)
+   - uses mobileChapter as container on mobile (not document)
+   - waits a bit longer and retries once if no matches found (useful on slow devices)
+*/
 async function openFragmentOrChapterAndHighlight(id, query){
   const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
   const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
+
   if(isFragment){
     await openFragment(id);
-    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
   } else if(isChapter){
     await openChapter(id, null);
-    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
   } else {
     await openFragment(id);
-    setTimeout(()=> highlightAllInContainer(isDesktop() ? pageFrame : document, query), 220);
   }
+
+  // choose container correctly
+  const container = isDesktop() ? pageFrame : mobileChapter;
+
+  // ensure container has been rendered and focused
+  setTimeout(async ()=> {
+    try{
+      if(!isDesktop()){
+        mobileChapter.setAttribute('tabindex','-1');
+        mobileChapter.focus({ preventScroll: true });
+      } else {
+        pageFrame.setAttribute('tabindex','-1');
+        pageFrame.focus({ preventScroll: true });
+      }
+    }catch(e){}
+
+    // try highlight now; if no matches, try again after a short delay
+    let matches = 0;
+    try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
+
+    if(matches === 0){
+      setTimeout(()=> {
+        try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
+      }, 320);
+    }
+  }, 420);
 }
 
 /* wire search UI */
@@ -663,6 +694,8 @@ btnSearch.addEventListener('click', ()=> {
   else openSearchPanel();
 });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
+searchClear.addEventListener('click', ()=> clearSearch());
+
 searchInput.addEventListener('keydown', (e)=> {
   if(e.key === 'Escape'){ closeSearchPanel(); return; }
   if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }
@@ -671,8 +704,7 @@ searchInput.addEventListener('input', ()=> {
   debouncePerformSearch(searchInput.value, 160);
 });
 
-/* when reopening search after selecting a result, lastQuery & lastResults are used
-   (they were persisted to localStorage). Let's restore them on script load. */
+/* when reopening search after selecting a result, lastQuery & lastResults are used */
 (function restoreSearchState(){
   const q = localStorage.getItem(SEARCH_Q_KEY) || '';
   lastQuery = q;
@@ -727,9 +759,7 @@ let _rt = null;
 window.addEventListener('resize', ()=>{
   clearTimeout(_rt);
   _rt = setTimeout(()=> {
-    // if the search panel is open we must not re-render (keyboard may be open)
     if(window.__gkr_search_open) return;
-    // short lock to avoid re-render during immediate open/close sequences
     if(window.__gkr_search_resize_lock) return;
     if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
   }, 180);
