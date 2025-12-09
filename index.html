@@ -1,63 +1,140 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>G&SR — Konkan Railway (Offline Book)</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b63d6">
-  <style>
-    :root{--bg:#f6f9ff;--card:#fff;--kr:#0b63d6;--kr2:#0b9cff;--muted:#6b7280}
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
-    header{position:fixed;left:0;right:0;top:0;height:64px;display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200}
-    .brand{flex:1;text-align:center;font-weight:800}
-    .menu-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer}
-    .hamburger{width:22px;height:16px;position:relative}
-    .hamburger span{position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;transition:.24s}
-    .hamburger span:nth-child(1){top:0}
-    .hamburger span:nth-child(2){top:7px}
-    .hamburger span:nth-child(3){top:14px}
-    .menu-btn.open .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-    .menu-btn.open .hamburger span:nth-child(2){opacity:0}
-    .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>G&SR — Konkan Railway (Offline Book)</title>
+<meta name="theme-color" content="#0b63d6">
+<style>
+:root{
+  --bg:#f6f9ff;
+  --card:#fff;
+  --kr:#0b63d6;
+  --kr2:#0b9cff;
+  --muted:#6b7280;
+  --header-h:64px;
+  --footer-h:60px;
+  --desktop-break:980px;
+  --page-gap:24px; /* gap used in height calc */
+  --page-max-width:1200px;
+  --page-inner-pad:20px; /* smaller padding so more content fits */
+}
 
-    /* keep the same main padding but allow it to grow full width up to max */
-    main{padding:88px 16px 120px;max-width:1200px;margin:0 auto;min-height:320px}
+/* base */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
+header{
+  position:fixed;left:0;right:0;top:0;height:var(--header-h);
+  display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
+}
+.brand{flex:1;text-align:center;font-weight:800}
+.menu-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer}
+.hamburger{width:22px;height:16px;position:relative}
+.hamburger span{position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;transition:.24s}
+.hamburger span:nth-child(1){top:0} .hamburger span:nth-child(2){top:7px} .hamburger span:nth-child(3){top:14px}
 
-    #cover { width:100%; border-radius:16px; overflow:hidden; height:420px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
-    #cover img{ width:100%; height:100%; object-fit:contain; display:block; }
+/* main */
+main{
+  padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);
+  max-width:var(--page-max-width);
+  margin:0 auto;
+}
 
-    #reader { margin-top:18px; display:none; width:100%; } /* ensure reader can span full width on desktop */
+/* mobile cover default */
+#cover {
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  height:520px;
+  position:relative;
+  background:#111;
+  box-shadow:0 12px 30px rgba(0,0,0,.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#cover img{
+  /* allow image to grow to fill frame while keeping whole image visible */
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  object-position:center center;
+  display:block;
+  background:#111;
+}
 
-    .chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); min-height:200px; }
+/* reader (hidden until used) */
+#reader { margin-top:18px; display:none; }
 
-    /* Desktop page shell and book page centering */
-    .page-shell{ display:flex; justify-content:center; align-items:center; width:100%; box-sizing:border-box; }
-    .book-page{ width:100%; max-width:980px; margin:0 auto; border-radius:8px; overflow:hidden; box-shadow:0 12px 40px rgba(6,18,41,0.08); background:var(--card); }
-    .page-frame{ padding:28px; overflow:auto; height: calc(100vh - 64px - 60px - 48px); /* header + footer + gaps */ }
+/* mobile chapter card (original look) */
+.mobile-chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
 
-    #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
-    #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
-    .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
-    .toc-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
-    .toc-list .toc-item{padding:6px 8px;border-radius:8px;cursor:pointer;color:#05204a;font-weight:700}
-    .toc-list .toc-item:hover{background:rgba(11,99,214,0.04)}
-    .toc-list .toc-sub{padding-left:18px;font-weight:600;color:#0b63d6;cursor:pointer}
-    .toc-list .toc-sub:hover{background:rgba(11,99,214,0.03)}
+/* desktop: make cover frame and book-page same size and centered */
+@media(min-width:980px){
+  main{ max-width:1600px; } /* allow wide screens */
+  /* cover height equals available viewport area between header & footer */
+  #cover{
+    height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap));
+    border-radius:0;
+    box-shadow:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,#0f1724 0%, #061229 100%); /* dark behind the contained image */
+  }
 
-    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05)}
-    .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+  /* ensure cover image occupies as much space as possible without cropping */
+  #cover img{ max-width: min(var(--page-max-width), 92vw); max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); }
 
-    @media(max-width:640px){
-      #cover{height:520px}
-      main{padding:84px 12px 140px; max-width:980px}
-      #tocDrawer{width:86vw}
-      /* mobile: hide the desktop page-frame specific styles */
-      .page-shell{ display:none !important; }
-      #reader .mobile-inject{ display:block; }
-    }
-  </style>
+  /* page shell centers a fixed-size page matching the cover's frame */
+  .page-shell{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100%;
+    box-sizing:border-box;
+    margin-top:18px;
+  }
+  /* book page exactly matches cover frame size (same calc), but constrained by max width */
+  .book-page{
+    width: min(var(--page-max-width), 92vw);
+    height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap));
+    background:var(--card);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 12px 40px rgba(6,18,41,0.08);
+    display:flex;
+    flex-direction:column;
+    margin:0 auto;
+  }
+  .page-frame{
+    padding:var(--page-inner-pad);
+    overflow:auto;
+    flex:1 1 auto;
+  }
+  .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
+}
+
+/* fragment content rules */
+.chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+.chapter-content p{ margin:0 0 14px; line-height:1.6; color:#1b2b3a; font-size:16px; }
+.chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
+
+/* TOC drawer + footer */
+#tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
+#tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
+.toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
+footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
+.nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+
+/* mobile fine-tune */
+@media(max-width:640px){
+  main{padding:84px 12px 140px}
+  #tocDrawer{width:86vw}
+}
+</style>
 </head>
 <body>
   <header>
@@ -74,28 +151,31 @@
   </nav>
 
   <main>
+    <!-- COVER -->
     <section id="cover" aria-hidden="false" role="img" aria-label="Book cover image">
       <img
+        id="coverImg"
         srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
-        sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 800px"
-        src="assets/cover-1200.webp"
+        sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 1200px"
+        src="assets/cover-1600.webp"
         alt="G&SR Konkan Railway — Book cover"
         decoding="async"
         loading="eager"
       />
     </section>
 
-    <section id="reader" aria-live="polite" tabindex="-1">
-      <!-- Desktop book page shell (injected on desktop) -->
+    <!-- Reader region: desktop uses book page, mobile uses fallback -->
+    <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
+      <!-- Desktop book page -->
       <div class="page-shell" id="pageShell" style="display:none;">
         <div class="book-page" id="bookPage" role="region" aria-label="Book page">
-          <div class="page-frame" id="pageFrame"><div class="chapter" id="pageChapter"><!-- content injected here --></div></div>
+          <div class="page-frame" id="pageFrame"><div class="chapter" id="pageChapter"><!-- injected --></div></div>
         </div>
       </div>
 
-      <!-- Mobile injection area (keeps original behaviour) -->
-      <div class="mobile-inject" id="mobileInject" style="display:none;">
-        <div class="chapter" id="mobileChapter"><!-- content injected here on mobile --></div>
+      <!-- Mobile reader -->
+      <div id="mobileReader" style="display:none;">
+        <div class="chapter mobile-chapter" id="mobileChapter"><!-- injected --></div>
       </div>
     </section>
   </main>
@@ -106,29 +186,23 @@
   </footer>
 
 <script>
-/* ---------------------------
-  Keys & storage
-----------------------------*/
+/* Keep same JS behavior as before (TOC, fetching fragments, inject into desktop pageFrame or mobile area) */
+/* Only slight adaptation: use same injection targets used previously */
+const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
-const DESKTOP_BREAK = 980;
 
-/* ---------------------------
-  TOC structure (uses actual fragment filenames)
-----------------------------*/
 const TOC = [
   { type: 'fragment', id: 'notification', label: 'Notification' },
   { type: 'fragment', id: 'resolution', label: 'Resolution' },
   { type: 'fragment', id: 'documents_accompanying', label: 'Documents Accompanying' },
-
   { type: 'chapter', id: 'ch1', label: 'CHAPTER I — PRELIMINARY', children: [
       { anchor:'s101', label:'1.01 Short title and commencement' },
       { anchor:'s102', label:'1.02 Definitions' },
       { anchor:'s103', label:'1.03 Classification of Stations' }
     ]
   },
-
   { type:'chapter', id:'ch2', label:'Chapter 2 — Definitions & Interpretations' },
   { type:'chapter', id:'ch3', label:'Chapter 3 — Personnel & Duties' },
   { type:'chapter', id:'ch4', label:'Chapter 4 — Signalling' },
@@ -149,9 +223,6 @@ const TOC = [
   { type:'chapter', id:'appendix', label:'Appendix — Reference Material' }
 ];
 
-/* ---------------------------
-  Flattened order for forward/back (includes anchors)
-----------------------------*/
 const FLAT = [];
 TOC.forEach(item=>{
   if(item.type === 'fragment') FLAT.push({ kind:'fragment', id:item.id });
@@ -161,42 +232,43 @@ TOC.forEach(item=>{
   }
 });
 
-/* ---------- DOM refs ---------- */
-const tocList = document.getElementById('tocList');
-const btnMenu = document.getElementById('btnMenu');
-const tocDrawer = document.getElementById('tocDrawer');
-const coverEl = document.getElementById('cover');
+/* DOM references */
+const cover = document.getElementById('cover');
 const reader = document.getElementById('reader');
 const pageShell = document.getElementById('pageShell');
 const pageFrame = document.getElementById('pageFrame');
 const pageChapter = document.getElementById('pageChapter');
-const mobileInject = document.getElementById('mobileInject');
+const mobileReader = document.getElementById('mobileReader');
 const mobileChapter = document.getElementById('mobileChapter');
+const tocList = document.getElementById('tocList');
+const btnMenu = document.getElementById('btnMenu');
+const tocDrawer = document.getElementById('tocDrawer');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
+let cache = {};
 let currentFlatIndex = -1;
-let cache = {}; // html cache to avoid refetching
 let lastHtml = null;
 
-/* ---------- Build TOC (no numbers) ---------- */
+/* Build TOC */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
     const li = document.createElement('li');
     const btn = document.createElement('div');
-    btn.className = 'toc-item';
     btn.textContent = item.label;
+    btn.style.padding = '6px 8px';
+    btn.style.cursor = 'pointer';
     btn.onclick = ()=> openFromTOC(item);
     li.appendChild(btn);
     tocList.appendChild(li);
-
     if(item.children){
       item.children.forEach(ch=>{
         const sli = document.createElement('li');
         const sbtn = document.createElement('div');
-        sbtn.className = 'toc-sub';
         sbtn.textContent = ch.label;
+        sbtn.style.padding = '6px 8px 6px 20px';
+        sbtn.style.cursor = 'pointer';
         sbtn.onclick = ()=> openAnchor(item.id, ch.anchor);
         sli.appendChild(sbtn);
         tocList.appendChild(sli);
@@ -206,68 +278,58 @@ function buildTOC(){
 }
 buildTOC();
 
-/* ---------- Menu toggle ---------- */
-btnMenu.addEventListener('click', ()=>{
+/* menu toggle */
+btnMenu.addEventListener('click', ()=> {
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
   btnMenu.setAttribute('aria-expanded', String(open));
   tocDrawer.setAttribute('aria-hidden', String(!open));
 });
-document.addEventListener('click', (e)=>{
+document.addEventListener('click', (e)=> {
   if(!tocDrawer.classList.contains('open')) return;
   if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
   tocDrawer.classList.remove('open');
   btnMenu.classList.remove('open');
 });
 
-/* ---------- Fetch helpers (return cached if present, else fetch chapters/{id}.html) ---------- */
+/* fetch helper */
 async function getHtml(id){
   if(cache[id]) return cache[id];
   try{
-    const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-    if(res.ok){
-      const t = await res.text();
-      cache[id] = t;
-      return t;
-    }
-  }catch(e){}
+    const res = await fetch(`chapters/${id}.html`, { cache:'force-cache' });
+    if(res.ok){ const t = await res.text(); cache[id]=t; return t; }
+  }catch(e){ console.warn('fetch failed', id, e); }
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* ---------- Helpers ---------- */
-function isDesktopView(){ return window.innerWidth >= DESKTOP_BREAK; }
+/* helpers */
+function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
 
-/* ---------- Open handlers ---------- */
+/* open handlers */
 async function openFromTOC(item){
-  tocDrawer.classList.remove('open');
-  btnMenu.classList.remove('open');
+  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
-  if(item.type === 'fragment'){
-    await openFragment(item.id);
-  } else if(item.type === 'chapter'){
-    await openChapter(item.id, null);
-  }
+  if(item.type === 'fragment') await openFragment(item.id);
+  else await openChapter(item.id, null);
 }
-
 async function openAnchor(chapterId, anchorId){
   markStarted();
   await openChapter(chapterId, anchorId);
 }
 
-/* ---------- Open fragment/chapter/anchor ---------- */
+/* open fragment/chapter */
 async function openFragment(id){
   const html = await getHtml(id);
-  renderInReader(html);
+  renderHtml(html);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
-
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
-  renderInReader(html);
+  renderHtml(html);
   if(anchor){
     setTimeout(()=> {
-      if(isDesktopView()){
+      if(isDesktop()){
         const el = pageFrame.querySelector('#' + anchor);
         if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
       } else {
@@ -279,180 +341,39 @@ async function openChapter(chId, anchor=null){
     saveLastRead({ kind:'chapter', id:chId, anchor });
   } else {
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
-    saveLastRead({ kind:'chapter', id:chId, anchor: null });
+    saveLastRead({ kind:'chapter', id:chId, anchor:null });
   }
 }
 
-/* ---------- Render & show (keeps mobile behavior intact) ---------- */
-function renderInReader(html){
+/* render HTML into appropriate container */
+function renderHtml(html){
   lastHtml = html;
-  coverEl.style.display = 'none';
+  cover.style.display = 'none';
   reader.style.display = 'block';
 
-  if(isDesktopView()){
-    // desktop: show centered book-page and inject content into pageChapter
+  if(isDesktop()){
     pageShell.style.display = 'flex';
-    mobileInject.style.display = 'none';
+    mobileReader.style.display = 'none';
     pageChapter.innerHTML = html;
-    // restore page scroll if present
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){ restorePageScrollIfAny(it.id); attachPageScrollSaver(it.id); }
-    else detachPageScrollSaver();
-    // focus pageFrame
+    attachPageSaverIfNeeded();
+    const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
+    if(it && it.kind==='chapter') restorePageScroll(it.id);
     pageFrame.setAttribute('tabindex','-1'); pageFrame.focus();
   } else {
-    // mobile: original behavior - inject into mobile area
     pageShell.style.display = 'none';
-    mobileInject.style.display = 'block';
+    mobileReader.style.display = 'block';
     mobileChapter.innerHTML = html;
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){ restoreWindowScrollIfAny(it.id); attachWindowScrollSaver(it.id); }
-    else detachWindowScrollSaver();
+    attachWindowSaverIfNeeded();
+    const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
+    if(it && it.kind==='chapter') restoreWindowScroll(it.id);
     mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
   }
 }
 
-/* ---------- Show cover ---------- */
+/* show cover */
 function showCover(){
   currentFlatIndex = -1;
-  coverEl.style.display = 'flex';
+  cover.style.display = 'flex';
   reader.style.display = 'none';
-  reader.innerHTML = '';
   pageShell.style.display = 'none';
-  mobileInject.style.display = 'none';
-  detachPageScrollSaver();
-  detachWindowScrollSaver();
-  history.replaceState({}, '', './');
-}
-
-/* ---------- Forward / Back (flattened FLAT array) ---------- */
-nextBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex === -1){
-    if(FLAT.length > 0) openFlatItem(FLAT[0], 0);
-    return;
-  }
-  if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
-});
-
-prevBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
-  else showCover();
-});
-
-function openFlatItem(it, idx){
-  currentFlatIndex = idx;
-  if(it.kind === 'fragment') openFragment(it.id);
-  else if(it.kind === 'chapter') openChapter(it.id, null);
-  else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor);
-}
-
-/* ---------- Resume (save/load last-read) ---------- */
-function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
-function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
-function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
-
-/* ---------- Scroll saver (desktop page-frame) ---------- */
-let pageScrollSaver = { timer:null, lastSaved:0, id:null, handler:null };
-function attachPageScrollSaver(chapterId){
-  detachPageScrollSaver();
-  if(!chapterId) return;
-  pageScrollSaver.id = chapterId;
-  pageScrollSaver.handler = ()=> {
-    const now = Date.now();
-    if(now - pageScrollSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){}
-    clearTimeout(pageScrollSaver.timer);
-    pageScrollSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700);
-    pageScrollSaver.lastSaved = now;
-  };
-  pageFrame.addEventListener('scroll', pageScrollSaver.handler, { passive:true });
-}
-function detachPageScrollSaver(){
-  if(pageScrollSaver.handler) pageFrame.removeEventListener('scroll', pageScrollSaver.handler);
-  if(pageScrollSaver.timer){ clearTimeout(pageScrollSaver.timer); pageScrollSaver.timer = null; }
-  pageScrollSaver.handler = null; pageScrollSaver.id = null; pageScrollSaver.lastSaved = 0;
-}
-function restorePageScrollIfAny(chId){
-  try{
-    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
-    const n = raw ? Number(raw) || 0 : 0;
-    if(n>0) setTimeout(()=> pageFrame.scrollTo({ top: n, behavior:'auto' }), 80);
-    else setTimeout(()=> pageFrame.scrollTo({ top: 0, behavior:'auto' }), 80);
-  }catch(e){}
-}
-
-/* ---------- Scroll saver (mobile window) ---------- */
-let windowSaver = { timer:null, lastSaved:0, id:null, handler:null };
-function attachWindowScrollSaver(chapterId){
-  detachWindowScrollSaver();
-  if(!chapterId) return;
-  windowSaver.id = chapterId;
-  windowSaver.handler = ()=> {
-    const now = Date.now();
-    if(now - windowSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(window.scrollY || 0))); }catch(e){}
-    clearTimeout(windowSaver.timer);
-    windowSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(window.scrollY || 0))); }catch(e){} }, 700);
-    windowSaver.lastSaved = now;
-  };
-  window.addEventListener('scroll', windowSaver.handler, { passive:true });
-}
-function detachWindowScrollSaver(){
-  if(windowSaver.handler) window.removeEventListener('scroll', windowSaver.handler);
-  if(windowSaver.timer){ clearTimeout(windowSaver.timer); windowSaver.timer = null; }
-  windowSaver.handler = null; windowSaver.id = null; windowSaver.lastSaved = 0;
-}
-function restoreWindowScrollIfAny(chId){
-  try{
-    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
-    const n = raw ? Number(raw) || 0 : 0;
-    if(n>0) setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80);
-    else setTimeout(()=> window.scrollTo({ top: 0, behavior:'auto' }), 80);
-  }catch(e){}
-}
-
-/* ---------- Hook to attach scroll saver after render (for chapters only) ---------- */
-/* already handled in renderInReader above */
-
-/* ---------- service worker register + restore last-read ---------- */
-window.addEventListener('load', ()=>{
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>console.warn('sw failed')); }
-
-  try{
-    const hadStarted = localStorage.getItem(VISITED_FLAG);
-    const last = loadLastRead();
-    if(!hadStarted){ showCover(); return; }
-    if(last){
-      if(last.kind === 'fragment'){ openFragment(last.id); setFlatIndexFromLast(last); return; }
-      if(last.kind === 'chapter'){ openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
-    }
-    showCover();
-  }catch(e){ console.warn(e); showCover(); }
-});
-
-/* set currentFlatIndex from last record */
-function setFlatIndexFromLast(last){
-  for(let i=0;i<FLAT.length;i++){
-    const it = FLAT[i];
-    if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; }
-  }
-}
-
-/* ---------- popstate/back handling ---------- */
-window.addEventListener('popstate', (ev)=>{
-  if(!ev.state){ showCover(); return; }
-  const s = ev.state;
-  if(s.kind === 'fragment') openFragment(s.id);
-  else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null);
-});
-
-/* ---------- UX helpers ---------- */
-document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
-document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') tocDrawer.classList.remove('open'); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
-
-/* expose for debugging */
-window._GSR = { TOC, FLAT, openFragment, openChapter, openFlatItem };
-
-</script>
-</body>
-</html>
+  mobileReader.style.display = 'none';
