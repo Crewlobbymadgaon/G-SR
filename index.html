@@ -466,14 +466,18 @@ function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().ca
 
 /* ---------- SEARCH: persistent, live, responsive ---------- */
 
-/* OPEN / CLOSE search panel - mobile-friendly and keeps results */
+/* OPEN / CLOSE search panel - mobile-friendly and keeps results
+   Notes:
+   - do NOT set body overflow hidden on all devices (can dismiss Android keyboard).
+   - set a flag `window.__gkr_search_open` so resize handler can skip re-render while search open.
+   - use a slightly longer focus delay which improves reliability on some Android/iOS versions.
+*/
 function openSearchPanel(){
+  window.__gkr_search_open = true;
+
   // show panel
   searchPanel.style.display = 'flex';
   searchPanel.setAttribute('aria-hidden','false');
-
-  // prevent body scrolling so keyboard/resizing doesn't push content around
-  try { document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden'; } catch(e){}
 
   // restore previous query & results (if any)
   const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
@@ -486,32 +490,37 @@ function openSearchPanel(){
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
   }
 
-  // focus with a small delay to make keyboard open reliably on mobile
+  // Focus after a little longer delay for mobile reliability.
+  // (some mobile UIs need 300-600ms)
   setTimeout(()=> {
     try{
       searchInput.focus();
-      // move caret to end
       const val = searchInput.value;
       searchInput.setSelectionRange(val.length, val.length);
     }catch(e){}
-  }, 220);
+  }, 420);
 
   // stop touch propagation inside panel so external handlers don't close it accidentally
   searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
   searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
+
+  // also prevent immediate resize-triggered rerender while user types: set a short lock
+  window.__gkr_search_resize_lock = true;
+  setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
 }
 
 function closeSearchPanel(){
+  window.__gkr_search_open = false;
+
   searchPanel.style.display = 'none';
   searchPanel.setAttribute('aria-hidden','true');
 
-  // allow body scrolling again
-  try { document.documentElement.style.overflow = ''; document.body.style.overflow = ''; } catch(e){}
-
-  // keep lastQuery and lastResults so reopening restores previous state
   // remove listeners
   searchPanel.removeEventListener('touchstart', stopTouchBubble);
   searchPanel.removeEventListener('click', stopTouchBubble);
+
+  // small safety: release resize lock if still present
+  window.__gkr_search_resize_lock = false;
 }
 
 /* helper to stop touch/click event propagation inside search panel */
@@ -666,9 +675,19 @@ document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPane
 /* expose for debug */
 window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
 
-/* small reflow on resize */
-let _rt=null;
-window.addEventListener('resize', ()=>{ clearTimeout(_rt); _rt=setTimeout(()=>{ if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml); }, 140); });
+/* small reflow on resize — but DO NOT re-render while search panel is open or during short lock */
+let _rt = null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(_rt);
+  _rt = setTimeout(()=> {
+    // if the search panel is open we must not re-render (keyboard may be open)
+    if(window.__gkr_search_open) return;
+    // short lock to avoid re-render during immediate open/close sequences
+    if(window.__gkr_search_resize_lock) return;
+    if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
+  }, 180);
+});
+
 </script>
 </body>
 </html>
