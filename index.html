@@ -44,7 +44,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
 }
 
-/* search panel under header */
+/* search panel under header (desktop) / full-width on mobile */
 #searchPanel{
   position:fixed;
   left:50%;
@@ -68,6 +68,12 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 .search-item{ padding:8px; border-radius:8px; cursor:pointer; border:1px solid transparent; margin-bottom:6px; }
 .search-item:hover{ background:#f7fbff; border-color:#e6f0ff; }
 .search-snippet{ color:#475569; font-size:0.95rem; margin-top:6px; }
+
+/* mobile style: full-width panel */
+@media(max-width:640px){
+  #searchPanel{ left:8px; transform:none; width: calc(100% - 16px); top: calc(var(--header-h) + 6px); padding:10px; flex-direction:column; align-items:stretch; }
+  #searchResults{ width:100%; border-left:none; padding-left:0; margin-top:8px; }
+}
 
 /* highlight styling */
 .search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
@@ -149,13 +155,22 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
   </footer>
 
 <script>
-/* Config & data */
+/* improvements:
+ - persistent last query & results (stored in localStorage + memory)
+ - live results while typing (debounced)
+ - when reopening search, previous query + results restored
+ - responsive searchPanel behavior on mobile
+ - selecting a result opens page and highlights the match
+*/
+
 const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 const UPDATE_TS_KEY = 'gkr_last_update_ts';
 const UPDATE_INTERVAL_MS = Number(getComputedStyle(document.documentElement).getPropertyValue('--update-interval-ms')) || 15*60*1000;
+const SEARCH_Q_KEY = 'gkr_search_q';    // last query persist
+const SEARCH_R_KEY = 'gkr_search_r';    // last results persisted (optional)
 
 const TOC = [
   { type: 'fragment', id: 'notification', label: 'Notification' },
@@ -196,7 +211,7 @@ TOC.forEach(item=>{
   }
 });
 
-/* DOM */
+/* DOM refs */
 const tocList = document.getElementById('tocList');
 const btnMenu = document.getElementById('btnMenu');
 const tocDrawer = document.getElementById('tocDrawer');
@@ -216,12 +231,17 @@ const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 
+/* state */
 let cache = {};
 let currentFlatIndex = -1;
 let lastHtml = null;
 let bgTimer = null;
 
-/* Build TOC */
+/* persist last search in memory + storage */
+let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
+let lastResults = []; // array of {id, snippet}
+
+/* ---------- Build TOC ---------- */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
@@ -251,7 +271,7 @@ function buildTOC(){
 }
 buildTOC();
 
-/* Menu toggle */
+/* ---------- TOC toggle ---------- */
 btnMenu.addEventListener('click', ()=>{
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
@@ -265,17 +285,13 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* helpers */
-function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
-
-/* fetch helpers */
+/* ---------- fetch helpers ---------- */
 async function fetchChapterRaw(id, bypass=false){
   try{
     const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
     const res = await fetch(url, bypass ? { cache:'no-store' } : { cache:'force-cache' });
     if(res.ok) return await res.text();
-  }catch(e){ /* silent */ }
+  }catch(e){ /* ignore */ }
   return null;
 }
 async function getHtml(id){
@@ -285,7 +301,7 @@ async function getHtml(id){
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* render and navigation */
+/* ---------- render + navigation ---------- */
 async function openFromTOC(item){
   tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
@@ -322,12 +338,11 @@ async function openChapter(chId, anchor=null){
 
 /* injection + highlight support */
 function renderHtml(html, highlight=null){
-  // highlight: { query: 'text', rawQuery: 'orig', id: 'chapterId' } optional
   lastHtml = html;
   cover.style.display = 'none';
   reader.style.display = 'block';
 
-  // clear any previous highlights in both containers
+  // remove previous highlights
   removeExistingHighlights();
 
   if(isDesktop()){
@@ -339,10 +354,7 @@ function renderHtml(html, highlight=null){
     if(it && it.kind === 'chapter') restorePageScrollIfAny(it.id);
     pageFrame.setAttribute('tabindex','-1'); pageFrame.focus();
 
-    if(highlight && highlight.query){
-      // highlight inside pageFrame
-      highlightInContainer(pageFrame, highlight.query);
-    }
+    if(highlight && highlight.query) highlightInContainer(pageFrame, highlight.query);
   } else {
     pageShell.style.display = 'none';
     mobileReader.style.display = 'block';
@@ -352,9 +364,7 @@ function renderHtml(html, highlight=null){
     if(it && it.kind === 'chapter') restoreWindowScrollIfAny(it.id);
     mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
 
-    if(highlight && highlight.query){
-      highlightInContainer(document, highlight.query); // search in whole document (mobile)
-    }
+    if(highlight && highlight.query) highlightInContainer(document, highlight.query);
   }
 }
 
@@ -369,21 +379,18 @@ function removeExistingHighlights(){
   });
 }
 
-/* highlight the first occurrence of query string inside container (container is an Element) */
+/* highlight first occurrence */
 function highlightInContainer(container, rawQuery){
   if(!rawQuery) return false;
   const q = String(rawQuery).trim();
   if(!q) return false;
-  // case-insensitive search: walk text nodes to find match
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode(node){
-      // ignore script/style or hidden
       if(!node.nodeValue) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
       if(!parent) return NodeFilter.FILTER_REJECT;
       const tag = parent.tagName.toLowerCase();
-      if(tag === 'script' || tag === 'style' || tag === 'noscript' || parent.closest('.search-results')) return NodeFilter.FILTER_REJECT;
-      // small node only?
+      if(tag === 'script' || tag === 'style' || tag === 'noscript' || parent.closest('#searchResults')) return NodeFilter.FILTER_REJECT;
       if(node.nodeValue.trim().length === 0) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     }
@@ -395,7 +402,6 @@ function highlightInContainer(container, rawQuery){
     const text = n.nodeValue;
     const idx = text.toLowerCase().indexOf(needle);
     if(idx !== -1){
-      // split the text node into three parts: before, match, after
       const before = text.slice(0, idx);
       const match = text.slice(idx, idx + needle.length);
       const after = text.slice(idx + needle.length);
@@ -409,11 +415,9 @@ function highlightInContainer(container, rawQuery){
       parent.insertBefore(matchNode, n);
       parent.insertBefore(afterNode, n);
       parent.removeChild(n);
-      // scroll the match into view (small delay to ensure layout stable)
       setTimeout(()=> {
         matchNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // pulse is via CSS animation; remove it after 2s to avoid persistent animation
-        setTimeout(()=> { matchNode.classList.remove('search-highlight'); }, 2200);
+        setTimeout(()=> { if(matchNode) matchNode.classList.remove('search-highlight'); }, 2200);
       }, 120);
       return true;
     }
@@ -432,12 +436,12 @@ prevBtn.addEventListener('click', ()=>{
 });
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
-/* last-read */
+/* last-read helpers */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* scroll savers (same as earlier) */
+/* scroll savers (desktop pageFrame and mobile window) */
 let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachPageSaverIfNeeded(){ detachPageSaver(); const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null; if(!it || it.kind!=='chapter') return; pageSaver.id = it.id; pageSaver.handler = ()=> { const now = Date.now(); if(now - pageSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} clearTimeout(pageSaver.timer); pageSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700); pageSaver.lastSaved = now; }; pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true }); }
 function detachPageSaver(){ try{ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); }catch(e){} pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
@@ -449,39 +453,117 @@ function detachWindowSaver(){ try{ if(winSaver.handler) window.removeEventListen
 function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
 /* background updater (silent) */
-async function updateAllBackground(){
-  const ids = collectChapterIds();
-  if(!ids.length) return;
-  // silently fetch bypassing caches and update in-memory cache
-  for(const id of ids){
-    try{
-      const t = await fetchChapterRaw(id, true);
-      if(t) cache[id] = t;
-    }catch(e){ /* ignore */ }
-  }
-  try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){}
-}
-function startBackgroundUpdater(){
-  if(navigator.onLine) updateAllBackground().catch(()=>{});
-  if(bgTimer) clearInterval(bgTimer);
-  bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS);
-  window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); });
-}
+function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
+async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
+function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* search: live, debounce */
-let searchDeb = null;
+/* ---------- SEARCH: persistent, live, responsive ---------- */
+
 function openSearchPanel(){
   searchPanel.style.display = 'flex';
   searchPanel.setAttribute('aria-hidden','false');
-  searchInput.focus();
+  // restore previous query & results
+  const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
+  searchInput.value = q;
+  if(q) {
+    // show cached results if available quickly
+    if(lastResults && lastResults.length) renderSearchResults(lastResults);
+    // run search but don't clear results until response (live)
+    debouncePerformSearch(q, 0);
+  } else {
+    searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
+  }
+  // focus reliably (small timeout helps on mobile so virtual keyboard shows)
+  setTimeout(()=> { try{ searchInput.focus(); searchInput.select(); }catch(e){} }, 80);
 }
 function closeSearchPanel(){
   searchPanel.style.display = 'none';
   searchPanel.setAttribute('aria-hidden','true');
-  searchInput.value = '';
-  searchResults.innerHTML = '';
-  removeExistingHighlights();
+  // keep lastQuery + lastResults in memory/storage so reopening restores state
 }
+
+/* debounce helper */
+let _debT = null;
+function debouncePerformSearch(q, delay=220){
+  clearTimeout(_debT);
+  _debT = setTimeout(()=> performSearch(q), delay);
+}
+
+/* render results list */
+function renderSearchResults(list){
+  lastResults = list || [];
+  try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
+  if(!list || list.length === 0){ searchResults.innerHTML = '<div class="small-muted">No results</div>'; return; }
+  searchResults.innerHTML = '';
+  list.forEach(r=>{
+    const div = document.createElement('div');
+    div.className = 'search-item';
+    div.innerHTML = `<div style="font-weight:700">${r.id}</div><div class="search-snippet">${escapeHtml(r.snippet)}</div>`;
+    div.onclick = async ()=> {
+      // open and highlight, but keep lastQuery intact so reopening shows it
+      await openFragmentOrChapterAndHighlight(r.id, lastQuery || searchInput.value);
+      // do NOT clear lastQuery; close panel to return to reader (user wanted to come back later)
+      closeSearchPanel();
+    };
+    searchResults.appendChild(div);
+  });
+}
+
+/* escape snippet HTML */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* perform search (live) - ensures missing chapters fetched */
+async function performSearch(q){
+  q = (q||'').trim();
+  lastQuery = q;
+  try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
+  if(!q){ searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; lastResults = []; try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}; return; }
+  searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
+
+  const needle = q.toLowerCase();
+  const ids = collectChapterIds();
+  const results = [];
+
+  // iterate and ensure cache; for speed, try to use existing cached text when possible
+  for(const id of ids){
+    // ensure cached HTML
+    if(!cache[id]){
+      const t = await fetchChapterRaw(id, false);
+      if(t) cache[id] = t;
+      else cache[id] = ''; // avoid repeated network attempts
+    }
+    const html = cache[id] || '';
+    // naive stripping of tags
+    const text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
+    const idx = text.toLowerCase().indexOf(needle);
+    if(idx !== -1){
+      const start = Math.max(0, idx - 60);
+      const snippet = text.substring(start, idx + 120).replace(/\s+/g,' ').trim();
+      results.push({ id, snippet });
+    }
+  }
+
+  // update UI & persist results
+  renderSearchResults(results);
+}
+
+/* helper to open and highlight */
+async function openFragmentOrChapterAndHighlight(id, query){
+  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
+  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
+  if(isFragment){
+    await openFragment(id);
+    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 220);
+  } else if(isChapter){
+    await openChapter(id, null);
+    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 220);
+  } else {
+    await openFragment(id);
+    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 220);
+  }
+}
+
+/* wire search UI */
 btnSearch.addEventListener('click', ()=> {
   if(searchPanel.style.display === 'flex') closeSearchPanel();
   else openSearchPanel();
@@ -492,74 +574,32 @@ searchInput.addEventListener('keydown', (e)=> {
   if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }
 });
 searchInput.addEventListener('input', ()=> {
-  clearTimeout(searchDeb);
-  searchDeb = setTimeout(()=> performSearch(searchInput.value), 220);
+  debouncePerformSearch(searchInput.value, 160);
 });
 
-/* performSearch: ensure missing chapters fetched on demand, search across cached HTML */
-async function performSearch(q){
-  q = (q||'').trim();
-  searchResults.innerHTML = q ? '<div class="small-muted">Searching…</div>' : '<div class="small-muted">Type to search</div>';
-  if(!q) return;
-  const needle = q.toLowerCase();
-  const ids = collectChapterIds();
-  const results = [];
-  for(const id of ids){
-    // ensure cache (try network if not cached)
-    if(!cache[id]){
-      const t = await fetchChapterRaw(id, false);
-      if(t) cache[id] = t;
-      else cache[id] = null;
-    }
-    const html = cache[id] || '';
-    const text = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<\/?[^>]+(>|$)/g, ' ');
-    const idx = text.toLowerCase().indexOf(needle);
-    if(idx !== -1){
-      const start = Math.max(0, idx - 60);
-      const snippet = text.substring(start, idx + 120).replace(/\s+/g,' ').trim();
-      results.push({ id, snippet });
-    }
-  }
-  // render results
-  if(results.length === 0){
-    searchResults.innerHTML = '<div class="small-muted">No results</div>';
-    return;
-  }
-  searchResults.innerHTML = '';
-  results.forEach(r=>{
-    const div = document.createElement('div');
-    div.className = 'search-item';
-    div.innerHTML = `<div style="font-weight:700">${r.id}</div><div class="search-snippet">${r.snippet}</div>`;
-    div.onclick = async ()=> {
-      // open and highlight the query text within the opened page
-      await openFragmentOrChapterAndHighlight(r.id, q);
-      // close search panel (leave results for context) or keep open — close per request
-      closeSearchPanel();
-    };
-    searchResults.appendChild(div);
-  });
-}
+/* when reopening search after selecting a result, lastQuery & lastResults are used
+   (they were persisted to localStorage). Let's restore them on script load. */
+(function restoreSearchState(){
+  const q = localStorage.getItem(SEARCH_Q_KEY) || '';
+  lastQuery = q;
+  try{
+    const raw = localStorage.getItem(SEARCH_R_KEY);
+    if(raw) lastResults = JSON.parse(raw) || [];
+  }catch(e){ lastResults = []; }
+})();
 
-/* open a fragment/chapter and highlight query in it */
-async function openFragmentOrChapterAndHighlight(id, query){
-  // decide if id is fragment or chapter
-  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
-  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-  if(isFragment) {
-    await openFragment(id);
-    // highlight inside container (desktop pageFrame or mobile)
-    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 200);
-  } else if(isChapter){
-    await openChapter(id, null);
-    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 200);
-  } else {
-    // fallback: try as fragment
-    await openFragment(id);
-    setTimeout(()=> highlightInContainer(isDesktop() ? pageFrame : document, query), 200);
-  }
-}
+/* ---------- initial load + background updater ---------- */
+function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
+function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); }
 
-/* on load: start background updater and restore last-read */
+async function startBackgroundUpdater(){
+  if(navigator.onLine) updateAllBackground().catch(()=>{});
+  if(bgTimer) clearInterval(bgTimer);
+  bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS);
+  window.addEventListener('online', ()=> updateAllBackground().catch(()=>{}));
+}
+async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
+
 window.addEventListener('load', async ()=>{
   startBackgroundUpdater();
   try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
@@ -573,28 +613,24 @@ window.addEventListener('load', async ()=>{
   showCover();
 });
 
-/* helpers used above */
-function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); }
+/* small helpers referenced earlier */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } }
+function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 
 /* popstate/back */
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
-/* click outside toc to close */
+/* click outside TOC to close */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* helper open fragment/chapter used by search results */
-async function openFragmentOrChapterAndHighlightWrapper(id, q){ await openFragmentOrChapterAndHighlight(id, q); }
-
 /* expose for debug */
-window._GSR = { TOC, FLAT, openFragment, openChapter, openFragmentOrChapterAndHighlight };
+window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
 
 /* small reflow on resize */
 let _rt=null;
 window.addEventListener('resize', ()=>{ clearTimeout(_rt); _rt=setTimeout(()=>{ if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml); }, 140); });
-
 </script>
 </body>
 </html>
