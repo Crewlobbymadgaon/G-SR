@@ -1,230 +1,148 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>G&SR — Konkan Railway (Offline Book)</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b63d6">
-  <style>
-    :root{
-      --bg:#f6f9ff;
-      --card:#fff;
-      --kr:#0b63d6;
-      --kr2:#0b9cff;
-      --muted:#6b7280;
-      --header-h:64px;
-      --footer-h:60px;
-      --max-reader-width:980px;
-      --desktop-break:980px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
-    header{
-      position:fixed;left:0;right:0;top:0;height:var(--header-h);
-      display:flex;align-items:center;gap:12px;padding:10px 14px;
-      background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
-    }
-    .brand{flex:1;text-align:center;font-weight:800}
-    .menu-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer}
-    .hamburger{width:22px;height:16px;position:relative}
-    .hamburger span{position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;transition:.24s}
-    .hamburger span:nth-child(1){top:0}
-    .hamburger span:nth-child(2){top:7px}
-    .hamburger span:nth-child(3){top:14px}
-    .menu-btn.open .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-    .menu-btn.open .hamburger span:nth-child(2){opacity:0}
-    .menu-btn.open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>G&SR — Konkan Railway (Offline Book)</title>
+<meta name="theme-color" content="#0b63d6">
+<style>
+:root{
+  --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
+  --header-h:64px; --footer-h:60px; --desktop-break:980px; --max-width:980px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
+header{
+  position:fixed;left:0;right:0;top:0;height:var(--header-h);
+  display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
+}
+.brand{flex:1;text-align:center;font-weight:800}
+.menu-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer}
+.hamburger{width:22px;height:16px;position:relative}
+.hamburger span{position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;transition:.24s}
+.hamburger span:nth-child(1){top:0} .hamburger span:nth-child(2){top:7px} .hamburger span:nth-child(3){top:14px}
 
-    /* Outer page padding — mobile and desktop share same main layout */
-    main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-width:var(--max-reader-width);margin:0 auto;min-height:320px}
+/* main layout */
+main{
+  padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);
+  max-width:var(--max-width); margin:0 auto;
+}
 
-    /* COVER default (mobile-friendly) */
-    #cover {
-      width:100%;
-      border-radius:16px;
-      overflow:hidden;
-      height:420px;
-      position:relative;
-      background:#111;
-      box-shadow:0 12px 30px rgba(0,0,0,.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    #cover img{ width:100%; height:100%; object-fit:cover; display:block; object-position:center center; }
+/* COVER (mobile default) */
+#cover {
+  width:100%; border-radius:16px; overflow:hidden;
+  height:520px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14);
+  display:flex; align-items:center; justify-content:center;
+}
+/* IMPORTANT: use contain so the whole image is visible (no cropping) */
+#cover img{ width:100%; height:100%; object-fit:contain; object-position:center center; display:block; background:#111; }
 
-    /* READER: on mobile (and default) keep original full-width scrolling behavior */
-    #reader { margin-top:18px; display:none; }
-    .chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); min-height:200px; }
+/* READER wrapper hidden until used */
+#reader { margin-top:18px; display:none; }
 
-    /* Desktop: make cover full-screen (under header, above footer) and make reader pages same size */
-    @media (min-width: calc(var(--desktop-break) * 1px)) {
-      /* cover becomes full-bleed area (fills available viewport) */
-      #cover {
-        height: calc(100vh - var(--header-h) - var(--footer-h) - 24px);
-        border-radius:0;
-        box-shadow:none;
-      }
-      #cover img{ object-fit:cover; }
+/* mobile chapter card (preserve original look) */
+.mobile-chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
 
-      /* The reader becomes a centered fixed-size "page" matching the cover's size */
-      /* We keep the same width as main's max width (var --max-reader-width) but match height to cover */
-      .page-shell {
-        width:100%;
-        display:flex;
-        justify-content:center;
-        margin-top:18px;
-      }
-      .book-page {
-        width:100%;
-        max-width:var(--max-reader-width);
-        height: calc(100vh - var(--header-h) - var(--footer-h) - 24px);
-        border-radius:8px;
-        overflow:hidden;
-        background:var(--card);
-        box-shadow:0 12px 40px rgba(6,18,41,0.08);
-        display:flex;
-        flex-direction:column;
-      }
-      .page-frame {
-        flex:1 1 auto;
-        overflow:auto;
-        padding:28px;
-      }
+/* DESKTOP: cover frame becomes the size reference, and page uses the same fixed size */
+@media(min-width:980px){
+  main{ max-width:1200px; }
+  /* cover frame sized to available viewport height (under header & above footer) */
+  #cover{
+    height: calc(100vh - var(--header-h) - var(--footer-h) - 24px);
+    border-radius:0;
+    box-shadow:none;
+    background: linear-gradient(180deg,#0f1724 0%, #061229 100%); /* dark background behind contained image */
+  }
+  /* page shell centers a fixed-size page with same height as cover */
+  .page-shell{ display:flex; justify-content:center; margin-top:18px; }
+  .book-page{
+    width:100%; max-width:var(--max-width);
+    height: calc(100vh - var(--header-h) - var(--footer-h) - 24px);
+    background:var(--card); border-radius:8px; overflow:hidden;
+    box-shadow:0 12px 40px rgba(6,18,41,0.08); display:flex; flex-direction:column;
+  }
+  .page-frame{ padding:28px; overflow:auto; flex:1 1 auto; }
+  .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
+}
 
-      /* hide original .chapter wrapper styling to avoid double boxes */
-      .chapter { background:transparent; padding:0; box-shadow:none; border-radius:0; min-height:auto; }
-    }
+/* content rules for fragments */
+.chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+.chapter-content p{ margin:0 0 14px; line-height:1.6; color:#1b2b3a; font-size:16px; }
+.chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
 
-    /* Paragraph & text styles (keeps previous fixes, justification, italics etc.) */
-    .chapter article.chapter-content,
-    .chapter .chapter-content {
-      text-align:justify;
-      text-justify:inter-word;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      hyphens:auto;
-    }
-    .chapter article.chapter-content p,
-    .chapter .chapter-content p {
-      margin:0 0 14px;
-      text-align:justify;
-      text-justify:inter-word;
-      line-height:1.6;
-      color:#1b2b3a;
-      font-size:16px;
-    }
-    .chapter article.chapter-content .signature,
-    .chapter .chapter-content .signature {
-      margin-top:24px;
-      text-align:center;
-      font-style:italic;
-      color: #05204a;
-      font-weight:600;
-    }
-    .chapter article.chapter-content > div[style*="text-align:center"],
-    .chapter .chapter-content > div[style*="text-align:center"] {
-      margin-top:24px;
-      text-align:center;
-      font-style:italic;
-    }
-
-    /* TOC drawer and footer unchanged (keep UI) */
-    #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
-    #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
-    .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
-    .toc-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
-    .toc-list .toc-item{padding:6px 8px;border-radius:8px;cursor:pointer;color:#05204a;font-weight:700}
-    .toc-list .toc-item:hover{background:rgba(11,99,214,0.04)}
-    .toc-list .toc-sub{padding-left:18px;font-weight:600;color:#0b63d6;cursor:pointer}
-    .toc-list .toc-sub:hover{background:rgba(11,99,214,0.03)}
-
-    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
-    .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
-
-    /* Mobile specific tweaks to preserve original behavior */
-    @media(max-width:640px){
-      #cover{height:520px}
-      main{padding:calc(var(--header-h) + 8px) 12px calc(var(--footer-h) + 20px); max-width:100%;}
-      #tocDrawer{width:86vw}
-    }
-  </style>
+/* TOC drawer + footer */
+#tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
+#tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
+.toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
+footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
+.nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+</style>
 </head>
 <body>
-  <header>
-    <button id="btnMenu" class="menu-btn" aria-label="Open TOC">
-      <span class="hamburger"><span></span><span></span><span></span></span>
-    </button>
-    <div class="brand">G&SR — Konkan Railway</div>
-    <div style="width:44px;height:44px;"></div>
-  </header>
+<header>
+  <button id="btnMenu" class="menu-btn" aria-label="Open TOC"><span class="hamburger"><span></span><span></span><span></span></span></button>
+  <div class="brand">G&SR — Konkan Railway</div>
+  <div style="width:44px;height:44px;"></div>
+</header>
 
-  <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
-    <div class="toc-title">ARRANGEMENT OF RULES</div>
-    <ul id="tocList" class="toc-list" role="list"></ul>
-  </nav>
+<nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
+  <div class="toc-title">ARRANGEMENT OF RULES</div>
+  <ul id="tocList" style="list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto"></ul>
+</nav>
 
-  <main>
-    <section id="cover" aria-hidden="false" role="img" aria-label="Book cover image">
-      <img
-        srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
-        sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 1200px"
-        src="assets/cover-1600.webp"
-        alt="G&SR Konkan Railway — Book cover"
-        decoding="async"
-        loading="eager"
-      />
-    </section>
+<main>
+  <!-- COVER -->
+  <section id="cover" role="img" aria-label="Book cover image">
+    <img id="coverImg"
+      srcset="assets/cover-800.webp 800w, assets/cover-1200.webp 1200w, assets/cover-1600.webp 1600w"
+      sizes="(max-width:640px) 95vw, (max-width:980px) 90vw, 1200px"
+      src="assets/cover-1600.webp"
+      alt="G&SR Konkan Railway — Book cover" decoding="async" loading="eager" />
+  </section>
 
-    <!-- Reader: mobile uses the old #reader injection; desktop shows a fixed-size book-page -->
-    <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
-      <!-- Desktop page shell (visible on desktop via CSS media query) -->
-      <div class="page-shell" aria-hidden="false">
-        <div class="book-page" id="bookPage" role="region" aria-label="Book page">
-          <div class="page-frame" id="pageFrame">
-            <!-- chapter HTML will be injected here -->
-            <div class="chapter"></div>
-          </div>
-        </div>
+  <!-- Reader region: desktop uses book page, mobile uses fallback -->
+  <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
+    <!-- Desktop book page -->
+    <div class="page-shell" id="pageShell" style="display:none;">
+      <div class="book-page" id="bookPage" role="region" aria-label="Book page">
+        <div class="page-frame" id="pageFrame"><div class="chapter" id="pageChapter"><!-- injected --></div></div>
       </div>
+    </div>
 
-      <!-- Fallback/injection area for mobile (we'll inject the same HTML into this .chapter node when in mobile) -->
-      <div id="mobileReaderFallback" style="display:none;">
-        <!-- content will be injected into this container for mobile view (keeps original mobile behaviour) -->
-      </div>
-    </section>
-  </main>
+    <!-- Mobile reader -->
+    <div id="mobileReader" style="display:none;">
+      <div class="chapter mobile-chapter" id="mobileChapter"><!-- injected --></div>
+    </div>
+  </section>
+</main>
 
-  <footer>
-    <div class="nav-small"><button id="prevBtn" aria-label="Previous">◀</button></div>
-    <div class="nav-small"><button id="nextBtn" aria-label="Next">▶</button></div>
-  </footer>
+<footer>
+  <div class="nav-small"><button id="prevBtn" aria-label="Previous">◀</button></div>
+  <div class="nav-small"><button id="nextBtn" aria-label="Next">▶</button></div>
+</footer>
 
 <script>
-/* ---------------------------
-  Keys & storage
-----------------------------*/
+/* Reader script:
+   - Desktop (>=980px): cover uses object-fit:contain (full view) and page-frame matches same size; chapter content injected into #pageChapter and scroll saved/restored from pageFrame.
+   - Mobile (<980px): original full-width behavior (inject into #mobileChapter and save window scroll).
+*/
+
+const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
-const DESKTOP_BREAK = 980; // px breakpoint used in CSS
 
-/* ---------------------------
-  TOC structure (uses actual fragment filenames)
-----------------------------*/
+/* TOC definition (unchanged) */
 const TOC = [
   { type: 'fragment', id: 'notification', label: 'Notification' },
   { type: 'fragment', id: 'resolution', label: 'Resolution' },
   { type: 'fragment', id: 'documents_accompanying', label: 'Documents Accompanying' },
-
   { type: 'chapter', id: 'ch1', label: 'CHAPTER I — PRELIMINARY', children: [
       { anchor:'s101', label:'1.01 Short title and commencement' },
       { anchor:'s102', label:'1.02 Definitions' },
       { anchor:'s103', label:'1.03 Classification of Stations' }
     ]
   },
-
   { type:'chapter', id:'ch2', label:'Chapter 2 — Definitions & Interpretations' },
   { type:'chapter', id:'ch3', label:'Chapter 3 — Personnel & Duties' },
   { type:'chapter', id:'ch4', label:'Chapter 4 — Signalling' },
@@ -245,9 +163,6 @@ const TOC = [
   { type:'chapter', id:'appendix', label:'Appendix — Reference Material' }
 ];
 
-/* ---------------------------
-  Flattened order for forward/back (includes anchors)
-----------------------------*/
 const FLAT = [];
 TOC.forEach(item=>{
   if(item.type === 'fragment') FLAT.push({ kind:'fragment', id:item.id });
@@ -257,39 +172,41 @@ TOC.forEach(item=>{
   }
 });
 
-/* ---------- DOM refs ---------- */
+/* DOM references */
+const cover = document.getElementById('cover');
+const reader = document.getElementById('reader');
+const pageShell = document.getElementById('pageShell');
+const pageFrame = document.getElementById('pageFrame');
+const pageChapter = document.getElementById('pageChapter');
+const mobileReader = document.getElementById('mobileReader');
+const mobileChapter = document.getElementById('mobileChapter');
 const tocList = document.getElementById('tocList');
 const btnMenu = document.getElementById('btnMenu');
 const tocDrawer = document.getElementById('tocDrawer');
-const coverEl = document.getElementById('cover');
-const reader = document.getElementById('reader');
-const bookPage = document.getElementById('bookPage');
-const pageFrame = document.getElementById('pageFrame');
-const mobileReaderFallback = document.getElementById('mobileReaderFallback');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
+let cache = {};
 let currentFlatIndex = -1;
-let cache = {}; // html cache to avoid refetching
+let lastHtml = null;
 
-/* ---------- Build TOC ---------- */
+/* Build TOC UI */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
     const li = document.createElement('li');
     const btn = document.createElement('div');
-    btn.className = 'toc-item';
     btn.textContent = item.label;
+    btn.style.padding = '6px 8px'; btn.style.cursor = 'pointer';
     btn.onclick = ()=> openFromTOC(item);
     li.appendChild(btn);
     tocList.appendChild(li);
-
     if(item.children){
       item.children.forEach(ch=>{
         const sli = document.createElement('li');
         const sbtn = document.createElement('div');
-        sbtn.className = 'toc-sub';
         sbtn.textContent = ch.label;
+        sbtn.style.padding = '6px 8px 6px 20px'; sbtn.style.cursor = 'pointer';
         sbtn.onclick = ()=> openAnchor(item.id, ch.anchor);
         sli.appendChild(sbtn);
         tocList.appendChild(sli);
@@ -299,43 +216,35 @@ function buildTOC(){
 }
 buildTOC();
 
-/* ---------- Menu toggle ---------- */
-btnMenu.addEventListener('click', ()=>{
+/* Menu toggle */
+btnMenu.addEventListener('click', ()=> {
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
   btnMenu.setAttribute('aria-expanded', String(open));
   tocDrawer.setAttribute('aria-hidden', String(!open));
 });
-document.addEventListener('click', (e)=>{
+document.addEventListener('click', (e)=> {
   if(!tocDrawer.classList.contains('open')) return;
   if(e.target.closest('#tocDrawer') || e.target.closest('#btnMenu')) return;
-  tocDrawer.classList.remove('open');
-  btnMenu.classList.remove('open');
+  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
 });
 
-/* ---------- Fetch helpers ---------- */
+/* Fetch helper */
 async function getHtml(id){
   if(cache[id]) return cache[id];
   try{
-    const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-    if(res.ok){
-      const t = await res.text();
-      cache[id] = t;
-      return t;
-    }
-  }catch(e){}
+    const res = await fetch(`chapters/${id}.html`, { cache:'force-cache' });
+    if(res.ok){ const t = await res.text(); cache[id] = t; return t; }
+  }catch(e){ console.warn('fetch failed for', id, e); }
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* ---------- Helpers to detect desktop vs mobile behavior ---------- */
-function isDesktopView(){
-  return window.innerWidth >= DESKTOP_BREAK;
-}
+/* Helpers */
+function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
 
-/* ---------- Open handlers ---------- */
+/* Open handlers */
 async function openFromTOC(item){
-  tocDrawer.classList.remove('open');
-  btnMenu.classList.remove('open');
+  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
   if(item.type === 'fragment') await openFragment(item.id);
   else await openChapter(item.id, null);
@@ -345,20 +254,19 @@ async function openAnchor(chapterId, anchorId){
   await openChapter(chapterId, anchorId);
 }
 
-/* ---------- Open fragment/chapter ---------- */
+/* Open functions */
 async function openFragment(id){
   const html = await getHtml(id);
-  renderInReader(html);
+  renderHtml(html);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
-  renderInReader(html);
+  renderHtml(html);
   if(anchor){
     setTimeout(()=> {
-      // scroll inside the pageFrame (desktop) or window (mobile)
-      if(isDesktopView()){
+      if(isDesktop()){
         const el = pageFrame.querySelector('#' + anchor);
         if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
       } else {
@@ -370,179 +278,134 @@ async function openChapter(chId, anchor=null){
     saveLastRead({ kind:'chapter', id:chId, anchor });
   } else {
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
-    saveLastRead({ kind:'chapter', id:chId, anchor: null });
+    saveLastRead({ kind:'chapter', id:chId, anchor:null });
   }
 }
 
-/* ---------- Render & show ---------- */
-function renderInReader(html){
-  // Hide cover
-  coverEl.style.display = 'none';
-  // show reader root
+/* Render HTML into appropriate container */
+function renderHtml(html){
+  lastHtml = html;
+  cover.style.display = 'none';
   reader.style.display = 'block';
 
-  // If desktop, inject into pageFrame (fixed-size page). If mobile, inject into reader directly (same as before).
-  if(isDesktopView()){
-    // ensure desktop page shell visible (CSS handles it)
-    // inject the HTML into the inner .chapter inside pageFrame
-    const chapterNode = pageFrame.querySelector('.chapter');
-    if(chapterNode){
-      chapterNode.innerHTML = html;
-      // attach scroll saver for pageFrame
-      const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-      if(it && it.kind === 'chapter'){ attachPageFrameScrollSaver(it.id); restorePageFrameScrollIfAny(it.id); }
-      else detachPageFrameScrollSaver();
-      // focus pageFrame
-      pageFrame.setAttribute('tabindex','-1');
-      pageFrame.focus();
-    }
+  if(isDesktop()){
+    pageShell.style.display = 'block';
+    mobileReader.style.display = 'none';
+    pageChapter.innerHTML = html;
+    attachPageSaver();
+    const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length) ? FLAT[currentFlatIndex] : null;
+    if(it && it.kind==='chapter') restorePageScroll(it.id);
+    pageFrame.setAttribute('tabindex','-1'); pageFrame.focus();
   } else {
-    // Mobile: inject into the main reader area, replacing previous behaviour
-    reader.innerHTML = `<div class="chapter">${html}</div>`;
-    // attach window scroll saver as before
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){ attachWindowScrollSaver(it.id); restoreWindowScrollIfAny(it.id); }
-    else detachWindowScrollSaver();
-    const el = reader.querySelector('.chapter');
-    if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
+    pageShell.style.display = 'none';
+    mobileReader.style.display = 'block';
+    mobileChapter.innerHTML = html;
+    attachWindowSaver();
+    const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length) ? FLAT[currentFlatIndex] : null;
+    if(it && it.kind==='chapter') restoreWindowScroll(it.id);
+    mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
   }
 }
 
-/* ---------- Show cover ---------- */
+/* Show cover / go home */
 function showCover(){
   currentFlatIndex = -1;
-  coverEl.style.display = 'flex';
+  cover.style.display = 'flex';
   reader.style.display = 'none';
-  // clear both possible injections
-  const chapterInPage = pageFrame.querySelector('.chapter');
-  if(chapterInPage) chapterInPage.innerHTML = '';
-  reader.innerHTML = '';
-  detachPageFrameScrollSaver();
-  detachWindowScrollSaver();
-  history.replaceState({}, '', './');
+  pageShell.style.display = 'none';
+  mobileReader.style.display = 'none';
+  pageChapter.innerHTML = '';
+  mobileChapter.innerHTML = '';
+  detachPageSaver(); detachWindowSaver();
 }
 
-/* ---------- Forward / Back (flattened FLAT array) ---------- */
+/* Prev/Next */
 nextBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex === -1){
-    if(FLAT.length > 0) openFlatItem(FLAT[0], 0);
-    return;
-  }
-  if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
+  if(currentFlatIndex === -1){ if(FLAT.length>0) openFlatItem(FLAT[0],0); return; }
+  if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex+1], currentFlatIndex+1);
 });
-
 prevBtn.addEventListener('click', ()=>{
-  if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
+  if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex-1], currentFlatIndex-1);
   else showCover();
 });
+function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind==='fragment') openFragment(it.id); else if(it.kind==='chapter') openChapter(it.id, null); else if(it.kind==='anchor') openChapter(it.chapter, it.anchor); }
 
-function openFlatItem(it, idx){
-  currentFlatIndex = idx;
-  if(it.kind === 'fragment') openFragment(it.id);
-  else if(it.kind === 'chapter') openChapter(it.id, null);
-  else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor);
-}
-
-/* ---------- Resume (save/load last-read) ---------- */
+/* Last-read storage */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
-function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
+function markStarted(){ try{ localStorage.setItem(VISITED_FLAG,'1'); }catch(e){} }
 
-/* ---------- Scroll saving: two modes ----------
-   - Desktop: save pageFrame.scrollTop per chapter (attachPageFrameScrollSaver)
-   - Mobile: save window.scrollY per chapter (attachWindowScrollSaver)  */
-let pageFrameSaver = { timer:null, lastSaved:0, id:null, onScroll:null };
-function attachPageFrameScrollSaver(chapterId){
-  detachPageFrameScrollSaver();
-  if(!chapterId) return;
-  pageFrameSaver.id = chapterId;
-  const saveNow = pos => { try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(pos))); }catch(e){} pageFrameSaver.lastSaved = Date.now(); };
-  const onScroll = ()=> {
+/* SCROLL SAVERS */
+/* pageFrame saver (desktop) */
+let pageSaver = { handler:null, timer:null, last:0, id:null };
+function attachPageSaver(){
+  detachPageSaver();
+  const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
+  if(!it || it.kind!=='chapter') return;
+  pageSaver.id = it.id;
+  pageSaver.handler = ()=> {
     const now = Date.now();
-    if(now - pageFrameSaver.lastSaved > 800) saveNow(pageFrame.scrollTop || 0);
-    clearTimeout(pageFrameSaver.timer);
-    pageFrameSaver.timer = setTimeout(()=> saveNow(pageFrame.scrollTop || 0), 700);
+    if(now - pageSaver.last > 800){ try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} pageSaver.last = now; }
+    clearTimeout(pageSaver.timer);
+    pageSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} pageSaver.last = Date.now(); }, 700);
   };
-  pageFrame.addEventListener('scroll', onScroll, { passive:true });
-  pageFrameSaver.onScroll = onScroll;
+  pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true });
 }
-function detachPageFrameScrollSaver(){
-  if(pageFrameSaver.onScroll) pageFrame.removeEventListener('scroll', pageFrameSaver.onScroll);
-  if(pageFrameSaver.timer){ clearTimeout(pageFrameSaver.timer); pageFrameSaver.timer = null; }
-  pageFrameSaver.onScroll = null; pageFrameSaver.id = null; pageFrameSaver.lastSaved = 0;
-}
-function restorePageFrameScrollIfAny(chId){
-  try{
-    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
-    const n = raw ? Number(raw) || 0 : 0;
-    if(n>0) setTimeout(()=> { pageFrame.scrollTo({ top: n, behavior:'auto' }); }, 80);
-    else setTimeout(()=> { pageFrame.scrollTo({ top: 0, behavior:'auto' }); }, 80);
-  }catch(e){}
-}
+function detachPageSaver(){ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); pageSaver={handler:null,timer:null,last:0,id:null}; }
+function restorePageScroll(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> { pageFrame.scrollTo({ top:n, behavior:'auto' }); }, 80); }catch(e){} }
 
-let windowSaver = { timer:null, lastSaved:0, id:null, onScroll:null };
-function attachWindowScrollSaver(chapterId){
-  detachWindowScrollSaver();
-  if(!chapterId) return;
-  windowSaver.id = chapterId;
-  const saveNow = pos => { try{ localStorage.setItem(SCROLL_PREFIX + chapterId, String(Math.floor(pos))); }catch(e){} windowSaver.lastSaved = Date.now(); };
-  const onScroll = ()=> {
+/* window saver (mobile) */
+let winSaver = { handler:null, timer:null, last:0, id:null };
+function attachWindowSaver(){
+  detachWindowSaver();
+  const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
+  if(!it || it.kind!=='chapter') return;
+  winSaver.id = it.id;
+  winSaver.handler = ()=> {
     const now = Date.now();
-    if(now - windowSaver.lastSaved > 800) saveNow(window.scrollY || 0);
-    clearTimeout(windowSaver.timer);
-    windowSaver.timer = setTimeout(()=> saveNow(window.scrollY || 0), 700);
+    if(now - winSaver.last > 800){ try{ localStorage.setItem(SCROLL_PREFIX + winSaver.id, String(Math.floor(window.scrollY || 0))); }catch(e){} winSaver.last = now; }
+    clearTimeout(winSaver.timer);
+    winSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + winSaver.id, String(Math.floor(window.scrollY || 0))); }catch(e){} winSaver.last = Date.now(); }, 700);
   };
-  window.addEventListener('scroll', onScroll, { passive:true });
-  windowSaver.onScroll = onScroll;
+  window.addEventListener('scroll', winSaver.handler, { passive:true });
 }
-function detachWindowScrollSaver(){
-  if(windowSaver.onScroll) window.removeEventListener('scroll', windowSaver.onScroll);
-  if(windowSaver.timer){ clearTimeout(windowSaver.timer); windowSaver.timer = null; }
-  windowSaver.onScroll = null; windowSaver.id = null; windowSaver.lastSaved = 0;
-}
-function restoreWindowScrollIfAny(chId){
-  try{
-    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
-    const n = raw ? Number(raw) || 0 : 0;
-    if(n>0) setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80);
-    else setTimeout(()=> window.scrollTo({ top: 0, behavior:'auto' }), 80);
-  }catch(e){}
-}
+function detachWindowSaver(){ if(winSaver.handler) window.removeEventListener('scroll', winSaver.handler); if(winSaver.timer) clearTimeout(winSaver.timer); winSaver={handler:null,timer:null,last:0,id:null}; }
+function restoreWindowScroll(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> { window.scrollTo({ top:n, behavior:'auto' }); }, 80); }catch(e){} }
 
-/* Hook: when rendering into "reader" for chapters, attach appropriate saver */
-const originalRender = renderInReader;
-renderInReader = function(html){
-  originalRender(html);
-  // The original renderInReader is still used for some flows — keep it no-op here because we handle injection above.
-};
-
-/* ---------- service worker register + restore last-read ---------- */
-window.addEventListener('load', ()=>{
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>console.warn('sw failed')); }
-
-  try{
-    const hadStarted = localStorage.getItem(VISITED_FLAG);
-    const last = loadLastRead();
-    if(!hadStarted){ showCover(); return; }
-    if(last){
-      if(last.kind === 'fragment'){ openFragment(last.id); setFlatIndexFromLast(last); return; }
-      if(last.kind === 'chapter'){ openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
-    }
-    showCover();
-  }catch(e){ console.warn(e); showCover(); }
+/* Resize: if breakpoint crossed, re-render lastHtml into the right container */
+let rT;
+window.addEventListener('resize', ()=> {
+  clearTimeout(rT);
+  rT = setTimeout(()=> {
+    if(reader.style.display === 'none') return;
+    if(lastHtml) renderHtml(lastHtml);
+  }, 140);
 });
 
-/* set currentFlatIndex from last record */
+/* load / restore last-read */
+window.addEventListener('load', async ()=>{
+  try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+  const had = localStorage.getItem(VISITED_FLAG);
+  const last = loadLastRead();
+  if(!had){ showCover(); return; }
+  if(last){
+    if(last.kind === 'fragment'){ await openFragment(last.id); setFlatIndexFromLast(last); return; }
+    if(last.kind === 'chapter'){ await openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
+  }
+  showCover();
+});
+
+/* setFlatIndexFromLast helper */
 function setFlatIndexFromLast(last){
   for(let i=0;i<FLAT.length;i++){
     const it = FLAT[i];
-    if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; }
-    if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; }
+    if(last.kind === 'fragment' && it.kind==='fragment' && it.id===last.id){ currentFlatIndex=i; return; }
+    if(last.kind === 'chapter' && it.kind==='chapter' && it.id===last.id){ currentFlatIndex=i; return; }
+    if(last.kind === 'chapter' && it.kind==='anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex=i; return; }
   }
 }
 
-/* ---------- popstate/back handling ---------- */
+/* popstate/back */
 window.addEventListener('popstate', (ev)=>{
   if(!ev.state){ showCover(); return; }
   const s = ev.state;
@@ -550,83 +413,20 @@ window.addEventListener('popstate', (ev)=>{
   else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null);
 });
 
-/* ---------- UX helpers ---------- */
+/* click outside TOC to close */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') tocDrawer.classList.remove('open'); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* On resize, if view switches between mobile <-> desktop, re-render last content into appropriate container */
-let lastRenderedHtml = null; // keep last HTML so we can re-inject on breakpoint change
-function reflowIfNeeded(){
-  // if reader hidden nothing to do
-  if(reader.style.display === 'none') return;
-  // if lastRenderedHtml exists, re-render it into the correct container
-  if(lastRenderedHtml){
-    renderInReader(lastRenderedHtml);
-  }
-}
-window.addEventListener('resize', ()=> {
-  // small debounce
-  clearTimeout(window._gk_resize_timeout);
-  window._gk_resize_timeout = setTimeout(()=> {
-    reflowIfNeeded();
-  }, 160);
+/* expose for debug */
+window._GSR = { openFragment, openChapter, showCover, isDesktop };
+
+/* clicking the cover starts reading (opens first fragment) */
+cover.addEventListener('click', ()=> {
+  if(FLAT.length>0) openFlatItem(FLAT[0],0);
 });
 
-/* preserve lastRenderedHtml when rendering */
-const origRenderInReader = renderInReader;
-renderInReader = function(html){
-  lastRenderedHtml = html;
-  // delegate to our renderInReader above
-  // (we already replaced renderInReader earlier, so call the concrete function)
-  // call the inner implementation:
-  // (we defined renderInReader earlier, so call it again)
-};
-
-/* since we overrode renderInReader twice, make sure our real render function is the one named renderInReaderImpl */
-function renderInReader(html){ /* placeholder - actual injection done above in renderInReader usage */ }
-
-/* reassign to the correct function implemented earlier */
-renderInReader = function(html){ 
-  // actual injection logic defined previously (same name). We call that code path:
-  // (we implemented a renderInReader earlier above; here simply call the earlier local function by reusing the logic)
-  // To avoid confusion, call the injection logic directly:
-  // (We already implemented injection at top-level; reuse that code by calling a helper)
-  // Implemented above as renderInReaderInline — but to keep things simple, just reuse the code from earlier:
-  // We'll simply execute same steps here:
-  // Hide cover
-  coverEl.style.display = 'none';
-  reader.style.display = 'block';
-
-  if(isDesktopView()){
-    const chapterNode = pageFrame.querySelector('.chapter');
-    if(chapterNode){
-      chapterNode.innerHTML = html;
-      const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-      if(it && it.kind === 'chapter'){ attachPageFrameScrollSaver(it.id); restorePageFrameScrollIfAny(it.id); }
-      else detachPageFrameScrollSaver();
-      pageFrame.setAttribute('tabindex','-1');
-      pageFrame.focus();
-    }
-  } else {
-    reader.innerHTML = `<div class="chapter">${html}</div>`;
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){ attachWindowScrollSaver(it.id); restoreWindowScrollIfAny(it.id); }
-    else detachWindowScrollSaver();
-    const el = reader.querySelector('.chapter');
-    if(el){ el.setAttribute('tabindex','-1'); el.focus(); }
-  }
-
-  // store lastRenderedHtml for reflow on resize
-  lastRenderedHtml = html;
-};
-
-/* expose for debugging */
-window._GSR = { TOC, FLAT, openFragment, openChapter, openFlatItem };
-
-/* initialize side effect: ensure cover visible/reader hidden until load handler runs */
-document.addEventListener('DOMContentLoaded', ()=> {
-  // nothing to do here — load handler will restore last-read
-});
+/* openFlatItem helper */
+function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind==='fragment') openFragment(it.id); else if(it.kind==='chapter') openChapter(it.id, null); else if(it.kind==='anchor') openChapter(it.chapter, it.anchor); }
 </script>
 </body>
 </html>
