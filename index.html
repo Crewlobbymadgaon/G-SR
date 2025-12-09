@@ -4,7 +4,16 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>G&SR</title>
+
+  <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#0b63d6">
+
+<!-- iOS: required because Safari ignores manifest.json -->
+<link rel="apple-touch-icon" sizes="192x192" href="/assets/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/assets/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
 <style>
 :root{
   --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
