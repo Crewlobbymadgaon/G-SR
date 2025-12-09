@@ -561,10 +561,23 @@ function clearSearch(){
   lastResults = [];
   try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
   searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
-  // remove highlights in results & page
   removeExistingHighlights();
-  // focus back on input
-  try{ searchInput.focus(); }catch(e){}
+
+  // If a page is open, restore scroll saved position (avoids jumping)
+  try{
+    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
+    if(it && it.kind === 'chapter'){
+      if(isDesktop()) restorePageScrollIfAny(it.id);
+      else restoreWindowScrollIfAny(it.id);
+    }
+  }catch(e){}
+
+  // focus input so user can immediately type again (mobile keyboard stays up)
+  try{
+    searchInput.focus();
+    const v = searchInput.value || '';
+    searchInput.setSelectionRange(v.length, v.length);
+  }catch(e){}
 }
 
 /* helper to stop touch/click event propagation inside search panel */
