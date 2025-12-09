@@ -1,89 +1,111 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>G&SR — Konkan Railway (Offline Book)</title>
-  <meta name="theme-color" content="#0b63d6">
-  <style>
-    :root{
-      --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
-      --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
-    header{position:fixed;left:0;right:0;top:0;height:var(--header-h);display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200}
-    .brand{flex:1;text-align:center;font-weight:800}
-    .menu-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer}
-    .hamburger{width:22px;height:16px;position:relative}
-    .hamburger span{position:absolute;left:0;right:0;height:2px;background:#fff;border-radius:2px;transition:.24s}
-    .hamburger span:nth-child(1){top:0} .hamburger span:nth-child(2){top:7px} .hamburger span:nth-child(3){top:14px}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>G&SR — Konkan Railway (Offline Book)</title>
+<meta name="theme-color" content="#0b63d6">
+<style>
+:root{
+  --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
+  --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
+  --update-interval-ms:900000; /* 15 minutes */
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
+header{
+  position:fixed;left:0;right:0;top:0;height:var(--header-h);
+  display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
+}
+/* center brand/title on all devices */
+.header-left{width:44px;height:44px;display:flex;align-items:center;justify-content:flex-start}
+.header-center{flex:1;display:flex;align-items:center;justify-content:center}
+.header-right{width:44px;height:44px;display:flex;align-items:center;justify-content:flex-end}
 
-    /* small header controls */
-    .hdr-controls{display:flex;gap:8px;align-items:center}
-    .btn { background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.18); padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:700; font-size:0.95rem; }
-    .btn.secondary{ background:transparent; border:1px dashed rgba(255,255,255,0.14); }
-    .toggle { display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:8px; background:rgba(255,255,255,0.06); }
-    .spinner { width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; animation:spin 800ms linear infinite; display:inline-block; vertical-align:middle; margin-left:6px; }
-    @keyframes spin{ to{ transform:rotate(360deg); } }
+/* brand/title centered */
+.brand{font-weight:800; font-size:1rem; text-align:center;}
 
-    main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-width:var(--page-max-width);margin:0 auto;min-height:320px}
+/* small icon buttons */
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);cursor:pointer;color:#fff}
+.icon-btn:active{transform:translateY(1px)}
+/* magnifier svg styles */
+.icon{width:18px;height:18px;display:block}
 
-    /* COVER */
-    #cover { width:100%; border-radius:16px; overflow:hidden; height:520px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
-    #cover img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; object-position:center center; display:block; background:#111; }
+/* main layout */
+main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-width:var(--page-max-width);margin:0 auto;min-height:320px}
 
-    /* Start-button overlay */
-    .cover-overlay{ position:absolute; left:0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
-    .cover-overlay .start { pointer-events:auto; background:rgba(255,255,255,0.92); color:#051229; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(4,10,26,0.28); }
-    .cover-status { position:absolute; left:12px; bottom:12px; background:rgba(255,255,255,0.85); color:#05204a; padding:6px 10px; border-radius:8px; font-weight:700; font-size:0.9rem; }
+/* COVER */
+#cover { width:100%; border-radius:16px; overflow:hidden; height:520px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
+#cover img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; object-position:center center; display:block; background:#111; }
 
-    /* reader (desktop page or mobile fallback) */
-    #reader { margin-top:18px; display:none; }
-    .mobile-chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
+/* Start button overlay */
+.cover-overlay{ position:absolute; left:0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+.cover-overlay .start { pointer-events:auto; background:rgba(255,255,255,0.92); color:#051229; padding:12px 18px; border-radius:10px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(4,10,26,0.28); }
+.cover-status { position:absolute; left:12px; bottom:12px; background:rgba(255,255,255,0.85); color:#05204a; padding:6px 10px; border-radius:8px; font-weight:700; font-size:0.9rem; }
 
-    /* desktop shell/page */
-    @media(min-width:980px){
-      #cover{ height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); border-radius:0; box-shadow:none; background:linear-gradient(180deg,#0f1724 0%, #061229 100%); }
-      #cover img{ max-width: min(var(--page-max-width), 92vw); max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); }
-      .page-shell{ display:flex; justify-content:center; align-items:center; width:100%; box-sizing:border-box; margin-top:18px; }
-      .book-page{ width: min(var(--page-max-width), 92vw); height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); background:var(--card); border-radius:8px; overflow:hidden; box-shadow:0 12px 40px rgba(6,18,41,0.08); display:flex; flex-direction:column; margin:0 auto; }
-      .page-frame{ padding:20px; overflow:auto; flex:1 1 auto; }
-      .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
-    }
+/* reader (desktop page or mobile fallback) */
+#reader { margin-top:18px; display:none; }
+.mobile-chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
 
-    /* fragments content */
-    .chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-    .chapter-content p{ margin:0 0 14px; line-height:1.6; color:#1b2b3a; font-size:16px; }
-    .chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
+/* desktop shell/page */
+@media(min-width:980px){
+  #cover{ height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); border-radius:0; box-shadow:none; background:linear-gradient(180deg,#0f1724 0%, #061229 100%); }
+  #cover img{ max-width: min(var(--page-max-width), 92vw); max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); }
+  .page-shell{ display:flex; justify-content:center; align-items:center; width:100%; box-sizing:border-box; margin-top:18px; }
+  .book-page{ width: min(var(--page-max-width), 92vw); height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); background:var(--card); border-radius:8px; overflow:hidden; box-shadow:0 12px 40px rgba(6,18,41,0.08); display:flex; flex-direction:column; margin:0 auto; }
+  .page-frame{ padding:20px; overflow:auto; flex:1 1 auto; }
+  .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
+}
 
-    #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
-    #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
-    .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
-    footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
-    .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+/* fragments content */
+.chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+.chapter-content p{ margin:0 0 14px; line-height:1.6; color:#1b2b3a; font-size:16px; }
+.chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
 
-    /* small utilities */
-    .hidden{display:none !important}
-    .muted{color:#6b7280}
-    .status-small{font-size:0.9rem;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,0.9);color:#05204a;margin-left:8px}
-  </style>
+/* TOC drawer + footer */
+#tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
+#tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
+.toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
+footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
+.nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+
+/* Search modal */
+.search-overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(3,8,18,0.5); z-index:1500; }
+.search-panel{ width: min(920px, 92vw); background:#fff; border-radius:12px; box-shadow:0 20px 50px rgba(4,10,26,0.36); padding:18px; max-height:80vh; overflow:auto; }
+.search-top{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+.search-input{ flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; font-size:16px; }
+.search-results{ margin-top:8px; }
+.search-item{ padding:10px; border-radius:8px; cursor:pointer; border:1px solid transparent; }
+.search-item:hover{ background:#f7fbff; border-color:#e6f0ff; }
+.small-muted{ color:#6b7280; font-size:0.95rem; }
+
+/* utilities */
+.hidden{display:none !important}
+.muted{color:#6b7280}
+</style>
 </head>
 <body>
   <header>
-    <button id="btnMenu" class="menu-btn" aria-label="Open TOC">
-      <span class="hamburger"><span></span><span></span><span></span></span>
-    </button>
+    <div class="header-left">
+      <button id="btnMenu" class="icon-btn" aria-label="Open TOC">
+        <!-- simple hamburger -->
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
 
-    <div class="brand">G&SR — Konkan Railway</div>
+    <div class="header-center">
+      <div class="brand">G&SR — Konkan Railway</div>
+    </div>
 
-    <div class="hdr-controls" aria-hidden="false">
-      <div id="autoUpdateWrap" class="toggle" title="Auto-update on load">
-        <label style="font-weight:700;font-size:0.95rem;color:#fff;margin-right:6px">Auto-update</label>
-        <input id="autoUpdate" type="checkbox" style="width:18px;height:18px;border-radius:4px"/>
-      </div>
-      <button id="btnUpdate" class="btn" title="Fetch latest chapters from server">Update</button>
-      <button id="btnRefresh" class="btn secondary" title="Reload page (hard)">Refresh</button>
+    <div class="header-right">
+      <button id="btnSearch" class="icon-btn" title="Search the book (global)">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="6"></circle>
+          <path d="M21 21l-4.35-4.35"></path>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -104,7 +126,7 @@
       <div class="cover-overlay">
         <button id="startRead" class="start">Start reading ▶</button>
       </div>
-      <div id="coverStatus" class="cover-status muted">Offline</div>
+      <div id="coverStatus" class="cover-status muted">Initializing…</div>
     </section>
 
     <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
@@ -127,20 +149,26 @@
     <div class="nav-small"><button id="nextBtn" aria-label="Next">▶</button></div>
   </footer>
 
-<script>
-/* Reader + Update logic
-   - Desktop: pageFrame (#pageFrame) used for fixed-size pages.
-   - Mobile: original behavior, inject to #mobileChapter and keep window scroll.
-   - Update: fetches chapters/{id}.html with a cache-bypass and updates in-memory cache.
-   - Auto-update: optional toggle; if enabled and navigator.onLine true, update runs on load.
-*/
+  <!-- Search overlay -->
+  <div id="searchOverlay" class="search-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="search-panel" role="document">
+      <div class="search-top">
+        <input id="searchInput" class="search-input" placeholder="Search the whole book (title, paragraphs)..."/>
+        <button id="searchClose" class="icon-btn" title="Close search">✕</button>
+      </div>
+      <div id="searchMeta" class="small-muted">Search cached content. Missing files will be fetched automatically.</div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </div>
 
+<script>
+/* === Config & state === */
 const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 const UPDATE_TS_KEY = 'gkr_last_update_ts';
-const AUTO_UPDATE_KEY = 'gkr_auto_update';
+const UPDATE_INTERVAL_MS = Number(getComputedStyle(document.documentElement).getPropertyValue('--update-interval-ms')) || 15*60*1000; // fallback 15m
 
 const TOC = [
   { type: 'fragment', id: 'notification', label: 'Notification' },
@@ -198,16 +226,21 @@ const mobileReader = document.getElementById('mobileReader');
 const mobileChapter = document.getElementById('mobileChapter');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
+const btnSearch = document.getElementById('btnSearch');
 
-const btnUpdate = document.getElementById('btnUpdate');
-const btnRefresh = document.getElementById('btnRefresh');
-const autoUpdateCheckbox = document.getElementById('autoUpdate');
+/* Search DOM */
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+const searchClose = document.getElementById('searchClose');
+const searchMeta = document.getElementById('searchMeta');
 
-let cache = {};            // in-memory cache for chapters
-let currentFlatIndex = -1; // which flat item is open
-let lastHtml = null;       // last injected html
+let cache = {};            // in-memory cache for chapter HTML
+let currentFlatIndex = -1; // current open position
+let lastHtml = null;
+let updateTimer = null;
 
-/* Build TOC UI */
+/* ---------- UI: build TOC ---------- */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
@@ -220,6 +253,7 @@ function buildTOC(){
     btn.onclick = ()=> openFromTOC(item);
     li.appendChild(btn);
     tocList.appendChild(li);
+
     if(item.children){
       item.children.forEach(ch=>{
         const sli = document.createElement('li');
@@ -237,7 +271,7 @@ function buildTOC(){
 }
 buildTOC();
 
-/* Menu toggle */
+/* ---------- Menu toggle ---------- */
 btnMenu.addEventListener('click', ()=>{
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
@@ -251,42 +285,58 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* small helper */
+/* ---------- Helpers ---------- */
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-
-/* fetch helper with cache usage */
-async function getHtml(id){
-  // return in-memory cached html if present
-  if(cache[id]) return cache[id];
-
-  // if not cached, try network fetch (normal)
-  try{
-    const res = await fetch(`chapters/${id}.html`, { cache: 'force-cache' });
-    if(res.ok){
-      const t = await res.text();
-      cache[id] = t;
-      return t;
+function setCoverStatus(text, busy=false){
+  coverStatus.textContent = text;
+  if(busy){
+    if(!coverStatus.querySelector('.spinner')) {
+      const s = document.createElement('span'); s.className='spinner'; s.style.marginLeft='8px';
+      coverStatus.appendChild(s);
     }
-  }catch(e){ console.warn('fetch failed for', id, e); }
-  // fallback: placeholder
+  } else {
+    const s = coverStatus.querySelector('.spinner'); if(s) s.remove();
+  }
+}
+
+/* ---------- fetching & cache ---------- */
+async function fetchChapterRaw(id, bypass=false){
+  // bypass -> append timestamp param to avoid caches
+  try{
+    const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
+    const modeOpt = bypass ? { cache:'no-store' } : { cache:'force-cache' };
+    const res = await fetch(url, modeOpt);
+    if(res.ok){ const text = await res.text(); return text; }
+  }catch(e){ console.warn('fetch failed', id, e); }
+  return null;
+}
+
+async function getHtml(id){
+  if(cache[id]) return cache[id];
+  const t = await fetchChapterRaw(id, false);
+  if(t){ cache[id] = t; return t; }
+  // fallback placeholder
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* ---------- Open handlers ---------- */
+/* ---------- render & navigation ---------- */
 async function openFromTOC(item){
-  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
-  if(item.type === 'fragment'){ markStarted(); await openFragment(item.id); }
-  else { markStarted(); await openChapter(item.id, null); }
+  tocDrawer.classList.remove('open');
+  btnMenu.classList.remove('open');
+  markStarted();
+  if(item.type === 'fragment') await openFragment(item.id);
+  else await openChapter(item.id, null);
 }
-async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter(chapterId, anchorId); }
-
+async function openAnchor(chapterId, anchorId){
+  markStarted();
+  await openChapter(chapterId, anchorId);
+}
 async function openFragment(id){
   const html = await getHtml(id);
   renderHtml(html);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
-
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
   renderHtml(html);
@@ -308,7 +358,6 @@ async function openChapter(chId, anchor=null){
   }
 }
 
-/* ---------- Render & show ---------- */
 function renderHtml(html){
   lastHtml = html;
   cover.style.display = 'none';
@@ -333,7 +382,6 @@ function renderHtml(html){
   }
 }
 
-/* ---------- Show cover ---------- */
 function showCover(){
   currentFlatIndex = -1;
   cover.style.display = 'flex';
@@ -346,7 +394,7 @@ function showCover(){
   history.replaceState({}, '', './');
 }
 
-/* ---------- Forward / Back ---------- */
+/* prev/next */
 nextBtn.addEventListener('click', ()=>{
   if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
   if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
@@ -355,15 +403,19 @@ prevBtn.addEventListener('click', ()=>{
   if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
   else showCover();
 });
-function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
+function openFlatItem(it, idx){
+  currentFlatIndex = idx;
+  if(it.kind === 'fragment') openFragment(it.id);
+  else if(it.kind === 'chapter') openChapter(it.id, null);
+  else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor);
+}
 
-/* ---------- Save/load last-read ---------- */
+/* save/load last read */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* ---------- Scroll savers ---------- */
-/* page-frame saver (desktop) */
+/* ---------- Scroll savers (desktop pageFrame and mobile window) ---------- */
 let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachPageSaverIfNeeded(){
   detachPageSaver();
@@ -379,10 +431,9 @@ function attachPageSaverIfNeeded(){
   };
   pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true });
 }
-function detachPageSaver(){ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
+function detachPageSaver(){ try{ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); }catch(e){} pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
 function restorePageScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> pageFrame.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
-/* window saver (mobile) */
 let winSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachWindowSaverIfNeeded(){
   detachWindowSaver();
@@ -398,132 +449,161 @@ function attachWindowSaverIfNeeded(){
   };
   window.addEventListener('scroll', winSaver.handler, { passive:true });
 }
-function detachWindowSaver(){ if(winSaver.handler) window.removeEventListener('scroll', winSaver.handler); if(winSaver.timer) clearTimeout(winSaver.timer); winSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
+function detachWindowSaver(){ try{ if(winSaver.handler) window.removeEventListener('scroll', winSaver.handler); if(winSaver.timer) clearTimeout(winSaver.timer); }catch(e){} winSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
 function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
-/* ---------- Update logic (fetch fresh copies from server) ---------- */
-function setCoverStatus(text, busy=false){
-  coverStatus.textContent = text;
-  if(busy){
-    if(!coverStatus.querySelector('.spinner')) {
-      const s = document.createElement('span'); s.className='spinner'; s.id='covSpinner';
-      coverStatus.appendChild(s);
-    }
-  } else {
-    const s = document.getElementById('covSpinner'); if(s) s.remove();
-  }
+/* ---------- Background update logic (silent) ---------- */
+function collectChapterIds(){
+  const ids = new Set();
+  TOC.forEach(it=>{
+    if(it.type==='fragment') ids.add(it.id);
+    else if(it.type==='chapter') ids.add(it.id);
+  });
+  return Array.from(ids);
 }
 
-/* update all fragments listed in TOC (fragments + chapters) */
-async function updateAllFromServer(){
-  // collect unique ids that correspond to fragment/chapter files
-  const ids = new Set();
-  TOC.forEach(it => {
-    if(it.type === 'fragment') ids.add(it.id);
-    else if(it.type === 'chapter') ids.add(it.id);
-  });
-  const list = Array.from(ids);
-  if(list.length === 0) return { ok: true, fetched: 0 };
-
+/* update all chapters in background, overwrite in-memory cache if fetch succeeds */
+async function updateAllBackground(){
+  const ids = collectChapterIds();
+  if(ids.length===0) return { ok:true, fetched:0 };
+  // indicate briefly on cover
   setCoverStatus('Updating…', true);
-  btnUpdate.disabled = true;
-
   let fetched = 0;
-  for(const id of list){
+  for(const id of ids){
     try{
-      // append timestamp to bypass caches and force reload; 'no-store' isn't accepted by fetch in some hosts, so use query
-      const url = `chapters/${id}.html?_=${Date.now()}`;
-      const res = await fetch(url, { cache: 'no-store' });
-      if(res.ok){
-        const text = await res.text();
-        cache[id] = text; // update in-memory cache
+      const text = await fetchChapterRaw(id, true); // bypass cache
+      if(text){
+        cache[id] = text;
         fetched++;
-      } else {
-        console.warn('update: failed to fetch', id, res.status);
       }
-    }catch(e){
-      console.warn('update catch', id, e);
-    }
+    }catch(e){ console.warn('bg update failed for', id, e); }
   }
-
-  // bump update timestamp
   try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){}
-  setCoverStatus(`Updated ${fetched}/${list.length}`, false);
-  btnUpdate.disabled = false;
-  // small flash
-  setTimeout(()=> setCoverStatus(navigator.onLine ? 'Online' : 'Offline', false), 1500);
-
-  // If reader is visible and a page is open, re-inject the lastHtml from cache so updated content shows
-  if(reader.style.display !== 'none' && lastHtml){
-    // re-render currently open item if present in cache
-    if(currentFlatIndex >= 0){
-      const it = FLAT[currentFlatIndex];
-      if(it){
-        if(it.kind === 'fragment'){
-          // if updated, inject cached version
-          const h = cache[it.id] || lastHtml;
-          renderHtml(h);
-        } else if(it.kind === 'chapter'){
-          const h = cache[it.id] || lastHtml;
-          renderHtml(h);
-        } else if(it.kind === 'anchor'){
-          // anchor belongs to chapter
-          const ch = it.chapter;
-          const h = cache[ch] || lastHtml;
-          renderHtml(h);
-          // scroll to anchor
-          setTimeout(()=> {
-            const el = isDesktop() ? pageFrame.querySelector('#' + it.anchor) : document.getElementById(it.anchor);
-            if(el) el.scrollIntoView({behavior:'auto', block:'start'});
-          }, 200);
-        }
-      }
-    }
-  }
-
+  setCoverStatus(navigator.onLine ? 'Online' : 'Offline', false);
   return { ok:true, fetched };
 }
 
-/* Auto-update checkbox */
-function loadAutoUpdateSetting(){
+/* helper to fetch with bypass */
+async function fetchChapterRaw(id, bypass=false){
   try{
-    const v = localStorage.getItem(AUTO_UPDATE_KEY);
-    autoUpdateCheckbox.checked = v === '1';
-  }catch(e){
-    autoUpdateCheckbox.checked = false;
-  }
-}
-function saveAutoUpdateSetting(val){
-  try{ localStorage.setItem(AUTO_UPDATE_KEY, val ? '1' : '0'); }catch(e){}
+    const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
+    const res = await fetch(url, bypass ? { cache:'no-store' } : { cache:'force-cache' });
+    if(res.ok) return await res.text();
+  }catch(e){ /* fail silently */ }
+  return null;
 }
 
-/* header buttons */
-btnUpdate.addEventListener('click', async ()=>{
-  // if offline, warn but still attempt (will likely fail)
-  if(!navigator.onLine){
-    if(!confirm('You appear to be offline. Update will try to fetch but may fail. Proceed?')) return;
+/* run background updater on load and periodically */
+async function startBackgroundUpdater(){
+  // initial run (if online)
+  if(navigator.onLine){
+    try{ await updateAllBackground(); }catch(e){ console.warn('initial bg update failed', e); }
+  } else {
+    setCoverStatus('Offline', false);
   }
-  await updateAllFromServer();
-});
-btnRefresh.addEventListener('click', ()=>{
-  // hard refresh the app shell (not the cached content)
-  location.reload(true);
-});
-autoUpdateCheckbox.addEventListener('change', (e)=> { saveAutoUpdateSetting(e.target.checked); });
+  // periodic
+  if(updateTimer) clearInterval(updateTimer);
+  updateTimer = setInterval(async ()=> {
+    if(!navigator.onLine) return;
+    try{ await updateAllBackground(); }catch(e){ console.warn('periodic bg update failed', e); }
+  }, UPDATE_INTERVAL_MS);
+  // when back online, run an immediate update
+  window.addEventListener('online', ()=> { setCoverStatus('Online', false); updateAllBackground().catch(()=>{}); });
+  window.addEventListener('offline', ()=> { setCoverStatus('Offline', false); });
+}
 
-/* ---------- Initializing + load/restore ---------- */
+/* ---------- Search implementation (global) ---------- */
+function openSearch(){
+  searchOverlay.style.display = 'flex';
+  searchOverlay.setAttribute('aria-hidden', 'false');
+  searchInput.value = '';
+  searchResults.innerHTML = '';
+  searchInput.focus();
+}
+function closeSearch(){
+  searchOverlay.style.display = 'none';
+  searchOverlay.setAttribute('aria-hidden', 'true');
+}
+
+/* search helper: ensure chapter cached (fetch if not) */
+async function ensureCached(id){
+  if(cache[id]) return cache[id];
+  const t = await fetchChapterRaw(id, false);
+  if(t){ cache[id] = t; return t; }
+  return null;
+}
+
+/* run search across all cached chapters (and fetch missing ones if necessary) */
+async function runSearch(q){
+  q = (q||'').trim();
+  if(!q){ searchResults.innerHTML = '<div class="small-muted">Enter a search term.</div>'; return; }
+  searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
+  const ids = collectChapterIds();
+  const results = [];
+  const lower = q.toLowerCase();
+  for(const id of ids){
+    // ensure cached
+    const html = await ensureCached(id);
+    if(!html) continue;
+    // simple text search: strip tags naively
+    const text = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<\/?[^>]+(>|$)/g, ' ');
+    const idx = text.toLowerCase().indexOf(lower);
+    if(idx !== -1){
+      // extract a small snippet around match
+      const start = Math.max(0, idx - 60);
+      const snippet = text.substring(start, idx + 120).replace(/\s+/g,' ').trim();
+      results.push({ id, snippet });
+    }
+  }
+  if(results.length === 0){
+    searchResults.innerHTML = '<div class="small-muted">No results.</div>';
+    return;
+  }
+  // render results
+  searchResults.innerHTML = '';
+  results.forEach(r=>{
+    const div = document.createElement('div');
+    div.className = 'search-item';
+    div.innerHTML = `<div style="font-weight:700">${r.id}</div><div class="small-muted">${r.snippet}</div>`;
+    div.onclick = ()=> { closeSearch(); openFragmentOrChapter(r.id); };
+    searchResults.appendChild(div);
+  });
+}
+
+/* open fragment/chapter (from search hit) */
+async function openFragmentOrChapter(id){
+  // if id is chapter (ch1 etc) open as chapter; else fragment open fragment
+  const chapterMatch = TOC.find(it => it.type === 'chapter' && it.id === id);
+  const fragmentMatch = TOC.find(it => it.type === 'fragment' && it.id === id);
+  if(fragmentMatch) await openFragment(id);
+  else if(chapterMatch) await openChapter(id, null);
+  else {
+    // fallback: try open as fragment
+    await openFragment(id);
+  }
+}
+
+/* wire search UI */
+btnSearch.addEventListener('click', ()=> openSearch());
+searchClose.addEventListener('click', ()=> closeSearch());
+searchOverlay.addEventListener('click', (e)=> { if(e.target === searchOverlay) closeSearch(); });
+searchInput.addEventListener('keydown', (e)=> { if(e.key === 'Enter'){ runSearch(searchInput.value); }});
+
+/* ---------- Start behavior / load restore ---------- */
+startBtn.addEventListener('click', ()=> {
+  if(FLAT.length>0) openFlatItem(FLAT[0], 0);
+});
+
+function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
+
+/* on load: init background updater, restore last-session if any */
 window.addEventListener('load', async ()=>{
-  // set cover status by online state
+  // small cover status
   setCoverStatus(navigator.onLine ? 'Online' : 'Offline', false);
-  loadAutoUpdateSetting();
-
-  // register service worker if present
+  // register service worker if present (keeps offline logic you had)
   try{ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); } }catch(e){}
-
-  // if auto-update enabled and online, run update
-  if(autoUpdateCheckbox.checked && navigator.onLine){
-    try{ await updateAllFromServer(); }catch(e){ console.warn('auto-update failed', e); }
-  }
+  // start background updater (quiet)
+  startBackgroundUpdater();
 
   try{
     const hadStarted = localStorage.getItem(VISITED_FLAG);
@@ -537,7 +617,7 @@ window.addEventListener('load', async ()=>{
   }catch(e){ console.warn(e); showCover(); }
 });
 
-/* set currentFlatIndex from last record */
+/* restore index from last read */
 function setFlatIndexFromLast(last){
   for(let i=0;i<FLAT.length;i++){
     const it = FLAT[i];
@@ -547,6 +627,9 @@ function setFlatIndexFromLast(last){
   }
 }
 
+/* small helpers for last-read */
+function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+
 /* popstate/back handling */
 window.addEventListener('popstate', (ev)=>{
   if(!ev.state){ showCover(); return; }
@@ -555,101 +638,16 @@ window.addEventListener('popstate', (ev)=>{
   else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null);
 });
 
-/* UX helpers */
+/* click outside TOC to close */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
-document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape') tocDrawer.classList.remove('open'); if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
+document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchOverlay.style.display==='flex') closeSearch(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* expose for debugging */
-window._GSR = { TOC, FLAT, openFragment, openChapter, updateAllFromServer };
+/* expose for debug */
+window._GSR = { TOC, FLAT, openFragment, openChapter, updateAllBackground };
 
-/* start button on cover */
-startBtn.addEventListener('click', ()=> {
-  if(FLAT.length>0) openFlatItem(FLAT[0], 0);
-});
-
-/* helper to open flat item */
-function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
-
-/* small helpers for update UI on online/offline toggles */
-window.addEventListener('online', ()=> setCoverStatus('Online', false));
-window.addEventListener('offline', ()=> setCoverStatus('Offline', false));
-
-/* small debounce reflow on resize */
-let _resize_t = null;
-window.addEventListener('resize', ()=> { clearTimeout(_resize_t); _resize_t = setTimeout(()=> { if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml); }, 160); });
-
-/* helpers for scroll savers used elsewhere (they were implemented above as attachPageSaverIfNeeded etc) */
-function attachPageSaverIfNeeded(){ attachPageSaverIfNeeded_original ? attachPageSaverIfNeeded_original() : null; }
-function detachPageSaver(){ detachPageSaver_original ? detachPageSaver_original() : null; }
-function attachWindowSaverIfNeeded(){ attachWindowSaverIfNeeded_original ? attachWindowSaverIfNeeded_original() : null; }
-function detachWindowSaver(){ detachWindowSaver_original ? detachWindowSaver_original() : null; }
-
-/* fallback: if original scroll saver implementations didn't exist (older file), use simplified versions */
-if(typeof attachPageSaverIfNeeded_original === 'undefined'){
-  // implement simple page saver here (same as earlier)
-  (function(){
-    // local copies
-    let ps = pageSaver;
-    attachPageSaverIfNeeded_original = function(){
-      // re-use pageSaver defined earlier (function exists above)
-      // attach only if currentFlatIndex maps to a chapter
-      const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
-      if(!it || it.kind!=='chapter') return;
-      detachPageSaver();
-      ps.id = it.id;
-      ps.handler = ()=> {
-        const now = Date.now();
-        if(now - ps.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + ps.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){}
-        clearTimeout(ps.timer);
-        ps.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + ps.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700);
-        ps.lastSaved = now;
-      };
-      pageFrame.addEventListener('scroll', ps.handler, { passive:true });
-      pageSaver = ps;
-    };
-    detachPageSaver_original = function(){
-      try{
-        if(ps.handler) pageFrame.removeEventListener('scroll', ps.handler);
-        if(ps.timer) clearTimeout(ps.timer);
-      }catch(e){}
-      ps = { timer:null, lastSaved:0, id:null, handler:null };
-      pageSaver = ps;
-    };
-    attachWindowSaverIfNeeded_original = function(){
-      let ws = winSaver;
-      const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null;
-      if(!it || it.kind!=='chapter') return;
-      detachWindowSaver_original();
-      ws.id = it.id;
-      ws.handler = ()=> {
-        const now = Date.now();
-        if(now - ws.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + ws.id, String(Math.floor(window.scrollY || 0))); }catch(e){}
-        clearTimeout(ws.timer);
-        ws.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + ws.id, String(Math.floor(window.scrollY || 0))); }catch(e){} }, 700);
-        ws.lastSaved = now;
-      };
-      window.addEventListener('scroll', ws.handler, { passive:true });
-      winSaver = ws;
-    };
-    detachWindowSaver_original = function(){
-      try{ if(winSaver.handler) window.removeEventListener('scroll', winSaver.handler); if(winSaver.timer) clearTimeout(winSaver.timer); }catch(e){}
-      winSaver = { timer:null, lastSaved:0, id:null, handler:null };
-    };
-  })();
-}
-
-/* restorePageScroll / restoreWindowScroll wrappers (should already exist above); if not create simple ones */
-if(typeof restorePageScrollIfAny === 'undefined'){
-  function restorePageScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> pageFrame.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
-}
-if(typeof restoreWindowScrollIfAny === 'undefined'){
-  function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
-}
-
-/* Ensure auto-update UI initialised */
-loadAutoUpdateSetting();
-
-/* End of script */
+/* small resize reflow */
+let _rt = null;
+window.addEventListener('resize', ()=> { clearTimeout(_rt); _rt = setTimeout(()=> { if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml); }, 140); });
 </script>
 </body>
 </html>
