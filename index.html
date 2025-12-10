@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>G&SR</title>
 
-  <link rel="manifest" href="/manifest.json" />
+<!-- manifest: relative path for GitHub Pages -->
+<link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0b63d6">
 
-<!-- iOS: required because Safari ignores manifest.json -->
-<link rel="apple-touch-icon" sizes="192x192" href="/assets/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="/assets/icon-512.png">
+<!-- iOS: use relative paths (Safari ignores manifest.json) -->
+<link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -786,6 +787,13 @@ window.addEventListener('resize', ()=>{
     if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
   }, 180);
 });
+
+  
+
+if ('serviceWorker' in navigator) {
+  // register 'sw.js' relative to repo root so scope= /G-SR/
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
+                                                                                                                                                                               }
 </script>
 </body>
 </html>
