@@ -3,138 +3,127 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chapter I — 2px gap, numbers flush left on mobile</title>
+<title>CHAPTER I — Preliminary (2px gap mobile)</title>
 <style>
   :root{
-    --bg: #ffffff;
-    --text: #0b1726;
-    --muted: #6b7280;
-    --header-h: 64px;
-
-    /* default desktop number column */
-    --num-col: 82px;
-    --marker-col: 2.0rem;
-    --rule-gap: 2px;         /* exact 2px gap between number and content */
-    --font-family: "Times New Roman", Georgia, serif;
-    --base-font-size: 16px;
-    --container-max: 980px;
+    --container-w:780px;
+    --num-col:88px;        /* desktop number column */
+    --gutter:12px;         /* default gap between number and content */
+    --marker-col:2.2rem;   /* width for the (1) marker inside each li */
+    --indent:26px;
+    --font-body: "Times New Roman", Georgia, serif;
+    --base-font-size: 15px;
   }
 
-  html { font-size: var(--base-font-size); }
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family: var(--font-family);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
-
-  /* main full-bleed container — on mobile we will remove side padding so numbers can go to edge */
-  main{
-    padding: 18px 14px 60px;
-    max-width:var(--container-max);
-    margin:0 auto;
-    box-sizing:border-box;
-  }
+  html { font-size: calc(var(--base-font-size) + 0.02vw); }
+  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
   .chapter-container{
-    background: #fff;
-    border-radius: 8px;
-    padding: 18px 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    max-width:var(--container-w);
+    margin:0 auto;
+    font-family: var(--font-body);
+    line-height:1.45;
+    font-size:1rem;
+    padding:22px 20px;
     box-sizing:border-box;
   }
 
-  .chapter-title { text-align:center; margin-bottom:10px; }
+  .chapter-title{ text-align:center; margin-bottom:10px; }
   .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
   .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  /* RULE grid: number column + content column. Keep two columns at all sizes. */
+  /*
+    RULE GRID: number column + content column.
+    We keep two columns on all viewports so the number and heading remain inline.
+    The gap between columns is controlled by --gutter.
+  */
   .rule{
     display: grid;
     grid-template-columns: var(--num-col) 1fr;
-    column-gap: var(--rule-gap); /* exact 2px gap */
-    align-items: start;
-    margin: 8px 0 14px;
-    width:100%;
+    column-gap: var(--gutter);
+    align-items: start;   /* align top of number with top of heading */
+    margin:8px 0 14px;
+    gap:0;
   }
 
   /* GR number */
   .rule .num{
     font-weight:800;
-    color:#061229;
-    font-size: 1rem;
-    margin:0;
-    padding:0;
-    line-height: 1;
     text-align:left;
-    align-self: start;
-  }
-
-  /* content column: heading + bold GR body */
-  .rule .content{
+    color:#061229;
+    font-size:1rem;
     margin:0;
     padding:0;
-    font-weight:800;      /* GR headings + content bold */
-    color: var(--text);
-    font-size: 16px;
-    line-height: 1.55;
+    line-height:1;        /* compact so it aligns top with heading */
+    align-self:start;
+    /* keep number flush to left of container */
   }
 
+  /* content column: GR heading + body bold (as required) */
+  .rule .content{
+    color:#1b2b3a;
+    font-size:1rem;
+    font-weight:800;
+    margin:0;
+    padding:0;            /* important — remove extra left padding */
+  }
+
+  /* heading-row keeps heading aligned at top */
   .heading-row{
     display:flex;
     align-items:flex-start;
-    gap:0.25rem;
+    gap:0.5rem;
     margin:0 0 6px 0;
   }
   .heading{
-    display:inline-block;
     font-weight:800;
-    font-size:16px;
+    font-size:1rem;
     margin:0;
-    line-height:1.25;
-    vertical-align:top;
-    color:#061229;
+    line-height:1.12;
+    text-align:left;
     word-break:break-word;
+    display:inline-block;
+    vertical-align: top;
   }
 
-  /* Term definitions inside content column */
-  .termdef{
-    font-size:16px;
-    line-height:1.6;
-    margin:0 0 12px 0;
-    padding-left: 18px; /* small indent so text doesn't jam into marker column */
-    text-align:justify;
-    text-justify:inter-word;
-    font-weight:800;    /* GR content bold */
-  }
-
-  /* hanging list (markers like (1),(2)) */
+  /* Hanging list: marker column + definition column so multi-line defs align properly */
   .hanging-list{
     list-style:none;
     margin:0;
     padding:0;
+    display:block;
   }
+
   .hanging-list li{
     display:grid;
     grid-template-columns: var(--marker-col) 1fr;
-    column-gap:0.5rem;
+    column-gap: var(--gutter);
     margin:0 0 8px 0;
     line-height:1.45;
-    font-weight:800;   /* GR bold */
+    font-weight:800;     /* GR content bold */
     text-align:justify;
   }
-  .hanging-list .marker{
-    align-self:start;
+
+  .hanging-list li .marker{
     justify-self:start;
+    align-self:start;
+    font-weight:800;
     white-space:nowrap;
+  }
+  .hanging-list li .termdef{
+    margin:0;
+    padding:0;
     font-weight:800;
   }
-  .hanging-list .marker, .hanging-list .termdef-inline{
-    font-size:15.5px;
+
+  .hanging-list li .sub{
+    display:block;
+    margin-top:6px;
+    padding-left:0;
+    font-weight:800;
   }
 
+  /* S.R. notes: normal weight (not italic) */
   .sr-note{
     margin:8px 0 12px 0;
     padding:8px 10px;
@@ -143,176 +132,174 @@
     color:#233445;
     font-style:normal;
     font-size:0.94rem;
-    font-weight:400; /* normal weight for SR */
+    font-weight:400;
   }
 
-  /* anchors offset (if using fixed header) */
-  .chapter-container [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
-
-  /* ---------------- Responsive: mobile full-bleed numbers ---------------- */
-  @media (max-width:980px){
-    :root{ --num-col:66px; --marker-col:1.8rem; }
-    .chapter-container{ padding:16px; }
+  /* termdef shared style (no extra left padding) */
+  .termdef {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 0;           /* IMPORTANT: remove padding so text moves left */
+    text-align: justify;
+    text-justify: inter-word;
+    color: #1b2b3a;
   }
 
-  /* On small screens we remove outer main side padding and remove container left padding
-     so the number column reaches the extreme left edge of the viewport.
-     We still keep a small right padding to avoid text touching the right edge.
+  /* ensure anchors scroll into view below header */
+  .chapter [id], .mobile-chapter [id], .page-frame .chapter [id] {
+    scroll-margin-top: 72px;
+  }
+
+  /* small-screen responsive adjustments:
+     - shrink number column and marker column
+     - reduce container padding and set container to full width
+     - very importantly set column-gap (--gutter) to 2px as requested
+     - remove left padding from content so text sits 2px to the right of number
   */
+  @media (max-width:900px){
+    :root{ --num-col:66px; --marker-col:1.9rem; --container-w:720px; }
+    .chapter-container{ padding:18px 16px; }
+  }
+
   @media (max-width:640px){
-    :root{ --num-col:44px; --marker-col:1.6rem; }
-
-    /* remove page-level side padding so content can go full-bleed */
-    main{
-      padding-left: 0;
-      padding-right: 0;
-      max-width: 100vw;
-      margin: 0;
+    :root{
+      --num-col:56px;      /* keep number small so heading stays inline */
+      --marker-col:1.75rem;
+      --container-w:100%;
+      --gutter:2px;        /* <<< 2px gap between number and content on mobile */
     }
-
-    /* remove left padding of the inner container so it is flush with viewport */
-    .chapter-container{
-      padding-left: 0;
-      padding-right: 14px; /* keep a little right breathing space */
-      border-radius: 0;
-      box-shadow: none;
-    }
-
-    /* force the number column to sit at the very left edge */
-    .rule{
-      grid-template-columns: var(--num-col) calc(100% - var(--num-col));
-      column-gap: var(--rule-gap);
-    }
-
-    /* ensure the number column itself has no internal left padding */
-    .rule .num{ padding-left: 6px; } /* small breathing from absolute edge; set to 0 if you want exact pixel to edge */
-
-    /* reduce heading/content font slightly */
-    .heading{ font-size:15.6px; }
-    .termdef{ font-size:15.6px; padding-left:14px; }
+    .chapter-container{ padding:12px 8px; }
+    /* Ensure termdef has zero left padding on mobile */
+    .termdef { padding-left: 0; }
+    .hanging-list li { column-gap: var(--gutter); }
   }
 
-  /* very narrow phones */
   @media (max-width:420px){
-    :root{ --num-col:40px; --marker-col:1.4rem; }
-    .chapter-container{ padding-right:12px; }
-    .heading{ font-size:15.2px; }
-    .termdef{ font-size:15.2px; padding-left:12px; }
-    .rule .num{ padding-left:6px; }
+    :root{ --num-col:48px; --marker-col:1.4rem; --gutter:2px; }
+    .chapter-container{ padding:10px 8px; }
+    .heading{ font-size:0.98rem; }
+    .hanging-list li{ font-size:0.96rem; }
   }
 
-  /* print tweaks */
   @media print{
-    :root{ --num-col:72px; --base-font-size:12.5px; }
-    main{ padding:12mm; }
-    .chapter-container{ box-shadow:none; border-radius:0; }
+    :root{ --container-w:720px; --base-font-size:12.5px; }
+    .chapter-container{ line-height:1.4; padding:12mm; }
   }
+
+  /* extra visual polish: make sure content column doesn't add extra left offset */
+  .rule .content > * { margin-left: 0; padding-left: 0; }
 </style>
 </head>
 <body>
-  <main>
-    <article class="chapter-container" aria-labelledby="chapter-heading">
-      <div class="chapter-title" id="chapter-heading">
-        <h2>CHAPTER I</h2>
-        <h3>PRELIMINARY</h3>
+
+<article class="chapter-container" aria-labelledby="chapter-heading">
+  <div class="chapter-title" id="chapter-heading">
+    <h2>CHAPTER I</h2>
+    <h3>PRELIMINARY</h3>
+  </div>
+
+  <!-- 1.01 (number and heading inline on same row) -->
+  <div class="rule" id="s101">
+    <div class="num">1.01</div>
+    <div class="content">
+      <div class="heading-row">
+        <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
       </div>
 
-      <!-- 1.01 -->
-      <div class="rule" id="s101">
-        <div class="num">1.01</div>
-        <div class="content">
-          <div class="heading-row">
-            <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
-          </div>
+      <ol class="hanging-list">
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
+        </li>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div>
+        </li>
+      </ol>
+    </div>
+  </div>
 
-          <ol class="hanging-list">
-            <li>
-              <div class="marker">(1)</div>
-              <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
-            </li>
-            <li>
-              <div class="marker">(2)</div>
-              <div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div>
-            </li>
-          </ol>
-        </div>
+  <!-- 1.02 (definitions) -->
+  <div class="rule" id="s102">
+    <div class="num">1.02</div>
+    <div class="content">
+      <div class="heading-row">
+        <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
       </div>
 
-      <!-- 1.02 -->
-      <div class="rule" id="s102">
-        <div class="num">1.02</div>
-        <div class="content">
-          <div class="heading-row">
-            <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
-          </div>
+      <ol class="hanging-list">
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef"><strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</div>
+        </li>
 
-          <ol class="hanging-list">
-            <li>
-              <div class="marker">(1)</div>
-              <div class="termdef"><strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</div>
-            </li>
-            <li>
-              <div class="marker">(2)</div>
-              <div class="termdef"><strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</div>
-            </li>
-            <li>
-              <div class="marker">(3)</div>
-              <div class="termdef"><strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div>
-            </li>
-            <li>
-              <div class="marker">(4)</div>
-              <div class="termdef"><strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div>
-            </li>
-            <li>
-              <div class="marker">(5)</div>
-              <div class="termdef"><strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div>
-            </li>
-          </ol>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef"><strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</div>
+        </li>
 
-          <div class="sr-note">
-            <strong>S.R.1.02(5)(1)</strong><br>
-            The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
-          </div>
-        </div>
+        <li>
+          <div class="marker">(3)</div>
+          <div class="termdef"><strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div>
+        </li>
+
+        <li>
+          <div class="marker">(4)</div>
+          <div class="termdef"><strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div>
+        </li>
+
+        <li>
+          <div class="marker">(5)</div>
+          <div class="termdef"><strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div>
+        </li>
+      </ol>
+
+      <div class="sr-note">
+        <strong>S.R.1.02(5)(1)</strong><br>
+        The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.03 -->
+  <div class="rule" id="s103">
+    <div class="num">1.03</div>
+    <div class="content">
+      <div class="heading-row">
+        <div class="heading">CLASSIFICATION OF STATIONS —</div>
       </div>
 
-      <!-- 1.03 -->
-      <div class="rule" id="s103">
-        <div class="num">1.03</div>
-        <div class="content">
-          <div class="heading-row">
-            <div class="heading">CLASSIFICATION OF STATIONS —</div>
-          </div>
+      <ol class="hanging-list">
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef">Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</div>
+        </li>
 
-          <ol class="hanging-list">
-            <li>
-              <div class="marker">(1)</div>
-              <div class="termdef">Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</div>
-            </li>
-            <li>
-              <div class="marker">(2)</div>
-              <div class="termdef">Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</div>
-            </li>
-            <li>
-              <div class="marker">(3)</div>
-              <div class="termdef">Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</div>
-            </li>
-          </ol>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef">Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</div>
+        </li>
 
-          <div style="margin:0 0 12px 0;">
-            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
-            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
-            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
-          </div>
+        <li>
+          <div class="marker">(3)</div>
+          <div class="termdef">Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</div>
+        </li>
+      </ol>
 
-          <div class="sr-note">
-            <strong>S.R.1.03(1)</strong><br>
-            Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station. The Station Working Rules for a “special class” stations shall have the approval of the “Commissioner of Railway Safety”.
-          </div>
-        </div>
+      <div style="margin:0 0 12px; padding-left:0; text-align:justify; text-justify:inter-word;">
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
       </div>
 
-    </article>
-  </main>
+      <div class="sr-note">
+        <strong>S.R.1.03(1)</strong><br>
+        Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station. The Station Working Rules for a “special class” stations shall have the approval of the “Commissioner of Railway Safety”.
+      </div>
+    </div>
+  </div>
+
+</article>
 </body>
 </html>
