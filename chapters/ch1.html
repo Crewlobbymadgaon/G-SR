@@ -3,27 +3,20 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chapter I — Preliminary</title>
+<title>Chapter I — Preliminary (fixed alignment)</title>
 
 <style>
   :root{
-    --container-w:780px;      /* max page width on desktop */
-    --num-col:88px;          /* width for number column on desktop (widened a bit) */
+    --container-w:780px;
+    --num-col:88px;
     --gutter:12px;
-    --indent:26px;           /* hanging indent for subitems */
+    --indent:26px;
     --font-body: "Times New Roman", Georgia, serif;
-    --base-font-size: 15px;  /* increased font size slightly */
+    --base-font-size: 15px;
   }
 
-  /* fluid font that adjusts slightly with viewport */
   html { font-size: calc(var(--base-font-size) + 0.04vw); }
-
-  body{
-    margin:0;
-    background:#fff;
-    color:#0b1726;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
   .chapter-container{
     max-width:var(--container-w);
@@ -35,54 +28,60 @@
     box-sizing:border-box;
   }
 
-  /* CHAPTER title centered */
-  .chapter-title{
-    text-align:center;
-    margin-bottom:10px;
-  }
+  .chapter-title{ text-align:center; margin-bottom:10px; }
   .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
   .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  /* Each rule row: left number column + right content column */
+  /* RULE GRID: number column + content column */
   .rule{
     display:grid;
     grid-template-columns: var(--num-col) 1fr;
     column-gap:var(--gutter);
-    align-items:center;    /* make number and heading inline on same horizontal line */
+    align-items:start;           /* ensure top alignment */
     margin:8px 0 14px;
   }
 
-  /* number column */
+  /* NUMBER: no top padding, bold, vertically aligned top */
   .rule .num{
-    font-weight:800;       /* GR number bold */
+    font-weight:800;
     text-align:left;
-    padding-top:0;
     color:#061229;
     font-size:1rem;
+    margin:0;                    /* remove unexpected margins */
+    padding:0;                   /* remove top padding that caused misalignment */
+    align-self:start;            /* explicit */
+    line-height:1;               /* keep compact */
   }
 
-  /* content column: default bold for GR content (requirement) */
+  /* CONTENT column */
   .rule .content{
-    text-align:justify;
     color:#1b2b3a;
     font-size:1rem;
-    font-weight:800;       /* make heading and its content bold */
+    font-weight:800;             /* GR content bold as requested */
+    margin:0;
+    padding:0;
   }
 
-  /* Put heading and first line inline-looking */
-  .rule .heading{
-    display:block;
+  /* Heading row inside content: keeps heading at top and inline with the number */
+  .heading-row{
+    display:flex;
+    align-items:flex-start;      /* top align heading text with number */
+    gap:0.5rem;
     margin:0 0 6px 0;
-    text-align:left;
-    font-size:1rem;
-    font-weight:800;
   }
 
-  /* paragraphs inside the content. Because the content is bold by default for GRs,
-     keep normal paragraphs bold too. S.R. notes will be styled separately. */
+  .heading{
+    font-weight:800;
+    font-size:1rem;
+    margin:0;                    /* important to avoid vertical drift */
+    line-height:1.12;
+    text-align:left;
+  }
+
+  /* paragraphs inside content — keep consistent margins */
   .rule p { margin:0 0 10px 0; }
 
-  /* Definition lists / subclauses with hanging indent */
+  /* hanging-list (subclauses) */
   .hanging-list{
     list-style:none;
     margin:0;
@@ -91,11 +90,11 @@
 
   .hanging-list li{
     margin:0 0 8px 0;
-    text-indent: -1.85em;      /* pulls first line left to show marker */
-    padding-left:1.85em;      /* leaves space for marker */
+    text-indent: -1.85em;
+    padding-left:1.85em;
     text-align:justify;
     line-height:1.45;
-    font-weight:800;          /* sub-items bold to match rule content */
+    font-weight:800;             /* sub-items bold for GRs */
   }
 
   .hanging-list li .marker{
@@ -113,67 +112,60 @@
     font-weight:800;
   }
 
-  /* S.R. notes style — normal font (not italic), smaller, and not bold */
+  /* S.R. notes — normal weight, not italic */
   .sr-note{
     margin:8px 0 12px 0;
     padding:8px 10px;
     border-left:3px solid #d0d8e0;
     background:#fbfcfd;
     color:#233445;
-    font-style:normal;        /* removed italics */
+    font-style:normal;
     font-size:0.94rem;
-    font-weight:400;          /* normal weight */
+    font-weight:400;
   }
 
-  /* small tweaks for better readability on medium screens */
-  @media (max-width: 900px){
+  /* Responsive rules */
+  @media (max-width:900px){
     :root{ --num-col:66px; --container-w:720px; }
     .chapter-container{ padding:18px 16px; }
   }
 
-  /* tablet / small laptop */
-  @media (max-width: 600px){
+  /* tablet */
+  @media (max-width:600px){
     :root{ --num-col:56px; --container-w:100%; }
     .chapter-container{ padding:18px 14px; }
-    .hanging-list li{ text-indent: -1.5em; padding-left:1.5em; }
+    .hanging-list li{ text-indent:-1.5em; padding-left:1.5em; }
     .hanging-list li .marker{ width:1.5em; margin-left:-1.5em; }
   }
 
-  /* mobile phones: stack number above content but number and heading still visually inline at top */
-  @media (max-width: 420px){
+  /* mobile: stack columns but keep number + heading visually at top */
+  @media (max-width:420px){
     .rule{
-      grid-template-columns: 1fr;  /* single column stack */
+      grid-template-columns: 1fr;
       align-items:start;
     }
+
+    /* move number and heading into a compact heading-row for mobile */
     .rule .num{
-      grid-column:1;
+      margin:0 0 4px 0;
       font-size:1.02rem;
-      margin-bottom:6px;
     }
-    .rule .content{
-      grid-column:1;
-      text-align:justify;
-      font-size:0.98rem;
-    }
+
+    /* heading-row remains flex; number and heading appear in sequence vertically */
+    .heading-row{ flex-direction:row; align-items:flex-start; gap:0.6rem; }
+
     .hanging-list li{
-      text-indent: -1.4em;
+      text-indent:-1.4em;
       padding-left:1.4em;
       font-size:0.96rem;
     }
     .hanging-list li .marker{
-      width:1.4em;
-      margin-left:-1.4em;
-      font-weight:800;
+      width:1.4em; margin-left:-1.4em; font-weight:800;
     }
-    .hanging-list .sub{
-      margin-left:18px;
-      text-indent:-1.2em;
-      padding-left:1.2em;
-    }
+    .hanging-list .sub{ margin-left:18px; text-indent:-1.2em; padding-left:1.2em; }
     .sr-note{ font-size:0.9rem; padding:8px 10px; }
   }
 
-  /* print-tune */
   @media print{
     :root{ --container-w:720px; --base-font-size:12.5px; }
     .chapter-container{ line-height:1.4; padding:12mm; }
@@ -188,11 +180,13 @@
     <h3>PRELIMINARY</h3>
   </div>
 
-  <!-- rule 1.01: number inline with heading -->
+  <!-- 1.01 -->
   <div class="rule" id="r1-01">
     <div class="num">1.01</div>
     <div class="content">
-      <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
+      <div class="heading-row">
+        <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
+      </div>
       <ol class="hanging-list">
         <li><span class="marker">(1)</span> These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</li>
         <li><span class="marker">(2)</span> They shall come into force on the date of their publication in the Official Gazette.</li>
@@ -200,11 +194,13 @@
     </div>
   </div>
 
-  <!-- rule 1.02 (long def list) -->
+  <!-- 1.02 -->
   <div class="rule" id="r1-02">
     <div class="num">1.02</div>
     <div class="content">
-      <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
+      <div class="heading-row">
+        <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
+      </div>
 
       <ol class="hanging-list">
         <li><span class="marker">(1)</span> <strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</li>
@@ -219,8 +215,7 @@
         <li><span class="marker">(9)</span> <strong>“Block forward”</strong> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
         <li><span class="marker">(10)</span> <strong>“Block section”</strong> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
 
-        <!-- ... continue remaining items as before ... -->
-
+        <!-- continue remaining items similarly... -->
       </ol>
 
       <div class="sr-note">
@@ -228,15 +223,16 @@
         The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
       </div>
 
-      <!-- Continue additional items/lists below in the same structure; S.R. notes will appear normal font -->
     </div>
   </div>
 
-  <!-- rule 1.03 -->
+  <!-- 1.03 -->
   <div class="rule" id="r1-03">
     <div class="num">1.03</div>
     <div class="content">
-      <div class="heading">CLASSIFICATION OF STATIONS —</div>
+      <div class="heading-row">
+        <div class="heading">CLASSIFICATION OF STATIONS —</div>
+      </div>
 
       <ol class="hanging-list">
         <li><span class="marker">(1)</span> Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</li>
@@ -258,6 +254,5 @@
   </div>
 
 </article>
-
 </body>
 </html>
