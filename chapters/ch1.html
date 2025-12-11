@@ -3,200 +3,187 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CHAPTER I — Preliminary (fixed layout)</title>
+<title>CHAPTER I — PRELIMINARY (Ultra-compact)</title>
 <style>
   :root{
-    --container-w:780px;
-    --num-col:64px;        /* desktop number column */
-    --gutter:12px;
-    --marker-col:2.2rem;   /* width for the (1) marker inside each li */
-    --indent:26px;
+    --container-w:820px;
+    --num-col:48px;        /* ultra-compact number column (desktop & mobile) */
+    --gutter:10px;         /* small gap between number and content */
+    --marker-col:1.6rem;   /* width for list marker like (1) */
     --font-body: "Times New Roman", Georgia, serif;
-    --base-font-size: 15px;
+    --base-font-size: 15.5px;
   }
 
   html { font-size: calc(var(--base-font-size) + 0.02vw); }
-  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
+  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; font-family:var(--font-body); }
 
   .chapter-container{
     max-width:var(--container-w);
     margin:0 auto;
-    font-family: var(--font-body);
-    line-height:1.45;
+    line-height:1.48;
     font-size:1rem;
-    padding:22px 20px;
+    padding:18px 16px;
     box-sizing:border-box;
-    background: #ffffff;
+    color:#1b2b3a;
   }
 
-  .chapter-title{ text-align:center; margin-bottom:10px; }
-  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
-  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
+  .chapter-title{ text-align:center; margin-bottom:8px; }
+  .chapter-title h2{ margin:0; font-size:1.08rem; font-weight:800; letter-spacing:0.02em; }
+  .chapter-title h3{ margin:6px 0 0; font-size:1.0rem; font-weight:800; }
 
-  /* RULE GRID: number column + content column
-     Keeps number and heading inline on all viewports */
+  /* KEEP two-column rule grid so number and heading stay inline */
   .rule{
     display: grid;
     grid-template-columns: var(--num-col) 1fr;
     column-gap: var(--gutter);
-    align-items: start;   /* align top of number with top of heading */
-    margin:8px 0 14px;
-    gap:0;
+    align-items:start;          /* top-align number with heading */
+    margin:8px 0 12px;
   }
 
-  /* GR number */
+  /* GR number (bold) */
   .rule .num{
     font-weight:800;
-    text-align:left;
     color:#061229;
-    font-size:1rem;
+    font-size:0.98rem;
     margin:0;
     padding:0;
-    line-height:1;        /* keep compact so it aligns top with heading */
+    line-height:1;
     align-self:start;
   }
 
-  /* content column: heading + body bold (per your instruction) */
+  /* content column - GR heading + body (heading bold, body bold for GR content) */
   .rule .content{
-    color:#1b2b3a;
-    font-size:1rem;
-    font-weight:800;      /* GR heading & GR content bold */
     margin:0;
     padding:0;
   }
 
-  /* heading-row keeps heading aligned at top and visually inline with the number */
+  /* heading row keeps heading inline with number */
   .heading-row{
     display:flex;
     align-items:flex-start;
-    gap:0.5rem;
+    gap:0.4rem;
     margin:0 0 6px 0;
-    flex-wrap:wrap;
   }
   .heading{
     font-weight:800;
     font-size:1rem;
     margin:0;
-    line-height:1.12;
+    line-height:1.25;
     text-align:left;
-    word-break:break-word;
-    color:#061229;
     display:inline-block;
     vertical-align:top;
+    word-break:break-word;
+    color:#061229;
   }
 
-  /* inline sentence after heading (keeps same bold style as heading) */
-  .heading-inline {
-    display:inline-block;
-    font-weight:800;      /* heading and its sentence bold as requested */
-    font-size:1rem;
-    line-height:1.45;
-    margin:0;
-  }
-
-  /* Hanging list (subparagraphs) — aligns under the content column */
+  /* Hanging list: marker column + content column — ensures multi-line items align under content */
   .hanging-list{
     list-style:none;
     margin:0;
     padding:0;
-    display:block;
   }
-
   .hanging-list li{
     display:grid;
     grid-template-columns: var(--marker-col) 1fr;
     column-gap:0.5rem;
     margin:0 0 8px 0;
     line-height:1.45;
-    font-weight:800;     /* GR content bold */
+    font-weight:800; /* GR content bold per your request */
     text-align:justify;
   }
-
   .hanging-list li .marker{
     justify-self:start;
     align-self:start;
-    font-weight:800;
     white-space:nowrap;
+    font-weight:800;
+    font-size:0.95rem;
+    color:#061229;
   }
 
-  .hanging-list li .termdef{
-    /* Contains the definition text; inherited bold */
+  /* termdef: make left padding small so text hugs the number for maximum reading width */
+  .termdef {
+    font-size:1rem;
+    line-height:1.6;
     margin:0;
+    padding-left:6px;          /* compact padding */
+    text-align:justify;
+    text-justify:inter-word;
+    color:#1b2b3a;
   }
 
-  /* S.R. notes: normal weight (not italic) */
+  /* S.R. notes: normal weight (not italic) and not bold */
   .sr-note{
     margin:8px 0 12px 0;
     padding:8px 10px;
     border-left:3px solid #d0d8e0;
     background:#fbfcfd;
     color:#233445;
+    font-size:0.95rem;
+    font-weight:400; /* normal weight */
     font-style:normal;
-    font-size:0.94rem;
-    font-weight:400;
   }
 
-  .termdef {
-    font-size: 16px;       /* same as mobile paragraph size you prefer */
-    line-height: 1.6;      /* comfortable reading */
-    margin: 0 0 12px;
-    padding-left: 0;
-    text-align: justify;
-    color: #1b2b3a;
+  /* Extra compact list paragraphs (when you want the heading and first sentence inline) */
+  .inline-first-sentence {
+    display:inline;  /* use inline to visually keep it with heading if you want */
   }
 
-  /* small adjustments for heading baseline and spacing */
-  .page-note { margin-top:6px; font-size:0.92rem; color: #475569; font-weight:400; }
+  /* Make sure anchors are scrolled under any fixed header on real site */
+  .chapter-container [id] { scroll-margin-top: 84px; }
 
-  /* responsive adjustments: reduce number column on smaller screens
-     but keep two-column layout so heading stays inline with number */
+  /* Responsive tweaks
+     We keep two columns even on small screens to keep number and heading inline.
+     Adjust column width minimally to try to keep heading on same line.
+  */
   @media (max-width:900px){
-    :root{ --num-col:66px; --marker-col:1.9rem; --container-w:720px; }
-    .chapter-container{ padding:18px 16px; }
-  }
-
-  @media (max-width:600px){
-    :root{ --num-col:56px; --marker-col:1.75rem; --container-w:100%; }
+    :root{ --container-w:100%; --num-col:44px; --marker-col:1.5rem; --gutter:8px; }
     .chapter-container{ padding:16px 12px; }
+    .heading { font-size:0.98rem; }
   }
 
-  /* very narrow phones: keep heading readable but maintain alignment */
-  @media (max-width:420px){
-    :root{ --num-col:48px; --marker-col:1.4rem; }
-    .chapter-container{ padding:14px 10px; }
-    .heading{ font-size:0.98rem; }
-    .hanging-list li{ font-size:0.96rem; }
-    .heading-inline{ font-size:0.98rem; }
+  @media (max-width:460px){
+    :root{ --container-w:100%; --num-col:40px; --marker-col:1.35rem; --gutter:6px; }
+    .chapter-container{ padding:12px 10px; font-size:0.98rem; }
+    .heading { font-size:0.96rem; }
+    .termdef { padding-left:4px; }
   }
 
   @media print{
-    :root{ --container-w:720px; --base-font-size:12.5px; }
+    :root{ --container-w:720px; --base-font-size:12.5px; --num-col:56px; }
     .chapter-container{ line-height:1.4; padding:12mm; }
   }
 </style>
 </head>
 <body>
-
 <article class="chapter-container" aria-labelledby="chapter-heading">
   <div class="chapter-title" id="chapter-heading">
     <h2>CHAPTER I</h2>
     <h3>PRELIMINARY</h3>
   </div>
 
-  <!-- 1.01 — heading + single sentence on same line -->
+  <!-- 1.01 — ultra-compact: heading inline with number; first para(s) close to number -->
   <div class="rule" id="s101">
     <div class="num">1.01</div>
     <div class="content">
       <div class="heading-row">
         <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
-        <!-- the sentence immediately follows the heading on the same line -->
-        <div class="heading-inline">— These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024 and shall come into force on the date of their publication in the Official Gazette.</div>
       </div>
-      <!-- No hanging-list here because the whole provision is a single sentence as requested -->
+
+      <!-- hanging list keeps markers (1),(2) and paragraphs aligned under the content column -->
+      <ol class="hanging-list">
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
+        </li>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div>
+        </li>
+      </ol>
     </div>
   </div>
 
-  <!-- 1.02 — Definitions with sub-items aligned under heading -->
+  <!-- 1.02 Definitions — heading inline, items bold (GR), S.R. normal weight -->
   <div class="rule" id="s102">
     <div class="num">1.02</div>
     <div class="content">
@@ -229,6 +216,8 @@
           <div class="marker">(5)</div>
           <div class="termdef"><strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things.</div>
         </li>
+
+        <!-- additional items can follow -->
       </ol>
 
       <div class="sr-note">
@@ -238,7 +227,7 @@
     </div>
   </div>
 
-  <!-- 1.03 — Classification of Stations -->
+  <!-- 1.03 Classification — compact layout with descriptive paragraphs moved left -->
   <div class="rule" id="s103">
     <div class="num">1.03</div>
     <div class="content">
@@ -263,7 +252,8 @@
         </li>
       </ol>
 
-      <div style="margin:0 0 12px; padding-left:0; text-align:justify; text-justify:inter-word;">
+      <!-- compact paragraphs for classes — left padding small to increase reading width -->
+      <div style="margin:0 0 12px; padding-left:6px; text-align:justify; text-justify:inter-word;">
         <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
         <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
         <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
@@ -277,6 +267,5 @@
   </div>
 
 </article>
-
 </body>
 </html>
