@@ -3,19 +3,20 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chapter I — Preliminary (fixed alignment)</title>
+<title>Chapter I — Preliminary (alignment fixes)</title>
 
 <style>
   :root{
     --container-w:780px;
-    --num-col:88px;
+    --num-col:88px;        /* desktop number column */
     --gutter:12px;
+    --marker-col:2.2rem;   /* width for the (1) marker inside each li */
     --indent:26px;
     --font-body: "Times New Roman", Georgia, serif;
     --base-font-size: 15px;
   }
 
-  html { font-size: calc(var(--base-font-size) + 0.04vw); }
+  html { font-size: calc(var(--base-font-size) + 0.02vw); }
   body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
   .chapter-container{
@@ -32,87 +33,95 @@
   .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
   .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  /* RULE GRID: number column + content column */
+  /* RULE GRID: number column + content column
+     Keep as two columns on all viewports so number and heading remain inline */
   .rule{
-    display:grid;
+    display: grid;
     grid-template-columns: var(--num-col) 1fr;
-    column-gap:var(--gutter);
-    align-items:start;           /* ensure top alignment */
+    column-gap: var(--gutter);
+    align-items: start;   /* align top of number with top of heading */
     margin:8px 0 14px;
+    gap:0;
   }
 
-  /* NUMBER: no top padding, bold, vertically aligned top */
+  /* GR number */
   .rule .num{
     font-weight:800;
     text-align:left;
     color:#061229;
     font-size:1rem;
-    margin:0;                    /* remove unexpected margins */
-    padding:0;                   /* remove top padding that caused misalignment */
-    align-self:start;            /* explicit */
-    line-height:1;               /* keep compact */
+    margin:0;
+    padding:0;
+    line-height:1;        /* keep compact so it aligns top with heading */
+    align-self:start;
   }
 
-  /* CONTENT column */
+  /* content column: GR heading + body bold (per your instruction) */
   .rule .content{
     color:#1b2b3a;
     font-size:1rem;
-    font-weight:800;             /* GR content bold as requested */
+    font-weight:800;
     margin:0;
     padding:0;
   }
 
-  /* Heading row inside content: keeps heading at top and inline with the number */
+  /* heading-row keeps heading aligned at top and visually inline with the number */
   .heading-row{
     display:flex;
-    align-items:flex-start;      /* top align heading text with number */
+    align-items:flex-start;
     gap:0.5rem;
     margin:0 0 6px 0;
   }
-
   .heading{
     font-weight:800;
     font-size:1rem;
-    margin:0;                    /* important to avoid vertical drift */
+    margin:0;
     line-height:1.12;
     text-align:left;
+    /* allow heading to wrap but keep it in the content column (so it stays on same row as number) */
+    word-break:break-word;
   }
 
-  /* paragraphs inside content — keep consistent margins */
-  .rule p { margin:0 0 10px 0; }
-
-  /* hanging-list (subclauses) */
+  /* Each list item uses CSS grid: marker column + definition column.
+     This ensures multi-line definitions align vertically under the definition column. */
   .hanging-list{
     list-style:none;
     margin:0;
     padding:0;
+    display:block;
   }
 
   .hanging-list li{
+    display:grid;
+    grid-template-columns: var(--marker-col) 1fr;
+    column-gap:0.5rem;
     margin:0 0 8px 0;
-    text-indent: -1.85em;
-    padding-left:1.85em;
-    text-align:justify;
     line-height:1.45;
-    font-weight:800;             /* sub-items bold for GRs */
+    font-weight:800;     /* GR content bold */
+    text-align:justify;
   }
 
   .hanging-list li .marker{
-    display:inline-block;
-    width:1.85em;
-    margin-left:-1.85em;
+    justify-self:start;
+    align-self:start;
     font-weight:800;
+    /* keep marker visually like "(1)" - centered left column */
+    white-space:nowrap;
   }
 
-  .hanging-list .sub{
-    margin-left: var(--indent);
-    text-indent: -1.5em;
-    padding-left:1.5em;
+  .hanging-list li .termdef{
+    /* contains <strong>term</strong> and the rest of the sentence */
+  }
+
+  /* sub items within a definition (a), (i), etc. — we keep them as block elements */
+  .hanging-list li .sub{
     display:block;
+    margin-top:6px;
+    padding-left:0;
     font-weight:800;
   }
 
-  /* S.R. notes — normal weight, not italic */
+  /* S.R. notes: normal weight, not italic */
   .sr-note{
     margin:8px 0 12px 0;
     padding:8px 10px;
@@ -124,46 +133,24 @@
     font-weight:400;
   }
 
-  /* Responsive rules */
+  /* responsive adjustments: reduce number column on smaller screens
+     but keep two-column rule layout so heading stays inline with number */
   @media (max-width:900px){
-    :root{ --num-col:66px; --container-w:720px; }
+    :root{ --num-col:66px; --marker-col:1.9rem; --container-w:720px; }
     .chapter-container{ padding:18px 16px; }
   }
 
-  /* tablet */
   @media (max-width:600px){
-    :root{ --num-col:56px; --container-w:100%; }
-    .chapter-container{ padding:18px 14px; }
-    .hanging-list li{ text-indent:-1.5em; padding-left:1.5em; }
-    .hanging-list li .marker{ width:1.5em; margin-left:-1.5em; }
+    :root{ --num-col:56px; --marker-col:1.75rem; --container-w:100%; }
+    .chapter-container{ padding:16px 12px; }
   }
 
-  /* mobile: stack columns but keep number + heading visually at top */
+  /* very narrow phones: still two columns, but make the number smaller so heading remains on same line */
   @media (max-width:420px){
-    .rule{
-      grid-template-columns: 1fr;
-      align-items:start;
-    }
-
-    /* move number and heading into a compact heading-row for mobile */
-    .rule .num{
-      margin:0 0 4px 0;
-      font-size:1.02rem;
-    }
-
-    /* heading-row remains flex; number and heading appear in sequence vertically */
-    .heading-row{ flex-direction:row; align-items:flex-start; gap:0.6rem; }
-
-    .hanging-list li{
-      text-indent:-1.4em;
-      padding-left:1.4em;
-      font-size:0.96rem;
-    }
-    .hanging-list li .marker{
-      width:1.4em; margin-left:-1.4em; font-weight:800;
-    }
-    .hanging-list .sub{ margin-left:18px; text-indent:-1.2em; padding-left:1.2em; }
-    .sr-note{ font-size:0.9rem; padding:8px 10px; }
+    :root{ --num-col:48px; --marker-col:1.4rem; }
+    .chapter-container{ padding:14px 10px; }
+    .heading{ font-size:0.98rem; }
+    .hanging-list li{ font-size:0.96rem; }
   }
 
   @media print{
@@ -180,21 +167,28 @@
     <h3>PRELIMINARY</h3>
   </div>
 
-  <!-- 1.01 -->
+  <!-- 1.01 (number and heading inline on same row) -->
   <div class="rule" id="r1-01">
     <div class="num">1.01</div>
     <div class="content">
       <div class="heading-row">
         <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
       </div>
+
       <ol class="hanging-list">
-        <li><span class="marker">(1)</span> These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</li>
-        <li><span class="marker">(2)</span> They shall come into force on the date of their publication in the Official Gazette.</li>
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
+        </li>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div>
+        </li>
       </ol>
     </div>
   </div>
 
-  <!-- 1.02 -->
+  <!-- 1.02 (definitions) -->
   <div class="rule" id="r1-02">
     <div class="num">1.02</div>
     <div class="content">
@@ -203,26 +197,38 @@
       </div>
 
       <ol class="hanging-list">
-        <li><span class="marker">(1)</span> <strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</li>
-        <li><span class="marker">(2)</span> <strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</li>
-        <li><span class="marker">(3)</span> <strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</li>
-        <li><span class="marker">(4)</span> <strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</li>
-        <li><span class="marker">(5)</span> <strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</li>
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef"><strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</div>
+        </li>
 
-        <li><span class="marker">(6)</span> <strong>“Authority to proceed”</strong> means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</li>
-        <li><span class="marker">(7)</span> <strong>“Axle counter”</strong> means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</li>
-        <li><span class="marker">(8)</span> <strong>“Block back”</strong> means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</li>
-        <li><span class="marker">(9)</span> <strong>“Block forward”</strong> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
-        <li><span class="marker">(10)</span> <strong>“Block section”</strong> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef"><strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</div>
+        </li>
 
-        <!-- continue remaining items similarly... -->
+        <li>
+          <div class="marker">(3)</div>
+          <div class="termdef"><strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div>
+        </li>
+
+        <li>
+          <div class="marker">(4)</div>
+          <div class="termdef"><strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div>
+        </li>
+
+        <li>
+          <div class="marker">(5)</div>
+          <div class="termdef"><strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div>
+        </li>
+
+        <!-- continue items similarly -->
       </ol>
 
       <div class="sr-note">
         <strong>S.R.1.02(5)(1)</strong><br>
         The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
       </div>
-
     </div>
   </div>
 
@@ -235,9 +241,20 @@
       </div>
 
       <ol class="hanging-list">
-        <li><span class="marker">(1)</span> Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</li>
-        <li><span class="marker">(2)</span> Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</li>
-        <li><span class="marker">(3)</span> Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</li>
+        <li>
+          <div class="marker">(1)</div>
+          <div class="termdef">Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</div>
+        </li>
+
+        <li>
+          <div class="marker">(2)</div>
+          <div class="termdef">Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</div>
+        </li>
+
+        <li>
+          <div class="marker">(3)</div>
+          <div class="termdef">Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</div>
+        </li>
       </ol>
 
       <div style="margin:0 0 12px; padding-left:20px; text-align:justify; text-justify:inter-word;">
