@@ -142,6 +142,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   display:block;
   scroll-margin-top: calc(var(--header-h) + 8px);
 }
+/* make term definitions same weight/font-size as the example block you liked */
 .page-frame .rule .termdef,
 .mobile-chapter .rule .termdef,
 .page-frame .rule .content > p,
@@ -169,6 +170,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   font-weight:400;
 }
 .termdef { font-size:1rem; line-height:1.6; }
+/* ensure any element with id (target) receives offset scroll to avoid header overlap */
 .chapter [id], .mobile-chapter [id], .page-frame .chapter [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
 
 @media(max-width:640px){
@@ -182,18 +184,10 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
 .nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
 
-  /* Hide any forward/back controls that might have been added inside header.
-   If you prefer editing HTML instead, remove the buttons from <header>. */
-.header .nav-small,
-.header .header-nav,
-.header .prev-next {
+/* Strong safety: hide any nav controls added incorrectly inside header area */
+header .prev, header .next, header .header-nav, header .nav-small, header .header-forward, header .header-back {
   display: none !important;
 }
-
-/* Ensure header-right still shows the search button (unaffected) */
-.header-right { display: flex; align-items: center; gap:8px; }
-/* If you used a class like .header-forward or .header-back change rule above to match it */
-
 </style>
 </head>
 <body>
@@ -207,11 +201,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
     <div class="header-center"><div class="brand">G&SR — Konkan Railway</div></div>
 
     <div class="header-right">
-      <!-- Back / Forward always visible in header -->
-      <div class="main-actions" role="group" aria-label="Navigation">
-        <button id="btnBack" class="icon-btn" title="Previous" aria-label="Previous (back)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button id="btnForward" class="icon-btn" title="Next" aria-label="Next (forward)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
+      <!-- header back/forward removed on purpose (footer has navigation) -->
 
       <button id="btnSearch" class="icon-btn" title="Search the book (global)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -328,8 +318,6 @@ const mobileReader = document.getElementById('mobileReader');
 const mobileChapter = document.getElementById('mobileChapter');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
-const btnBack = document.getElementById('btnBack');
-const btnForward = document.getElementById('btnForward');
 
 const btnSearch = document.getElementById('btnSearch');
 const searchPanel = document.getElementById('searchPanel');
@@ -436,21 +424,80 @@ async function openFragment(id){
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
   renderHtml(html);
+
   if(anchor){
+    // robust anchor scroll with header offset
     setTimeout(()=> {
       try {
-        if(isDesktop()){
-          const el = pageFrame.querySelector('#' + CSS.escape(anchor));
-          if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        const headerOffset = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64) + 8;
+        let el = null;
+
+        // prefer desktop container or mobile container as rendered
+        const container = isDesktop() ? pageFrame : mobileChapter;
+
+        // try exact id in container
+        el = container.querySelector('#' + CSS.escape(anchor));
+        // fallback: try matching anchor id directly on document (in case markup put ids at root)
+        if(!el) el = document.getElementById(anchor);
+
+        // fallback: try common alternate id forms (helpful if chapter uses r1-01 while TOC uses s101)
+        if(!el){
+          // e.g. s101 -> try r1-01: take digits from anchor and format 'r<chapter>-<num>'
+          const digits = (anchor.match(/\d+/g) || []).join('');
+          if(digits.length === 3){
+            const major = digits.slice(0,1);
+            const minor = digits.slice(1);
+            const alt = `r${major}-${minor.padStart(2,'0')}`; // r1-01
+            el = container.querySelector('#' + CSS.escape(alt)) || document.getElementById(alt);
+          }
+        }
+
+        if(el){
+          // compute element position relative to container or document and scroll with offset
+          if(isDesktop()){
+            // pageFrame is scroll container
+            const containerTop = pageFrame.getBoundingClientRect().top;
+            const elTop = el.getBoundingClientRect().top;
+            const scrollTop = pageFrame.scrollTop + (elTop - containerTop) - headerOffset;
+            pageFrame.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+          } else {
+            // document scroll
+            const elRect = el.getBoundingClientRect();
+            const target = window.scrollY + elRect.top - headerOffset;
+            window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+          }
         } else {
-          const el = mobileChapter.querySelector('#' + CSS.escape(anchor));
-          if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+          // last-resort: find a heading that contains the TOC label text and scroll to it
+          // (only if TOC entry exists)
+          const tocEntry = TOC.find(ch => ch.type==='chapter' && ch.id===chId);
+          if(tocEntry && tocEntry.children){
+            const child = tocEntry.children.find(c => c.anchor === anchor);
+            if(child){
+              const txt = child.label.split(' ').slice(1).join(' '); // approximate
+              const nodes = (isDesktop() ? pageFrame : mobileChapter).querySelectorAll('h2, .heading, p, .termdef');
+              for(const n of nodes){
+                if(n.textContent && n.textContent.trim().startsWith(txt.substring(0,12))){
+                  // scroll to node
+                  if(isDesktop()){
+                    const containerTop = pageFrame.getBoundingClientRect().top;
+                    const nodeTop = n.getBoundingClientRect().top;
+                    const scrollTop = pageFrame.scrollTop + (nodeTop - containerTop) - headerOffset;
+                    pageFrame.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+                  } else {
+                    const nodeRect = n.getBoundingClientRect();
+                    const target = window.scrollY + nodeRect.top - headerOffset;
+                    window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+                  }
+                  break;
+                }
+              }
+            }
+          }
         }
       } catch(err){
-        const el2 = document.getElementById(anchor);
-        if(el2) el2.scrollIntoView({behavior:'smooth', block:'start'});
+        // ignore
       }
-    }, 140);
+    }, 150);
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
     saveLastRead({ kind:'chapter', id:chId, anchor });
   } else {
@@ -562,8 +609,6 @@ function highlightAllInContainer(container, rawQuery){
 /* navigation helpers */
 nextBtn.addEventListener('click', gotoNext);
 prevBtn.addEventListener('click', gotoPrev);
-btnForward.addEventListener('click', gotoNext);
-btnBack.addEventListener('click', gotoPrev);
 
 function gotoNext(){
   if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
@@ -576,11 +621,10 @@ function gotoPrev(){
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
 function updateNavButtons(){
-  // enable/disable header buttons and footer ones based on currentFlatIndex
   const hasPrev = currentFlatIndex > 0;
   const hasNext = currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1;
-  [prevBtn, btnBack].forEach(b => { if(b) b.disabled = !hasPrev; });
-  [nextBtn, btnForward].forEach(b => { if(b) b.disabled = !hasNext; });
+  if(prevBtn) prevBtn.disabled = !hasPrev;
+  if(nextBtn) nextBtn.disabled = !hasNext;
 }
 
 /* last-read helpers & scroll savers */
@@ -602,7 +646,7 @@ function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type=
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* SEARCH (same as before) */
+/* SEARCH (clean snippets + safe rendering) */
 function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420); searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true }); searchPanel.addEventListener('click', stopTouchBubble, { passive:true }); window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
 function closeSearchPanel(){ window.__gkr_search_open = false; searchPanel.style.display = 'none'; searchPanel.setAttribute('aria-hidden','true'); searchPanel.removeEventListener('touchstart', stopTouchBubble); searchPanel.removeEventListener('click', stopTouchBubble); window.__gkr_search_resize_lock = false; }
 function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){} }
@@ -611,7 +655,8 @@ let _debT = null;
 function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippet; const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const re = new RegExp(esc, 'ig'); return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`); }
-/* ------------------ REPLACE renderSearchResults ------------------ */
+
+/* renderSearchResults (safe: snippet is plain text) */
 function renderSearchResults(list){
   lastResults = list || [];
   try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
@@ -619,21 +664,15 @@ function renderSearchResults(list){
     searchResults.innerHTML = '<div class="small-muted">No results</div>';
     return;
   }
-  // current query for highlighting
   const q = (searchInput.value || lastQuery || '').trim();
   searchResults.innerHTML = '';
 
   list.forEach(r=>{
     const div = document.createElement('div');
     div.className = 'search-item';
-
-    // r.snippet is plain text now (no HTML) but still escape defensively
     const escaped = escapeHtml(String(r.snippet || ''));
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
-
-    // show the chapter id/title line (bold)
     div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
-
     div.onclick = async ()=> {
       await openFragmentOrChapterAndHighlight(r.id, q || searchInput.value);
       closeSearchPanel();
@@ -642,7 +681,7 @@ function renderSearchResults(list){
   });
 }
 
-/* ------------------ REPLACE performSearch ------------------ */
+/* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
   q = (q||'').trim();
   lastQuery = q;
@@ -655,7 +694,6 @@ async function performSearch(q){
   const results = [];
 
   for(const id of ids){
-    // ensure cached
     if(!cache[id]){
       const t = await fetchChapterRaw(id, false);
       if(t) cache[id] = t;
@@ -663,39 +701,26 @@ async function performSearch(q){
     }
     const html = cache[id] || '';
 
-    // Parse HTML into DOM to reliably extract textContent (removes tags)
     let text = '';
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-
-      // remove scripts and styles
       const scripts = doc.querySelectorAll('script, style, noscript');
       scripts.forEach(n => n.remove());
-
-      // If the chapter content is wrapped in a container we expect (e.g. .chapter-content),
-      // prefer that node's textContent; otherwise use whole document body.
       const container = doc.querySelector('.chapter-content') || doc.body;
       text = container.textContent || '';
     } catch(e){
-      // fallback: strip tags with regex as last resort
       text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
     }
-
-    // normalize whitespace
     text = text.replace(/\s+/g, ' ').trim();
-
     const lower = text.toLowerCase();
     const idx = lower.indexOf(needle);
     if(idx !== -1){
       const start = Math.max(0, idx - 80);
       const end = Math.min(text.length, idx + 180);
       let snippet = text.substring(start, end).trim();
-
-      // add ellipses if snippet is clipped
       if(start > 0) snippet = '…' + snippet;
       if(end < text.length) snippet = snippet + '…';
-
       results.push({ id, snippet });
     }
   }
@@ -703,7 +728,31 @@ async function performSearch(q){
   renderSearchResults(results);
 }
 
-async function openFragmentOrChapterAndHighlight(id, query){ const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id); const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id); if(isFragment){ await openFragment(id); } else if(isChapter){ await openChapter(id, null); } else { await openFragment(id); } const container = isDesktop() ? pageFrame : mobileChapter; setTimeout(async ()=> { try{ if(!isDesktop()){ mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus({ preventScroll: true }); } else { pageFrame.setAttribute('tabindex','-1'); pageFrame.focus({ preventScroll: true }); } }catch(e){} let matches = 0; try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; } if(matches === 0){ setTimeout(()=> { try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){} }, 320); } }, 420); }
+async function openFragmentOrChapterAndHighlight(id, query){
+  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
+  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
+  if(isFragment){ await openFragment(id); } else if(isChapter){ await openChapter(id, null); } else { await openFragment(id); }
+
+  const container = isDesktop() ? pageFrame : mobileChapter;
+  setTimeout(async ()=> {
+    try{
+      if(!isDesktop()){
+        mobileChapter.setAttribute('tabindex','-1');
+        mobileChapter.focus({ preventScroll: true });
+      } else {
+        pageFrame.setAttribute('tabindex','-1');
+        pageFrame.focus({ preventScroll: true });
+      }
+    }catch(e){}
+    let matches = 0;
+    try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
+    if(matches === 0){
+      setTimeout(()=> {
+        try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
+      }, 320);
+    }
+  }, 420);
+}
 
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
@@ -736,6 +785,7 @@ function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = 
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
+/* close TOC when clicking outside */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
@@ -755,33 +805,16 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
 }
 
-/* small utility to ensure nav buttons are in correct initial state */
-updateNavButtons();
-
-  // ------------------------------------------------------------
-// UX: close search panel when clicking anywhere outside it
-// ------------------------------------------------------------
+/* UX: close search panel when clicking anywhere outside it (desktop & mobile) */
 (function installGlobalClickToCloseSearch(){
-  // click handler that closes search panel when user clicks outside it or the search button
   document.addEventListener('click', function (e) {
     try {
-      // If panel is not visible, nothing to do
       if (!searchPanel || searchPanel.style.display !== 'flex') return;
-
-      // If click happened inside the panel or on the search button, do nothing
-      if (e.target.closest && (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))) {
-        return;
-      }
-
-      // Otherwise close the panel
+      if (e.target.closest && (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))) return;
       closeSearchPanel();
-    } catch (err) {
-      // silently ignore
-      console.warn('close-search handler error', err);
-    }
+    } catch (err) {}
   }, { passive: true, capture: false });
 
-  // also close on touchstart outside (helps on some mobile browsers)
   document.addEventListener('touchstart', function (e) {
     try {
       if (!searchPanel || searchPanel.style.display !== 'flex') return;
@@ -790,7 +823,6 @@ updateNavButtons();
     } catch (err) {}
   }, { passive: true, capture: false });
 })();
-
 </script>
 </body>
 </html>
