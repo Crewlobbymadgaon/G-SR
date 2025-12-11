@@ -228,6 +228,21 @@
   .heading { font-size: 15.2px; }
 }
 
+/* --- Inline heading + one-sentence body for single-line rules (like 1.01) --- */
+.rule.inline .heading {
+  display: inline-block;      /* keep heading on same line as the sentence */
+  vertical-align: middle;
+  margin-right: 10px;         /* space between heading and sentence */
+  font-weight: 800;
+}
+
+.rule.inline .inline-body {
+  display: inline;            /* sentence flows on same line */
+  font-weight: 800;           /* bold to match your other rule text */
+  line-height: 1.45;
+  text-align: left;
+  /* ensure it wraps naturally on small screens */
+}
 
 
 </style>
@@ -241,15 +256,18 @@
   </div>
 
   <!-- 1.01 (number and heading inline on same row) -->
-  <div class="rule" id="s101">
-    <div class="num">1.01</div>
-    <div class="content">
-      <div class="heading-row">
-        <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
-      </div>
+  <!-- 1.01 INLINE: heading + one sentence -->
+<div class="rule inline" id="s101">
+  <div class="num">1.01</div>
 
-      <ol class="hanging-list">
-        <li>
+  <div class="content">
+    <div class="heading-row">
+      <div class="heading">SHORT TITLE AND COMMENCEMENT —</div>
+      
+    </div>
+  </div>
+</div>
+
           <div class="marker">(1)</div>
           <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
         </li>
