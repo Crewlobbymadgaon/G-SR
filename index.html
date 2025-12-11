@@ -5,11 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>G&SR</title>
 
-<!-- manifest: relative path for GitHub Pages -->
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0b63d6">
-
-<!-- iOS: use relative paths (Safari ignores manifest.json) -->
 <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,17 +16,14 @@
 :root{
   --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
   --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
-  --update-interval-ms:900000; /* 15 minutes */
+  --update-interval-ms:900000;
   --highlight-color: #fff59d;
-
-  /* typography */
   --base-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica, "Times New Roman", serif;
-  --base-font-size: 16px; /* slightly increased for mobile readability */
-  --rule-num-width: 84px; /* room for "1.01" */
+  --base-font-size: 16px;
+  --rule-num-width: 84px;
   --gutter:12px;
 }
 
-/* reset + base */
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:var(--base-font-family);background:var(--bg);color:#071033;font-size:var(--base-font-size);}
 header{
@@ -38,21 +32,23 @@ header{
 }
 .header-left{width:44px;height:44px;display:flex;align-items:center;justify-content:flex-start}
 .header-center{flex:1;display:flex;align-items:center;justify-content:center}
-.header-right{width:44px;height:44px;display:flex;align-items:center;justify-content:flex-end}
+.header-right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
 .brand{font-weight:800; font-size:1rem; text-align:center;}
 .icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);cursor:pointer;color:#fff}
 .icon{width:18px;height:18px;display:block}
+.main-actions{display:flex;gap:8px;align-items:center}
+
+/* disabled look */
+.icon-btn[disabled]{ opacity:0.5; pointer-events:none; }
+
 main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-width:var(--page-max-width);margin:0 auto;min-height:320px}
 
-/* COVER */
 #cover { width:100%; border-radius:16px; overflow:hidden; height:520px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; }
 #cover img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; object-position:center center; display:block; background:#111; }
 
-/* reader (desktop page or mobile fallback) */
 #reader { margin-top:18px; display:none; }
 .mobile-chapter { background:var(--card); padding:18px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
 
-/* desktop shell/page */
 @media(min-width:980px){
   #cover{ height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); border-radius:0; box-shadow:none; background:linear-gradient(180deg,#0f1724 0%, #061229 100%); }
   #cover img{ max-width: min(var(--page-max-width), 92vw); max-height: calc(100vh - var(--header-h) - var(--footer-h) - var(--page-gap)); }
@@ -99,28 +95,23 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 .search-item:hover{ background:#f7fbff; border-color:#e6f0ff; }
 .search-snippet{ color:#475569; font-size:0.95rem; margin-top:6px; }
 
-/* highlight styling */
+/* highlight */
 .search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
 @keyframes highlight-pulse { 0%{ box-shadow:0 0 0 6px rgba(255,245,157,0.18) inset; } 100%{ box-shadow:0 0 0 0 rgba(255,245,157,0.0) inset; } }
 
-/* fragments content basics */
 .chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-size:var(--base-font-size); line-height:1.6; font-family:var(--base-font-family); color:#1b2b3a; }
 .chapter-content p{ margin:0 0 14px; }
 
-/* TOC drawer */
 #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
 #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
 .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
 .toc-list .toc-item{ font-weight:700; color:#05204a; padding:6px 8px; cursor:pointer; }
 .toc-list .toc-sub{ font-weight:800; color:#05204a; padding:6px 8px 6px 20px; cursor:pointer; }
 
-/* small utils */
 .hidden{display:none !important}
 .small-muted{color:#6b7280;font-size:0.95rem}
+.doc-chapter { max-width: 920px; margin: 0 auto; padding: 20px 14px; color: #0b1726; line-height: 1.55; font-family: var(--base-font-family); }
 
-/* ------ Styling for injected chapter HTML (rules/number alignment, headings) ------ */
-
-/* Make .rule show number and content inline and vertically aligned */
 .page-frame .rule,
 .mobile-chapter .rule {
   display:flex;
@@ -129,8 +120,6 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   margin:8px 0 14px;
   width:100%;
 }
-
-/* number column (1.01 etc) */
 .page-frame .rule .num,
 .mobile-chapter .rule .num {
   width:var(--rule-num-width);
@@ -140,14 +129,10 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   padding-top:2px;
   flex:0 0 var(--rule-num-width);
 }
-
-/* content column */
 .page-frame .rule .content,
 .mobile-chapter .rule .content {
   flex:1 1 auto;
 }
-
-/* heading of the rule — bold and left aligned and on same line as number */
 .page-frame .rule .heading,
 .mobile-chapter .rule .heading {
   font-weight:800;
@@ -155,11 +140,8 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   margin:0 0 8px 0;
   font-size:1.02rem;
   display:block;
-  /* ensure not hidden by header when scrolled to */
   scroll-margin-top: calc(var(--header-h) + 8px);
 }
-
-/* term/definitions (first-line content) — match heading font-weight for GRs */
 .page-frame .rule .termdef,
 .mobile-chapter .rule .termdef,
 .page-frame .rule .content > p,
@@ -168,17 +150,13 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   margin:0 0 10px 0;
   line-height:1.55;
 }
-
-/* Hanging lists inside content — use normal weight but keep spacing */
 .page-frame .hanging-list li,
 .mobile-chapter .hanging-list li,
 .page-frame .rule .content ol li,
 .mobile-chapter .rule .content ol li {
-  font-weight:800; /* user wanted rule content bold — keep as requested */
+  font-weight:800;
   margin:0 0 8px 0;
 }
-
-/* S.R. notes style — normal font, not italic (user requested) */
 .page-frame .sr-note,
 .mobile-chapter .sr-note {
   margin:8px 0 12px 0;
@@ -190,27 +168,19 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   font-size:12.5px;
   font-weight:400;
 }
-
-/* make .termdef class (single line defs) match the block below for mobile readability */
 .termdef { font-size:1rem; line-height:1.6; }
+.chapter [id], .mobile-chapter [id], .page-frame .chapter [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
 
-/* Ensure any anchor targets inside loaded chapters aren't hidden by header */
-.chapter [id],
-.mobile-chapter [id],
-.page-frame .chapter [id] {
-  scroll-margin-top: calc(var(--header-h) + 8px);
-}
-
-/* Small responsiveness tweaks */
 @media(max-width:640px){
   :root{ --rule-num-width:68px; --base-font-size:17px; }
   .page-frame{ padding:14px; }
   .mobile-chapter{ padding:16px; border-radius:10px; }
   .page-frame .rule .heading, .mobile-chapter .rule .heading{ font-size:1rem; }
 }
-
-/* fewer widows/orphans on headings */
 .page-frame .rule .heading { line-height:1.25; }
+
+footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
+.nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
 </style>
 </head>
 <body>
@@ -224,6 +194,12 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
     <div class="header-center"><div class="brand">G&SR — Konkan Railway</div></div>
 
     <div class="header-right">
+      <!-- Back / Forward always visible in header -->
+      <div class="main-actions" role="group" aria-label="Navigation">
+        <button id="btnBack" class="icon-btn" title="Previous" aria-label="Previous (back)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="btnForward" class="icon-btn" title="Next" aria-label="Next (forward)"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+
       <button id="btnSearch" class="icon-btn" title="Search the book (global)">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="6"></circle><path d="M21 21l-4.35-4.35"></path>
@@ -232,7 +208,6 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
     </div>
   </header>
 
-  <!-- SEARCH PANEL (below header) -->
   <div id="searchPanel" role="search" aria-hidden="true">
     <div class="panel-row">
       <div class="left-col">
@@ -262,14 +237,12 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
     </section>
 
     <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
-      <!-- Desktop book page -->
       <div class="page-shell" id="pageShell" style="display:none;">
         <div class="book-page" id="bookPage" role="region" aria-label="Book page">
           <div class="page-frame" id="pageFrame"><div class="chapter" id="pageChapter"><!-- injected --></div></div>
         </div>
       </div>
 
-      <!-- Mobile reader -->
       <div id="mobileReader" style="display:none;">
         <div class="chapter mobile-chapter" id="mobileChapter"><!-- injected --></div>
       </div>
@@ -282,18 +255,12 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   </footer>
 
 <script>
-/* Keep your JS mostly the same — only small changes:
-   - safer anchor scrolling uses CSS scroll-margin-top and CSS.escape for id selectors
-   - ensure TOC auto-closes on click (delegated)
-   - minor adjustments preserved
-*/
-
 const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 const UPDATE_TS_KEY = 'gkr_last_update_ts';
-const UPDATE_INTERVAL_MS = Number(getComputedStyle(document.documentElement).getPropertyValue('--update-interval-ms')) || 15*60*1000;
+const UPDATE_INTERVAL_MS = 900000;
 const SEARCH_Q_KEY = 'gkr_search_q';
 const SEARCH_R_KEY = 'gkr_search_r';
 
@@ -336,7 +303,6 @@ TOC.forEach(item=>{
   }
 });
 
-/* DOM refs */
 const tocList = document.getElementById('tocList');
 const btnMenu = document.getElementById('btnMenu');
 const tocDrawer = document.getElementById('tocDrawer');
@@ -349,6 +315,8 @@ const mobileReader = document.getElementById('mobileReader');
 const mobileChapter = document.getElementById('mobileChapter');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
+const btnBack = document.getElementById('btnBack');
+const btnForward = document.getElementById('btnForward');
 
 const btnSearch = document.getElementById('btnSearch');
 const searchPanel = document.getElementById('searchPanel');
@@ -407,7 +375,7 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* Ensure drawer closes when any TOC item inside is clicked (delegated) */
+/* Close TOC when item clicked (delegated) */
 (function installTOCCloseHandler(){
   const toc = tocList;
   if(!toc) return;
@@ -420,11 +388,9 @@ document.addEventListener('click', (e)=>{
       tocDrawer.setAttribute('aria-hidden', 'true');
       btnMenu.setAttribute('aria-expanded', 'false');
     }
-    // allow other click handlers to run (openChapter/openAnchor) — we only close automatically here
   }, { passive: true });
 })();
 
-/* fetch helpers */
 async function fetchChapterRaw(id, bypass=false){
   try{
     const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
@@ -440,7 +406,6 @@ async function getHtml(id){
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* render + navigation */
 async function openFromTOC(item){
   tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
@@ -453,12 +418,12 @@ async function openFragment(id){
   renderHtml(html);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
+  updateNavButtons();
 }
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
   renderHtml(html);
   if(anchor){
-    // Wait a little for content to render then scroll anchor into view.
     setTimeout(()=> {
       try {
         if(isDesktop()){
@@ -473,16 +438,15 @@ async function openChapter(chId, anchor=null){
         if(el2) el2.scrollIntoView({behavior:'smooth', block:'start'});
       }
     }, 140);
-
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
     saveLastRead({ kind:'chapter', id:chId, anchor });
   } else {
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
     saveLastRead({ kind:'chapter', id:chId, anchor:null });
   }
+  updateNavButtons();
 }
 
-/* injection + highlight support */
 function renderHtml(html, highlight=null){
   lastHtml = html;
   cover.style.display = 'none';
@@ -510,7 +474,6 @@ function renderHtml(html, highlight=null){
   }
 }
 
-/* highlight functions (unchanged) */
 function removeExistingHighlights(){
   const prevs = document.querySelectorAll('mark.search-highlight');
   prevs.forEach(m => {
@@ -583,18 +546,31 @@ function highlightAllInContainer(container, rawQuery){
   return matches;
 }
 
-/* prev/next navigation */
-nextBtn.addEventListener('click', ()=>{
+/* navigation helpers */
+nextBtn.addEventListener('click', gotoNext);
+prevBtn.addEventListener('click', gotoPrev);
+btnForward.addEventListener('click', gotoNext);
+btnBack.addEventListener('click', gotoPrev);
+
+function gotoNext(){
   if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
   if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
-});
-prevBtn.addEventListener('click', ()=>{
+}
+function gotoPrev(){
   if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
   else showCover();
-});
+}
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
-/* last-read helpers + scroll savers (unchanged) */
+function updateNavButtons(){
+  // enable/disable header buttons and footer ones based on currentFlatIndex
+  const hasPrev = currentFlatIndex > 0;
+  const hasNext = currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1;
+  [prevBtn, btnBack].forEach(b => { if(b) b.disabled = !hasPrev; });
+  [nextBtn, btnForward].forEach(b => { if(b) b.disabled = !hasNext; });
+}
+
+/* last-read helpers & scroll savers */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
@@ -609,73 +585,42 @@ function attachWindowSaverIfNeeded(){ detachWindowSaver(); const it = (currentFl
 function detachWindowSaver(){ try{ if(winSaver.handler) window.removeEventListener('scroll', winSaver.handler); if(winSaver.timer) clearTimeout(winSaver.timer); }catch(e){} winSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
 function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
-/* background updater (silent) */
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* SEARCH (unchanged, but kept here) */
-function openSearchPanel(){
-  window.__gkr_search_open = true;
-  searchPanel.style.display = 'flex';
-  searchPanel.setAttribute('aria-hidden','false');
-  const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
-  searchInput.value = q;
-  if(q){
-    if(lastResults && lastResults.length) renderSearchResults(lastResults);
-    debouncePerformSearch(q, 0);
-  } else {
-    searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
-  }
-  setTimeout(()=> {
-    try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){}
-  }, 420);
-  searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
-  searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
-  window.__gkr_search_resize_lock = true;
-  setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
-}
-function closeSearchPanel(){
-  window.__gkr_search_open = false;
-  searchPanel.style.display = 'none';
-  searchPanel.setAttribute('aria-hidden','true');
-  searchPanel.removeEventListener('touchstart', stopTouchBubble);
-  searchPanel.removeEventListener('click', stopTouchBubble);
-  window.__gkr_search_resize_lock = false;
-}
-function clearSearch(){
-  searchInput.value = '';
-  lastQuery = '';
-  lastResults = [];
-  try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
-  searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
-  removeExistingHighlights();
-  try{
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){
-      if(isDesktop()) restorePageScrollIfAny(it.id);
-      else restoreWindowScrollIfAny(it.id);
-    }
-  }catch(e){}
-  try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){}
-}
+/* SEARCH (same as before) */
+function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420); searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true }); searchPanel.addEventListener('click', stopTouchBubble, { passive:true }); window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
+function closeSearchPanel(){ window.__gkr_search_open = false; searchPanel.style.display = 'none'; searchPanel.setAttribute('aria-hidden','true'); searchPanel.removeEventListener('touchstart', stopTouchBubble); searchPanel.removeEventListener('click', stopTouchBubble); window.__gkr_search_resize_lock = false; }
+function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){} }
 function stopTouchBubble(e){ e.stopPropagation(); }
 let _debT = null;
 function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippet; const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const re = new RegExp(esc, 'ig'); return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`); }
+/* ------------------ REPLACE renderSearchResults ------------------ */
 function renderSearchResults(list){
   lastResults = list || [];
   try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
-  if(!list || list.length === 0){ searchResults.innerHTML = '<div class="small-muted">No results</div>'; return; }
+  if(!list || list.length === 0){
+    searchResults.innerHTML = '<div class="small-muted">No results</div>';
+    return;
+  }
+  // current query for highlighting
   const q = (searchInput.value || lastQuery || '').trim();
   searchResults.innerHTML = '';
+
   list.forEach(r=>{
     const div = document.createElement('div');
     div.className = 'search-item';
-    const escaped = escapeHtml(r.snippet || '');
+
+    // r.snippet is plain text now (no HTML) but still escape defensively
+    const escaped = escapeHtml(String(r.snippet || ''));
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
+
+    // show the chapter id/title line (bold)
     div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
+
     div.onclick = async ()=> {
       await openFragmentOrChapterAndHighlight(r.id, q || searchInput.value);
       closeSearchPanel();
@@ -683,84 +628,82 @@ function renderSearchResults(list){
     searchResults.appendChild(div);
   });
 }
+
+/* ------------------ REPLACE performSearch ------------------ */
 async function performSearch(q){
   q = (q||'').trim();
   lastQuery = q;
   try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
   if(!q){ searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; lastResults = []; try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}; return; }
   searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
+
   const needle = q.toLowerCase();
   const ids = collectChapterIds();
   const results = [];
+
   for(const id of ids){
+    // ensure cached
     if(!cache[id]){
       const t = await fetchChapterRaw(id, false);
       if(t) cache[id] = t;
       else cache[id] = '';
     }
     const html = cache[id] || '';
-    const text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
-    const idx = text.toLowerCase().indexOf(needle);
+
+    // Parse HTML into DOM to reliably extract textContent (removes tags)
+    let text = '';
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // remove scripts and styles
+      const scripts = doc.querySelectorAll('script, style, noscript');
+      scripts.forEach(n => n.remove());
+
+      // If the chapter content is wrapped in a container we expect (e.g. .chapter-content),
+      // prefer that node's textContent; otherwise use whole document body.
+      const container = doc.querySelector('.chapter-content') || doc.body;
+      text = container.textContent || '';
+    } catch(e){
+      // fallback: strip tags with regex as last resort
+      text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
+    }
+
+    // normalize whitespace
+    text = text.replace(/\s+/g, ' ').trim();
+
+    const lower = text.toLowerCase();
+    const idx = lower.indexOf(needle);
     if(idx !== -1){
-      const start = Math.max(0, idx - 60);
-      const snippet = text.substring(start, idx + 120).replace(/\s+/g,' ').trim();
+      const start = Math.max(0, idx - 80);
+      const end = Math.min(text.length, idx + 180);
+      let snippet = text.substring(start, end).trim();
+
+      // add ellipses if snippet is clipped
+      if(start > 0) snippet = '…' + snippet;
+      if(end < text.length) snippet = snippet + '…';
+
       results.push({ id, snippet });
     }
   }
+
   renderSearchResults(results);
 }
-async function openFragmentOrChapterAndHighlight(id, query){
-  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
-  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-  if(isFragment) await openFragment(id);
-  else if(isChapter) await openChapter(id, null);
-  else await openFragment(id);
-  const container = isDesktop() ? pageFrame : mobileChapter;
-  setTimeout(async ()=> {
-    try{
-      if(!isDesktop()){ mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus({ preventScroll: true }); }
-      else { pageFrame.setAttribute('tabindex','-1'); pageFrame.focus({ preventScroll: true }); }
-    }catch(e){}
-    let matches = 0;
-    try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
-    if(matches === 0){
-      setTimeout(()=> { try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){} }, 320);
-    }
-  }, 420);
-}
 
-/* wire search UI */
-btnSearch.addEventListener('click', ()=> {
-  if(searchPanel.style.display === 'flex') closeSearchPanel();
-  else openSearchPanel();
-});
+async function openFragmentOrChapterAndHighlight(id, query){ const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id); const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id); if(isFragment){ await openFragment(id); } else if(isChapter){ await openChapter(id, null); } else { await openFragment(id); } const container = isDesktop() ? pageFrame : mobileChapter; setTimeout(async ()=> { try{ if(!isDesktop()){ mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus({ preventScroll: true }); } else { pageFrame.setAttribute('tabindex','-1'); pageFrame.focus({ preventScroll: true }); } }catch(e){} let matches = 0; try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; } if(matches === 0){ setTimeout(()=> { try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){} }, 320); } }, 420); }
+
+btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
 searchClear.addEventListener('click', ()=> clearSearch());
-searchInput.addEventListener('keydown', (e)=> {
-  if(e.key === 'Escape'){ closeSearchPanel(); return; }
-  if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }
-});
+searchInput.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeSearchPanel(); return; } if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }});
 searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.value, 160); });
 
-(function restoreSearchState(){
-  const q = localStorage.getItem(SEARCH_Q_KEY) || '';
-  lastQuery = q;
-  try{
-    const raw = localStorage.getItem(SEARCH_R_KEY);
-    if(raw) lastResults = JSON.parse(raw) || [];
-  }catch(e){ lastResults = []; }
-})();
+(function restoreSearchState(){ const q = localStorage.getItem(SEARCH_Q_KEY) || ''; lastQuery = q; try{ const raw = localStorage.getItem(SEARCH_R_KEY); if(raw) lastResults = JSON.parse(raw) || []; }catch(e){ lastResults = []; }})();
 
-/* initial load + background updater */
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); }
+function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); updateNavButtons(); }
 
-async function startBackgroundUpdater(){
-  if(navigator.onLine) updateAllBackground().catch(()=>{});
-  if(bgTimer) clearInterval(bgTimer);
-  bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS);
-  window.addEventListener('online', ()=> updateAllBackground().catch(()=>{}));
-}
+async function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> updateAllBackground().catch(()=>{})); }
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 
 window.addEventListener('load', async ()=>{
@@ -776,8 +719,7 @@ window.addEventListener('load', async ()=>{
   showCover();
 });
 
-/* helpers and misc */
-function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } }
+function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } updateNavButtons(); }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
@@ -799,6 +741,9 @@ window.addEventListener('resize', ()=>{
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
 }
+
+/* small utility to ensure nav buttons are in correct initial state */
+updateNavButtons();
 </script>
 </body>
 </html>
