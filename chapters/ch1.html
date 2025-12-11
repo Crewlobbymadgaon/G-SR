@@ -176,6 +176,57 @@
   display: inline-block; /* keeps it aligned beside rule number */
   vertical-align: top;   /* fixes desktop alignment */
 }
+/* --- GR number + heading alignment fix --- */
+.rule{
+  display: grid;
+  grid-template-columns: var(--num-col) 1fr; /* keep two columns so number and content are on same row */
+  column-gap: var(--gutter);
+  align-items: start;        /* IMPORTANT: top-align number with heading */
+  margin: 8px 0 14px;
+}
+
+/* remove any top padding/margin that could push headings down */
+.rule .num {
+  margin: 0;
+  padding: 0;
+  align-self: start;
+  line-height: 1;          /* keep compact number baseline */
+  font-weight: 800;
+}
+
+/* create a heading-row so heading top aligns with number */
+.heading-row {
+  display: flex;
+  align-items: flex-start;  /* aligns top of heading with top of number */
+  gap: 0.5rem;
+  margin: 0 0 6px 0;        /* reset margins that cause vertical drift */
+}
+
+/* heading: inline-block to avoid extra line-height differences */
+.heading {
+  display: inline-block;
+  margin: 0;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.45;
+  vertical-align: top;
+  color: #061229;
+  /* allow wrapping, but keep it aligned with number because of heading-row */
+  word-break: break-word;
+}
+
+/* ensure content inside .content doesn't add top padding */
+.rule .content {
+  margin: 0;
+  padding: 0;
+  font-weight: 800; /* keep GR content bold per your setting */
+}
+
+/* Small-screen tweak: slightly reduce number column so heading fits on same baseline */
+@media (max-width: 420px) {
+  :root { --num-col: 48px; }
+  .heading { font-size: 15.2px; }
+}
 
 
 
