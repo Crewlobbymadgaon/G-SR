@@ -20,12 +20,16 @@
   --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
   --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
   --update-interval-ms:900000; /* 15 minutes */
+
+  /* unified typography */
+  --base-font-size: 17px;  /* increase/decrease as you prefer (16-18 good) */
+  --base-line-height: 1.55;
+  --heading-weight: 800;
+  --body-font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica;
   --highlight-color: #fff59d;
-  --num-col:88px; /* number column width for desktop */
-  --gutter:12px;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
+html,body{height:100%;margin:0;font-family:var(--body-font);background:var(--bg);color:#071033}
 header{
   position:fixed;left:0;right:0;top:0;height:var(--header-h);
   display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
@@ -56,7 +60,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   .page-frame .chapter { padding:0; background:transparent; box-shadow:none; border-radius:0; }
 }
 
-/* SEARCH PANEL - updated for mobile stability */
+/* SEARCH PANEL */
 #searchPanel{
   position:fixed;
   left:50%;
@@ -73,8 +77,8 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
   align-items:center;
   max-height:calc(100vh - var(--header-h) - 16px);
   overflow:auto;
-  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-  display:none; /* hidden by default */
+  -webkit-overflow-scrolling: touch;
+  display:none;
   touch-action: manipulation;
 }
 #searchPanel .panel-row{ display:flex; gap:8px; align-items:center; width:100%; }
@@ -97,9 +101,50 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 .search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
 @keyframes highlight-pulse { 0%{ box-shadow:0 0 0 6px rgba(255,245,157,0.18) inset; } 100%{ box-shadow:0 0 0 0 rgba(255,245,157,0.0) inset; } }
 
+/* ---------- UNIFIED TYPOGRAPHY FOR CONTENT + TOC ---------- */
+.chapter-content,
+.mobile-chapter,
+.doc-body,
+.doc-chapter,
+.toc-list,
+.toc-list .toc-item,
+.toc-list .toc-sub {
+  font-size: var(--base-font-size);
+  line-height: var(--base-line-height);
+  font-family: var(--body-font);
+  color: #1b2b3a;
+}
+
+.chapter-content p,
+.mobile-chapter p,
+.doc-body p {
+  font-size: var(--base-font-size);
+  line-height: var(--base-line-height);
+  margin: 0 0 14px;
+}
+
+/* chapter heading styles (kept bold) */
+.chapter-content .heading,
+.mobile-chapter .heading,
+.doc-title {
+  font-weight: var(--heading-weight);
+  font-size: calc(var(--base-font-size) + 0px);
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+/* TOC list visuals */
+#tocList{ list-style:none;padding:0;margin:0; max-height:60vh; overflow:auto; }
+.toc-list .toc-item,
+.toc-list .toc-sub {
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.toc-list .toc-sub { padding-left: 20px; font-weight:700; }
+
 /* fragments content */
 .chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-.chapter-content p{ margin:0 0 14px; line-height:1.6; color:#1b2b3a; font-size:16px; }
 .chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
 
 /* TOC drawer + footer */
@@ -112,131 +157,6 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 /* small utils */
 .hidden{display:none !important}
 .small-muted{color:#6b7280;font-size:0.95rem}
-
-/* Documents Accompanying */
-.doc-chapter {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 20px 14px;
-  color: #0b1726;
-  line-height: 1.55;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica;
-}
-.doc-header { text-align: center; margin-bottom: 18px; }
-.doc-title { font-weight: 800; font-size: 1.1rem; color: #061229; margin: 0; }
-.doc-lead { margin-top: 8px; color: #1b2b3a; font-weight: 600; }
-.doc-body { margin-top: 12px; text-align: left; }
-.doc-body p { margin: 0 0 12px; color: #1b2b3a; font-size: 1rem; text-align: justify; }
-
-/* ====== NEW: RULE / DEFINITION STYLES & ALIGNMENT FIXES ====== */
-
-.rule{
-  display:grid;
-  grid-template-columns: var(--num-col) 1fr;
-  column-gap: var(--gutter);
-  align-items:start; /* top align number and heading */
-  margin:8px 0 14px;
-}
-
-.rule .num{
-  margin:0;
-  padding:0;
-  font-weight:800;
-  color:#061229;
-  align-self:start;
-  line-height:1;
-  font-size:1rem;
-}
-
-.rule .content{
-  margin:0;
-  padding:0;
-  font-weight:800; /* GR content bold per your setting */
-}
-
-/* heading line that stays aligned with .num */
-.heading-row{
-  display:flex;
-  align-items:flex-start;
-  gap:0.5rem;
-  margin:0 0 6px 0;
-}
-
-.heading{
-  display:inline-block;
-  margin:0;
-  font-weight:800;
-  font-size:16px;
-  line-height:1.45;
-  vertical-align:top;
-  color:#061229;
-  word-break:break-word;
-}
-
-/* Definition list: ensure multi-line continuation aligns under termdef */
-.hanging-list{
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-
-.hanging-list li{
-  display:grid;
-  grid-template-columns: 2.2rem 1fr; /* marker column + definition column */
-  column-gap:0.6rem;
-  margin:0 0 8px 0;
-  line-height:1.6;
-  font-weight:800;
-  text-align:justify;
-}
-
-.hanging-list li .marker{
-  justify-self:start;
-  align-self:flex-start;
-  white-space:nowrap;
-  font-weight:800;
-}
-
-.hanging-list li .termdef{
-  margin:0;
-  padding:0;
-  font-size:16px;
-  line-height:1.6;
-  font-weight:400; /* make definition text normal if you prefer */
-  color:#1b2b3a;
-}
-
-/* S.R. note style */
-.sr-note{
-  margin:8px 0 12px 0;
-  padding:8px 10px;
-  border-left:3px solid #d0d8e0;
-  background:#fbfcfd;
-  color:#233445;
-  font-style:normal;
-  font-size:0.94rem;
-  font-weight:400;
-}
-
-/* responsive tweaks */
-@media (max-width:900px){
-  :root{ --num-col:66px; }
-}
-@media (max-width:600px){
-  :root{ --num-col:56px; }
-  .heading{ font-size:15px; }
-  .hanging-list li .termdef{ font-size:15px; }
-}
-@media (max-width:420px){
-  :root{ --num-col:48px; }
-  .heading{ font-size:14.6px; }
-  .hanging-list li .termdef{ font-size:14.6px; }
-}
-
-/* print tuning */
-@media print{
-  :root{ --page-max-width:720px; }
-}
 </style>
 </head>
 <body>
@@ -277,7 +197,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
   <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
     <div class="toc-title">ARRANGEMENT OF RULES</div>
-    <ul id="tocList" class="toc-list" role="list" style="list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto"></ul>
+    <ul id="tocList" class="toc-list" role="list"></ul>
   </nav>
 
   <main>
@@ -308,12 +228,6 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
   </footer>
 
 <script>
-/* improvements + dynamic TOC integration included
-   - closes TOC on selection
-   - aligns GR numbers + heading
-   - injects IDs for rules & sub-items and builds per-chapter TOC
-*/
-
 const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
@@ -383,17 +297,13 @@ const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 const searchClear = document.getElementById('searchClear');
 
-/* state */
 let cache = {};
 let currentFlatIndex = -1;
 let lastHtml = null;
 let bgTimer = null;
-
-/* persist last search in memory + storage */
 let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
 let lastResults = [];
 
-/* ---------- Build TOC ---------- */
 function buildTOC(){
   tocList.innerHTML = '';
   TOC.forEach(item=>{
@@ -403,9 +313,16 @@ function buildTOC(){
     btn.textContent = item.label;
     btn.style.padding = '6px 8px';
     btn.style.cursor = 'pointer';
-    btn.onclick = ()=> openFromTOC(item);
+
+    // close drawer immediately then open
+    btn.onclick = ()=> {
+      if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
+      openFromTOC(item);
+    };
+
     li.appendChild(btn);
     tocList.appendChild(li);
+
     if(item.children){
       item.children.forEach(ch=>{
         const sli = document.createElement('li');
@@ -414,7 +331,13 @@ function buildTOC(){
         sbtn.textContent = ch.label;
         sbtn.style.padding = '6px 8px 6px 20px';
         sbtn.style.cursor = 'pointer';
-        sbtn.onclick = ()=> openAnchor(item.id, ch.anchor);
+
+        // close drawer then open anchor
+        sbtn.onclick = ()=> {
+          if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
+          openAnchor(item.id, ch.anchor);
+        };
+
         sli.appendChild(sbtn);
         tocList.appendChild(sli);
       });
@@ -437,151 +360,6 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* ---------- ensure IDs + dynamic per-chapter TOC ---------- */
-/* helper to make safe ids */
-function safeId(str){
-  return String(str || '').trim().toLowerCase().replace(/[()\[\]\.,:;\/\\\s]+/g,'-').replace(/[^a-z0-9\-]+/g,'').replace(/^\-+|\-+$/g,'') || ('id'+Math.random().toString(36).slice(2,8));
-}
-
-/* ensure .rule and hanging-list li items have stable ids; return metadata */
-function ensureSubIds(chapterContainer){
-  const rules = chapterContainer.querySelectorAll('.rule');
-  const meta = [];
-  rules.forEach((rule, rIndex) => {
-    // rule id
-    let ruleId = rule.id || '';
-    const numEl = rule.querySelector('.num');
-    const numText = numEl ? numEl.textContent.trim().replace(/\s+/g,'-') : ('r' + (rIndex+1));
-    if(!ruleId) ruleId = 'r-' + safeId(numText);
-    // ensure unique
-    if(document.getElementById(ruleId) && document.getElementById(ruleId) !== rule){
-      ruleId = ruleId + '-' + (rIndex+1);
-    }
-    rule.id = ruleId;
-
-    const headingEl = rule.querySelector('.heading') || rule.querySelector('.heading-row > .heading');
-    const headingText = headingEl ? headingEl.textContent.trim() : numText;
-
-    // collect subitems
-    const subs = [];
-    const listItems = rule.querySelectorAll('.hanging-list > li');
-    listItems.forEach((li, i) => {
-      let subId = li.id || '';
-      // marker detection
-      const markerEl = li.querySelector('.marker');
-      let marker = markerEl ? markerEl.textContent.trim() : '';
-      if(!marker){
-        const txt = li.textContent.trim();
-        const m = txt.match(/^\(?[0-9a-zA-Z]+\)?/);
-        marker = m ? m[0] : ('s' + (i+1));
-      }
-      if(!subId){
-        const cleanMarker = safeId(marker);
-        subId = `${ruleId}-${cleanMarker || ('s'+(i+1))}`;
-        if(document.getElementById(subId)) subId = `${subId}-${i+1}`;
-      }
-      li.id = subId;
-      const termdef = li.querySelector('.termdef') ? li.querySelector('.termdef').textContent.trim() : li.textContent.trim();
-      const snippet = termdef.split(/\n/)[0].trim().slice(0,80);
-      subs.push({ id: subId, marker, snippet });
-    });
-
-    meta.push({ ruleId, numText, headingText, subs });
-  });
-  return meta;
-}
-
-/* build a per-chapter TOC and replace tocList contents temporarily with it */
-function generateDynamicTOC(chapterId){
-  // choose container that currently holds the injected HTML
-  const container = (pageShell.style.display !== 'none') ? pageFrame : mobileChapter;
-  if(!container) return;
-  const meta = ensureSubIds(container);
-
-  // build new TOC list
-  tocList.innerHTML = '';
-  // heading
-  const titleLi = document.createElement('li');
-  titleLi.style.padding = '6px 8px';
-  titleLi.style.fontWeight = '800';
-  titleLi.textContent = (meta.length && meta[0].headingText) ? meta[0].headingText.split('—')[0] : 'Arrangement of Rules';
-  tocList.appendChild(titleLi);
-
-  meta.forEach(m => {
-    const li = document.createElement('li');
-    li.style.margin = '6px 0';
-    const a = document.createElement('a');
-    a.href = '#' + m.ruleId;
-    a.textContent = (m.numText ? (m.numText + ' — ') : '') + m.headingText;
-    a.style.fontWeight = '700';
-    a.style.color = '#05204a';
-    a.style.textDecoration = 'none';
-    a.onclick = (e) => {
-      // close drawer and allow default anchor behavior (we will scroll afterwards)
-      tocDrawer.classList.remove('open');
-      btnMenu.classList.remove('open');
-      tocDrawer.setAttribute('aria-hidden','true');
-      btnMenu.setAttribute('aria-expanded','false');
-      // prevent default so we can programmatically scroll within injected content
-      e.preventDefault();
-      // scroll inside the correct container
-      setTimeout(()=> {
-        const el = document.getElementById(m.ruleId);
-        if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
-      }, 120);
-    };
-    li.appendChild(a);
-
-    if(m.subs && m.subs.length){
-      const subul = document.createElement('ul');
-      subul.style.listStyle = 'none';
-      subul.style.paddingLeft = '14px';
-      subul.style.marginTop = '6px';
-      m.subs.forEach(s => {
-        const sli = document.createElement('li');
-        sli.style.marginBottom = '4px';
-        const sa = document.createElement('a');
-        sa.href = '#' + s.id;
-        sa.textContent = (s.marker ? (s.marker + ' ') : '') + s.snippet;
-        sa.style.fontWeight = '400';
-        sa.style.color = '#234';
-        sa.style.textDecoration = 'none';
-        sa.onclick = (e) => {
-          tocDrawer.classList.remove('open');
-          btnMenu.classList.remove('open');
-          tocDrawer.setAttribute('aria-hidden','true');
-          btnMenu.setAttribute('aria-expanded','false');
-          e.preventDefault();
-          setTimeout(()=> {
-            const el = document.getElementById(s.id);
-            if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
-          }, 120);
-        };
-        sli.appendChild(sa);
-        subul.appendChild(sli);
-      });
-      li.appendChild(subul);
-    }
-    tocList.appendChild(li);
-  });
-}
-
-/* ---------- Close TOC drawer when any TOC item or link is clicked (fallback) ---------- */
-(function installTOCCloseHandler(){
-  const toc = document.getElementById('tocList');
-  if(!toc) return;
-  toc.addEventListener('click', function(e){
-    const target = e.target.closest('a, button, .toc-item, .toc-sub');
-    if(!target) return;
-    if(tocDrawer && btnMenu){
-      tocDrawer.classList.remove('open');
-      btnMenu.classList.remove('open');
-      tocDrawer.setAttribute('aria-hidden', 'true');
-      btnMenu.setAttribute('aria-expanded', 'false');
-    }
-  }, { passive: true });
-})();
-
 /* ---------- fetch helpers ---------- */
 async function fetchChapterRaw(id, bypass=false){
   try{
@@ -600,42 +378,39 @@ async function getHtml(id){
 
 /* ---------- render + navigation ---------- */
 async function openFromTOC(item){
-  // always close drawer first (ensures it hides on selection)
-  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
+  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
   if(item.type === 'fragment') await openFragment(item.id);
   else await openChapter(item.id, null);
 }
-async function openAnchor(chapterId, anchorId){
-  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
-  markStarted();
-  await openChapter(chapterId, anchorId);
-}
+async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter(chapterId, anchorId); }
+
 async function openFragment(id){
-  // close drawer
-  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); }
   const html = await getHtml(id);
   renderHtml(html);
-  // make per-chapter TOC & ensure ids
-  generateDynamicTOC(id);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
+
 async function openChapter(chId, anchor=null){
-  // close drawer
-  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); }
   const html = await getHtml(chId);
   renderHtml(html);
-  // ensure ids and build per-chapter TOC
-  generateDynamicTOC(chId);
 
   if(anchor){
+    // wait for render then find anchor within the correct container
     setTimeout(()=> {
-      const container = isDesktop() ? pageFrame : mobileChapter;
-      // prefer finding element in the document (ids were injected by generateDynamicTOC)
-      const el = document.getElementById(anchor) || container.querySelector('#' + anchor);
-      if(el) { el.scrollIntoView({behavior:'smooth', block:'start'}); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
+      if(isDesktop()){
+        // pageFrame contains injected chapter; search within it
+        const container = pageFrame;
+        const el = container.querySelector('#' + CSS.escape(anchor));
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      } else {
+        const container = mobileChapter;
+        const el = container.querySelector('#' + CSS.escape(anchor));
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      }
     }, 150);
+
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
     saveLastRead({ kind:'chapter', id:chId, anchor });
   } else {
@@ -676,7 +451,6 @@ function renderHtml(html, highlight=null){
   }
 }
 
-/* remove previous <mark class="search-highlight"> elements */
 function removeExistingHighlights(){
   const prevs = document.querySelectorAll('mark.search-highlight');
   prevs.forEach(m => {
@@ -743,7 +517,6 @@ function highlightAllInContainer(container, rawQuery){
     if(parent) parent.replaceChild(frag, textNode);
   }
 
-  // scroll first match into view (if any)
   const first = container.querySelector('mark.search-highlight');
   if(first){
     try{ first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
@@ -785,17 +558,11 @@ function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type=
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* ---------- SEARCH: persistent, live, responsive ---------- */
-
-/* OPEN / CLOSE search panel - mobile-friendly and keeps results */
+/* ---------- SEARCH ---------- */
 function openSearchPanel(){
   window.__gkr_search_open = true;
-
-  // show panel
   searchPanel.style.display = 'flex';
   searchPanel.setAttribute('aria-hidden','false');
-
-  // restore previous query & results (if any)
   const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
   searchInput.value = q;
   if(q){
@@ -804,96 +571,25 @@ function openSearchPanel(){
   } else {
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
   }
-
-  // Focus after a little longer delay for mobile reliability.
   setTimeout(()=> {
-    try{
-      searchInput.focus();
-      const val = searchInput.value;
-      searchInput.setSelectionRange(val.length, val.length);
-    }catch(e){}
+    try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length); }catch(e){}
   }, 420);
-
-  // stop touch propagation inside panel so external handlers don't close it accidentally
   searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
   searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
-
-  // prevent immediate resize-triggered rerender while user types: set a short lock
   window.__gkr_search_resize_lock = true;
   setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
 }
-
-function closeSearchPanel(){
-  window.__gkr_search_open = false;
-
-  searchPanel.style.display = 'none';
-  searchPanel.setAttribute('aria-hidden','true');
-
-  // remove listeners
-  searchPanel.removeEventListener('touchstart', stopTouchBubble);
-  searchPanel.removeEventListener('click', stopTouchBubble);
-
-  // small safety: release resize lock if still present
-  window.__gkr_search_resize_lock = false;
-}
-
-/* Clear search (does NOT close panel) */
-function clearSearch(){
-  searchInput.value = '';
-  lastQuery = '';
-  lastResults = [];
-  try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
-  searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
-  removeExistingHighlights();
-
-  // If a page is open, restore scroll saved position (avoids jumping)
-  try{
-    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
-    if(it && it.kind === 'chapter'){
-      if(isDesktop()) restorePageScrollIfAny(it.id);
-      else restoreWindowScrollIfAny(it.id);
-    }
-  }catch(e){}
-
-  // focus input so user can immediately type again (mobile keyboard stays up)
-  try{
-    searchInput.focus();
-    const v = searchInput.value || '';
-    searchInput.setSelectionRange(v.length, v.length);
-  }catch(e){}
-}
-
-/* helper to stop touch/click event propagation inside search panel */
-function stopTouchBubble(e){
-  e.stopPropagation();
-}
-
-/* debounce helper */
+function closeSearchPanel(){ window.__gkr_search_open = false; searchPanel.style.display = 'none'; searchPanel.setAttribute('aria-hidden','true'); searchPanel.removeEventListener('touchstart', stopTouchBubble); searchPanel.removeEventListener('click', stopTouchBubble); window.__gkr_search_resize_lock = false; }
+function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length); }catch(e){} }
+function stopTouchBubble(e){ e.stopPropagation(); }
 let _debT = null;
-function debouncePerformSearch(q, delay=220){
-  clearTimeout(_debT);
-  _debT = setTimeout(()=> performSearch(q), delay);
-}
-
-/* escape snippet HTML */
+function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-/* wrap occurrences inside escaped HTML snippet with <mark> (case-insensitive) */
-function highlightSnippetEscaped(escapedSnippet, q){
-  if(!q) return escapedSnippet;
-  const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const re = new RegExp(esc, 'ig');
-  return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`);
-}
-
-/* render results list with highlighted query inside snippets */
+function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippet; const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const re = new RegExp(esc, 'ig'); return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`); }
 function renderSearchResults(list){
   lastResults = list || [];
   try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
-  if(!list || list.length === 0){
-    searchResults.innerHTML = '<div class="small-muted">No results</div>';
-    return;
-  }
+  if(!list || list.length === 0){ searchResults.innerHTML = '<div class="small-muted">No results</div>'; return; }
   const q = (searchInput.value || lastQuery || '').trim();
   searchResults.innerHTML = '';
   list.forEach(r=>{
@@ -909,19 +605,15 @@ function renderSearchResults(list){
     searchResults.appendChild(div);
   });
 }
-
-/* perform search (live) - ensures missing chapters fetched */
 async function performSearch(q){
   q = (q||'').trim();
   lastQuery = q;
   try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
   if(!q){ searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; lastResults = []; try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}; return; }
   searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
-
   const needle = q.toLowerCase();
   const ids = collectChapterIds();
   const results = [];
-
   for(const id of ids){
     if(!cache[id]){
       const t = await fetchChapterRaw(id, false);
@@ -937,18 +629,11 @@ async function performSearch(q){
       results.push({ id, snippet });
     }
   }
-
   renderSearchResults(results);
 }
-
-/* helper to open and highlight (opens result then highlight all matches in correct container)
-   - uses mobileChapter as container on mobile (not document)
-   - waits a bit longer and retries once if no matches found (useful on slow devices)
-*/
 async function openFragmentOrChapterAndHighlight(id, query){
   const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
   const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-
   if(isFragment){
     await openFragment(id);
   } else if(isChapter){
@@ -956,11 +641,7 @@ async function openFragmentOrChapterAndHighlight(id, query){
   } else {
     await openFragment(id);
   }
-
-  // choose container correctly
   const container = isDesktop() ? pageFrame : mobileChapter;
-
-  // ensure container has been rendered and focused
   setTimeout(async ()=> {
     try{
       if(!isDesktop()){
@@ -971,11 +652,8 @@ async function openFragmentOrChapterAndHighlight(id, query){
         pageFrame.focus({ preventScroll: true });
       }
     }catch(e){}
-
-    // try highlight now; if no matches, try again after a short delay
     let matches = 0;
     try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
-
     if(matches === 0){
       setTimeout(()=> {
         try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
@@ -991,7 +669,6 @@ btnSearch.addEventListener('click', ()=> {
 });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
 searchClear.addEventListener('click', ()=> clearSearch());
-
 searchInput.addEventListener('keydown', (e)=> {
   if(e.key === 'Escape'){ closeSearchPanel(); return; }
   if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }
@@ -1000,7 +677,6 @@ searchInput.addEventListener('input', ()=> {
   debouncePerformSearch(searchInput.value, 160);
 });
 
-/* when reopening search after selecting a result, lastQuery & lastResults are used */
 (function restoreSearchState(){
   const q = localStorage.getItem(SEARCH_Q_KEY) || '';
   lastQuery = q;
@@ -1035,10 +711,7 @@ window.addEventListener('load', async ()=>{
   showCover();
 });
 
-/* small helpers referenced earlier */
-function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } }
-function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 
 /* popstate/back */
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
@@ -1047,10 +720,8 @@ window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; 
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
-/* expose for debug */
-window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground, generateDynamicTOC };
+window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
 
-/* small reflow on resize — but DO NOT re-render while search panel is open or during short lock */
 let _rt = null;
 window.addEventListener('resize', ()=>{
   clearTimeout(_rt);
@@ -1060,10 +731,6 @@ window.addEventListener('resize', ()=>{
     if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
   }, 180);
 });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
-}
 </script>
 </body>
 </html>
