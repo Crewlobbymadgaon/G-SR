@@ -8,15 +8,15 @@
 <style>
   :root{
     --container-w:780px;      /* max page width on desktop */
-    --num-col:80px;          /* width for number column on desktop */
+    --num-col:88px;          /* width for number column on desktop (widened a bit) */
     --gutter:12px;
     --indent:26px;           /* hanging indent for subitems */
     --font-body: "Times New Roman", Georgia, serif;
-    --base-font-size: 13.5px;
+    --base-font-size: 15px;  /* increased font size slightly */
   }
 
   /* fluid font that adjusts slightly with viewport */
-  html { font-size: calc(var(--base-font-size) + 0.08vw); }
+  html { font-size: calc(var(--base-font-size) + 0.04vw); }
 
   body{
     margin:0;
@@ -40,41 +40,47 @@
     text-align:center;
     margin-bottom:10px;
   }
-  .chapter-title h2{ margin:0; font-size:1.08rem; font-weight:800; letter-spacing:0.02em; }
-  .chapter-title h3{ margin:6px 0 0; font-size:1rem; font-weight:800; }
+  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
+  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
   /* Each rule row: left number column + right content column */
   .rule{
     display:grid;
     grid-template-columns: var(--num-col) 1fr;
     column-gap:var(--gutter);
-    align-items:start;
+    align-items:center;    /* make number and heading inline on same horizontal line */
     margin:8px 0 14px;
   }
 
   /* number column */
   .rule .num{
-    font-weight:700;
+    font-weight:800;       /* GR number bold */
     text-align:left;
-    padding-top:2px;
+    padding-top:0;
     color:#061229;
-    font-size:0.98rem;
+    font-size:1rem;
   }
 
-  /* content column */
+  /* content column: default bold for GR content (requirement) */
   .rule .content{
     text-align:justify;
     color:#1b2b3a;
-    font-size:0.98rem;
+    font-size:1rem;
+    font-weight:800;       /* make heading and its content bold */
   }
 
-  /* heading of the rule — bold and left-aligned inside the content column */
+  /* Put heading and first line inline-looking */
   .rule .heading{
-    font-weight:800;
+    display:block;
+    margin:0 0 6px 0;
     text-align:left;
-    margin:0 0 8px 0;
-    font-size:0.98rem;
+    font-size:1rem;
+    font-weight:800;
   }
+
+  /* paragraphs inside the content. Because the content is bold by default for GRs,
+     keep normal paragraphs bold too. S.R. notes will be styled separately. */
+  .rule p { margin:0 0 10px 0; }
 
   /* Definition lists / subclauses with hanging indent */
   .hanging-list{
@@ -85,17 +91,18 @@
 
   .hanging-list li{
     margin:0 0 8px 0;
-    text-indent: -1.75em;      /* pulls first line left to show marker */
-    padding-left:1.75em;      /* leaves space for marker */
+    text-indent: -1.85em;      /* pulls first line left to show marker */
+    padding-left:1.85em;      /* leaves space for marker */
     text-align:justify;
     line-height:1.45;
+    font-weight:800;          /* sub-items bold to match rule content */
   }
 
   .hanging-list li .marker{
     display:inline-block;
-    width:1.75em;
-    margin-left:-1.75em;
-    font-weight:600;
+    width:1.85em;
+    margin-left:-1.85em;
+    font-weight:800;
   }
 
   .hanging-list .sub{
@@ -103,22 +110,24 @@
     text-indent: -1.5em;
     padding-left:1.5em;
     display:block;
+    font-weight:800;
   }
 
-  /* S.R. notes style */
+  /* S.R. notes style — normal font (not italic), smaller, and not bold */
   .sr-note{
     margin:8px 0 12px 0;
-    padding:10px 12px;
+    padding:8px 10px;
     border-left:3px solid #d0d8e0;
     background:#fbfcfd;
     color:#233445;
-    font-style:italic;
-    font-size:0.92rem;
+    font-style:normal;        /* removed italics */
+    font-size:0.94rem;
+    font-weight:400;          /* normal weight */
   }
 
   /* small tweaks for better readability on medium screens */
   @media (max-width: 900px){
-    :root{ --num-col:64px; --container-w:700px; }
+    :root{ --num-col:66px; --container-w:720px; }
     .chapter-container{ padding:18px 16px; }
   }
 
@@ -130,14 +139,15 @@
     .hanging-list li .marker{ width:1.5em; margin-left:-1.5em; }
   }
 
-  /* mobile phones: stack number above content */
+  /* mobile phones: stack number above content but number and heading still visually inline at top */
   @media (max-width: 420px){
     .rule{
-      grid-template-columns: 1fr;  /* single column */
+      grid-template-columns: 1fr;  /* single column stack */
+      align-items:start;
     }
     .rule .num{
       grid-column:1;
-      font-size:1rem;
+      font-size:1.02rem;
       margin-bottom:6px;
     }
     .rule .content{
@@ -145,7 +155,6 @@
       text-align:justify;
       font-size:0.98rem;
     }
-    /* reduce hanging indent for narrow screens */
     .hanging-list li{
       text-indent: -1.4em;
       padding-left:1.4em;
@@ -154,7 +163,7 @@
     .hanging-list li .marker{
       width:1.4em;
       margin-left:-1.4em;
-      font-weight:600;
+      font-weight:800;
     }
     .hanging-list .sub{
       margin-left:18px;
@@ -179,7 +188,7 @@
     <h3>PRELIMINARY</h3>
   </div>
 
-  <!-- rule 1.01 -->
+  <!-- rule 1.01: number inline with heading -->
   <div class="rule" id="r1-01">
     <div class="num">1.01</div>
     <div class="content">
@@ -191,7 +200,7 @@
     </div>
   </div>
 
-  <!-- rule 1.02 -->
+  <!-- rule 1.02 (long def list) -->
   <div class="rule" id="r1-02">
     <div class="num">1.02</div>
     <div class="content">
@@ -210,7 +219,8 @@
         <li><span class="marker">(9)</span> <strong>“Block forward”</strong> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
         <li><span class="marker">(10)</span> <strong>“Block section”</strong> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
 
-        <!-- ... continue items as before ... -->
+        <!-- ... continue remaining items as before ... -->
+
       </ol>
 
       <div class="sr-note">
@@ -218,11 +228,34 @@
         The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
       </div>
 
-      <!-- more content continues ... -->
+      <!-- Continue additional items/lists below in the same structure; S.R. notes will appear normal font -->
     </div>
   </div>
 
-  <!-- continue with remaining rules (1.03 etc.) as in your source -->
+  <!-- rule 1.03 -->
+  <div class="rule" id="r1-03">
+    <div class="num">1.03</div>
+    <div class="content">
+      <div class="heading">CLASSIFICATION OF STATIONS —</div>
+
+      <ol class="hanging-list">
+        <li><span class="marker">(1)</span> Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</li>
+        <li><span class="marker">(2)</span> Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</li>
+        <li><span class="marker">(3)</span> Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</li>
+      </ol>
+
+      <div style="margin:0 0 12px; padding-left:20px; text-align:justify; text-justify:inter-word;">
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
+        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
+      </div>
+
+      <div class="sr-note">
+        <strong>S.R.1.03(1)</strong><br>
+        Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station. The Station Working Rules for a “special class” stations shall have the approval of the “Commissioner of Railway Safety”.
+      </div>
+    </div>
+  </div>
 
 </article>
 
