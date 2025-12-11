@@ -1,61 +1,172 @@
 <!-- chapters/chapter1.html -->
 <article class="chapter-content"
-  style="font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,Helvetica;
-         line-height:1.55;
-         color:#0b1726;
-         text-align:center;
-         max-width:920px;
-         margin:0 auto;
-         padding:22px 14px;">
+  <style>
+  :root{
+    --container-w:780px;
+    --num-col:80px;     /* width for number column */
+    --gutter:12px;
+    --indent:26px;      /* hanging indent for subitems */
+    --font-body: "Times New Roman", Georgia, serif;
+  }
 
-  <!-- Centered header -->
-  <div style="margin-bottom:18px; text-align:center;">
-  <h2 style="margin:0; margin-top:14px; font-weight:800; font-size:1.25rem; letter-spacing:.04em; color:#061229;">
-    CHAPTER I
-  </h2>
-  <h3 style="margin:0; margin-top:6px; font-weight:800; font-size:1rem; color:#061229;">
-    PRELIMINARY
-  </h3>
-</div>
+  .chapter-container{
+    max-width:var(--container-w);
+    margin:0 auto;
+    font-family: var(--font-body);
+    color:#0b1726;
+    line-height:1.45;
+    font-size:13.5px; /* adjust to resemble scan */
+  }
 
+  /* top government header (centered small caps feel) */
+  .gov-header{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .gov-header .org{ font-weight:700; font-size:13px; letter-spacing:0.03em; color:#061229; }
+  .gov-header .dept{ font-weight:700; font-size:13px; margin-top:6px; color:#061229; }
+  .gov-header .subdept{ font-weight:700; font-size:13px; margin-top:6px; color:#061229; }
 
-  <!-- Intro / sections -->
-<div style="text-align:left; max-width:860px; margin:0 auto; color:#1b2b3a; font-size:0.98rem;">
+  /* CHAPTER title centered */
+  .chapter-title{
+    text-align:center;
+    margin-bottom:10px;
+  }
+  .chapter-title h2{ margin:0; font-size:14px; font-weight:800; letter-spacing:0.02em; }
+  .chapter-title h3{ margin:6px 0 0; font-size:13px; font-weight:800; }
 
-  <p style="margin:0 0 14px; text-align:left; font-weight:800;">
-  1.01 SHORT TITLE AND COMMENCEMENT
-</p>
+  /* Each rule row: left number column + right content column */
+  .rule{
+    display:grid;
+    grid-template-columns: var(--num-col) 1fr;
+    column-gap:var(--gutter);
+    align-items:start;
+    margin:8px 0 14px;
+  }
 
+  /* number column */
+  .rule .num{
+    font-weight:700;
+    text-align:left;
+    padding-top:2px;
+    color:#061229;
+  }
 
+  /* content column */
+  .rule .content{
+    text-align:justify;
+    color:#1b2b3a;
+  }
 
-    <p style="margin:0 0 14px; text-align:justify; text-justify:inter-word;">
-      (1) These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.
-    </p>
+  /* heading of the rule — bold and left-aligned inside the content column */
+  .rule .heading{
+    font-weight:800;
+    text-align:left;      /* ensures heading starts at left of content column */
+    margin:0 0 8px 0;
+    font-size:13px;
+  }
 
-    <p style="margin:0 0 14px; text-align:justify; text-justify:inter-word;">
-      (2) They shall come into force on the date of their publication in the Official Gazette.
-    </p>
+  /* normal paragraphs in a rule */
+  .rule p { margin:0 0 10px 0; }
 
-    <p style="margin:0 0 14px; text-align:justify; text-justify:inter-word;">
-      <strong>1.02 DEFINITIONS :-</strong> In these rules, unless the context otherwise requires :
-    </p>
+  /* Definition lists / subclauses with hanging indent */
+  .hanging-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
 
-    <ol style="margin:0 0 14px 20px; padding:0; counter-reset:item;" >
-      <li style="margin:0 0 10px;">(1) <span style="font-weight:600;">“Act”</span> means The Railways Act, 1989 (24 of 1989);</li>
-      <li style="margin:0 0 10px;">(2) <span style="font-weight:600;">“Adequate distance”</span> means the distance sufficient to ensure safety;</li>
-      <li style="margin:0 0 10px;">(3) <span style="font-weight:600;">“Approach lighting”</span> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</li>
-      <li style="margin:0 0 10px;">(4) <span style="font-weight:600;">“Approved special instructions”</span> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</li>
-      <li style="margin:0 0 10px;">(5) <span style="font-weight:600;">“Authorized officer”</span> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</li>
-    </ol>
+  .hanging-list li{
+    margin:0 0 8px 0;
+    text-indent: -1.75em;              /* pulls first line left to show marker */
+    padding-left:1.75em;               /* leaves space for marker */
+    text-align:justify;
+  }
 
-    <div style="margin:0 0 14px; padding-left:20px; font-style:italic; color:#233445;">
-      <small><strong>S.R.1.02(5)(1)</strong><br>The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.</small>
+  /* If you want the numeric markers to look like (1) etc., put them inline */
+  .hanging-list li .marker{
+    display:inline-block;
+    width:1.75em;
+    margin-left:-1.75em;
+    font-weight:600;
+  }
+
+  /* sub-sub items (a), (i) etc. — additional indent */
+  .hanging-list .sub{
+    margin-left: var(--indent);
+    text-indent: -1.5em;
+    padding-left:1.5em;
+  }
+
+  /* S.R. notes style */
+  .sr-note{
+    margin:8px 0 12px 0;
+    padding:10px 12px;
+    border-left:3px solid #d0d8e0;
+    background:#fbfcfd;
+    color:#233445;
+    font-style:italic;
+    font-size:12px;
+  }
+
+  /* print-tune */
+  @media print{
+    :root{ --container-w:720px; font-size:12.5px }
+    .chapter-container{ line-height:1.4 }
+  }
+</style>
+
+<article class="chapter-container">
+  
+
+  <div class="chapter-title">
+    <h2>CHAPTER I</h2>
+    <h3>PRELIMINARY</h3>
+  </div>
+
+  <!-- Example rule 1.01 -->
+  <div class="rule" id="r1-01">
+    <div class="num">1.01</div>
+    <div class="content">
+      <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
+
+      <ol class="hanging-list">
+        <li><span class="marker">(1)</span> These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</li>
+        <li><span class="marker">(2)</span> They shall come into force on the date of their publication in the Official Gazette.</li>
+      </ol>
     </div>
+  </div>
 
-    <ol start="6" style="margin:0 0 14px 20px; padding:0;">
-      <li style="margin:0 0 10px;">(6) <span style="font-weight:600;">“Authority to proceed”</span> means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</li>
-      <li style="margin:0 0 10px;">(7) <span style="font-weight:600;">“Axle counter”</span> means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</li>
-      <li style="margin:0 0 10px;">(8) <span style="font-weight:600;">“Block back”</span> means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</li>
+  <!-- Example rule 1.02 (long definition list) -->
+  <div class="rule" id="r1-02">
+    <div class="num">1.02</div>
+    <div class="content">
+      <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
+
+      <ol class="hanging-list">
+        <li><span class="marker">(1)</span> <strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</li>
+        <li><span class="marker">(2)</span> <strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</li>
+        <li><span class="marker">(3)</span> <strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</li>
+        <li><span class="marker">(4)</span> <strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</li>
+        <li><span class="marker">(5)</span> <strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</li>
+      </ol>
+
+      <div class="sr-note">
+        <strong>S.R.1.02(5)(1)</strong><br>
+        The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
+      </div>
+
+      <!-- continue list (note start counting in HTML is visual only here) -->
+      <ol class="hanging-list">
+        <li><span class="marker">(6)</span> <strong>“Authority to proceed”</strong> means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</li>
+        <li><span class="marker">(7)</span> <strong>“Axle counter”</strong> means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</li>
+        <li><span class="marker">(8)</span> <strong>“Block back”</strong> means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</li>
+      </ol>
+
+    </div>
+  </div>
+
+    
       <li style="margin:0 0 10px;">(9) <span style="font-weight:600;">“Block forward”</span> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
       <li style="margin:0 0 10px;">(10) <span style="font-weight:600;">“Block section”</span> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
       <li style="margin:0 0 10px;">(11) <span style="font-weight:600;">“Centralized Traffic Control”</span> means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</li>
