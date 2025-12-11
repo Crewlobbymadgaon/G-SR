@@ -21,6 +21,8 @@
   --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
   --update-interval-ms:900000; /* 15 minutes */
   --highlight-color: #fff59d;
+  --num-col:88px; /* number column width for desktop */
+  --gutter:12px;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:#071033}
@@ -91,12 +93,6 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 .search-item:hover{ background:#f7fbff; border-color:#e6f0ff; }
 .search-snippet{ color:#475569; font-size:0.95rem; margin-top:6px; }
 
-/* mobile style: full-width panel */
-@media(max-width:640px){
-  #searchPanel{ left:8px; transform:none; width: calc(100% - 16px); top: calc(var(--header-h) + 6px); padding:10px; flex-direction:column; align-items:stretch; }
-  #searchResults{ width:100%; border-left:none; padding-left:0; margin-top:8px; }
-}
-
 /* highlight styling */
 .search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
 @keyframes highlight-pulse { 0%{ box-shadow:0 0 0 6px rgba(255,245,157,0.18) inset; } 100%{ box-shadow:0 0 0 0 rgba(255,245,157,0.0) inset; } }
@@ -117,7 +113,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 .hidden{display:none !important}
 .small-muted{color:#6b7280;font-size:0.95rem}
 
-  /* Documents Accompanying */
+/* Documents Accompanying */
 .doc-chapter {
   max-width: 920px;
   margin: 0 auto;
@@ -126,13 +122,121 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
   line-height: 1.55;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica;
 }
-
 .doc-header { text-align: center; margin-bottom: 18px; }
 .doc-title { font-weight: 800; font-size: 1.1rem; color: #061229; margin: 0; }
 .doc-lead { margin-top: 8px; color: #1b2b3a; font-weight: 600; }
-
 .doc-body { margin-top: 12px; text-align: left; }
 .doc-body p { margin: 0 0 12px; color: #1b2b3a; font-size: 1rem; text-align: justify; }
+
+/* ====== NEW: RULE / DEFINITION STYLES & ALIGNMENT FIXES ====== */
+
+.rule{
+  display:grid;
+  grid-template-columns: var(--num-col) 1fr;
+  column-gap: var(--gutter);
+  align-items:start; /* top align number and heading */
+  margin:8px 0 14px;
+}
+
+.rule .num{
+  margin:0;
+  padding:0;
+  font-weight:800;
+  color:#061229;
+  align-self:start;
+  line-height:1;
+  font-size:1rem;
+}
+
+.rule .content{
+  margin:0;
+  padding:0;
+  font-weight:800; /* GR content bold per your setting */
+}
+
+/* heading line that stays aligned with .num */
+.heading-row{
+  display:flex;
+  align-items:flex-start;
+  gap:0.5rem;
+  margin:0 0 6px 0;
+}
+
+.heading{
+  display:inline-block;
+  margin:0;
+  font-weight:800;
+  font-size:16px;
+  line-height:1.45;
+  vertical-align:top;
+  color:#061229;
+  word-break:break-word;
+}
+
+/* Definition list: ensure multi-line continuation aligns under termdef */
+.hanging-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.hanging-list li{
+  display:grid;
+  grid-template-columns: 2.2rem 1fr; /* marker column + definition column */
+  column-gap:0.6rem;
+  margin:0 0 8px 0;
+  line-height:1.6;
+  font-weight:800;
+  text-align:justify;
+}
+
+.hanging-list li .marker{
+  justify-self:start;
+  align-self:flex-start;
+  white-space:nowrap;
+  font-weight:800;
+}
+
+.hanging-list li .termdef{
+  margin:0;
+  padding:0;
+  font-size:16px;
+  line-height:1.6;
+  font-weight:400; /* make definition text normal if you prefer */
+  color:#1b2b3a;
+}
+
+/* S.R. note style */
+.sr-note{
+  margin:8px 0 12px 0;
+  padding:8px 10px;
+  border-left:3px solid #d0d8e0;
+  background:#fbfcfd;
+  color:#233445;
+  font-style:normal;
+  font-size:0.94rem;
+  font-weight:400;
+}
+
+/* responsive tweaks */
+@media (max-width:900px){
+  :root{ --num-col:66px; }
+}
+@media (max-width:600px){
+  :root{ --num-col:56px; }
+  .heading{ font-size:15px; }
+  .hanging-list li .termdef{ font-size:15px; }
+}
+@media (max-width:420px){
+  :root{ --num-col:48px; }
+  .heading{ font-size:14.6px; }
+  .hanging-list li .termdef{ font-size:14.6px; }
+}
+
+/* print tuning */
+@media print{
+  :root{ --page-max-width:720px; }
+}
 </style>
 </head>
 <body>
@@ -204,14 +308,10 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
   </footer>
 
 <script>
-/* improvements:
- - persistent last query & results (stored in localStorage + memory)
- - live results while typing (debounced)
- - when reopening search, previous query & results restored
- - responsive searchPanel behavior on mobile
- - selecting a result opens page and highlights the match
- - added CLEAR button for search (clears input + results)
- - mobile highlighting improved (mobileChapter container + retry)
+/* improvements + dynamic TOC integration included
+   - closes TOC on selection
+   - aligns GR numbers + heading
+   - injects IDs for rules & sub-items and builds per-chapter TOC
 */
 
 const DESKTOP_BREAK = 980;
@@ -220,8 +320,8 @@ const LAST_READ_KEY = 'gkr_last_read';
 const SCROLL_PREFIX = 'gkr_scroll_';
 const UPDATE_TS_KEY = 'gkr_last_update_ts';
 const UPDATE_INTERVAL_MS = Number(getComputedStyle(document.documentElement).getPropertyValue('--update-interval-ms')) || 15*60*1000;
-const SEARCH_Q_KEY = 'gkr_search_q';    // last query persist
-const SEARCH_R_KEY = 'gkr_search_r';    // last results persisted (optional)
+const SEARCH_Q_KEY = 'gkr_search_q';
+const SEARCH_R_KEY = 'gkr_search_r';
 
 const TOC = [
   { type: 'fragment', id: 'notification', label: 'Notification' },
@@ -291,7 +391,7 @@ let bgTimer = null;
 
 /* persist last search in memory + storage */
 let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
-let lastResults = []; // array of {id, snippet}
+let lastResults = [];
 
 /* ---------- Build TOC ---------- */
 function buildTOC(){
@@ -337,42 +437,150 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-  // ---------- Close TOC drawer when any TOC item or link is clicked ----------
+/* ---------- ensure IDs + dynamic per-chapter TOC ---------- */
+/* helper to make safe ids */
+function safeId(str){
+  return String(str || '').trim().toLowerCase().replace(/[()\[\]\.,:;\/\\\s]+/g,'-').replace(/[^a-z0-9\-]+/g,'').replace(/^\-+|\-+$/g,'') || ('id'+Math.random().toString(36).slice(2,8));
+}
+
+/* ensure .rule and hanging-list li items have stable ids; return metadata */
+function ensureSubIds(chapterContainer){
+  const rules = chapterContainer.querySelectorAll('.rule');
+  const meta = [];
+  rules.forEach((rule, rIndex) => {
+    // rule id
+    let ruleId = rule.id || '';
+    const numEl = rule.querySelector('.num');
+    const numText = numEl ? numEl.textContent.trim().replace(/\s+/g,'-') : ('r' + (rIndex+1));
+    if(!ruleId) ruleId = 'r-' + safeId(numText);
+    // ensure unique
+    if(document.getElementById(ruleId) && document.getElementById(ruleId) !== rule){
+      ruleId = ruleId + '-' + (rIndex+1);
+    }
+    rule.id = ruleId;
+
+    const headingEl = rule.querySelector('.heading') || rule.querySelector('.heading-row > .heading');
+    const headingText = headingEl ? headingEl.textContent.trim() : numText;
+
+    // collect subitems
+    const subs = [];
+    const listItems = rule.querySelectorAll('.hanging-list > li');
+    listItems.forEach((li, i) => {
+      let subId = li.id || '';
+      // marker detection
+      const markerEl = li.querySelector('.marker');
+      let marker = markerEl ? markerEl.textContent.trim() : '';
+      if(!marker){
+        const txt = li.textContent.trim();
+        const m = txt.match(/^\(?[0-9a-zA-Z]+\)?/);
+        marker = m ? m[0] : ('s' + (i+1));
+      }
+      if(!subId){
+        const cleanMarker = safeId(marker);
+        subId = `${ruleId}-${cleanMarker || ('s'+(i+1))}`;
+        if(document.getElementById(subId)) subId = `${subId}-${i+1}`;
+      }
+      li.id = subId;
+      const termdef = li.querySelector('.termdef') ? li.querySelector('.termdef').textContent.trim() : li.textContent.trim();
+      const snippet = termdef.split(/\n/)[0].trim().slice(0,80);
+      subs.push({ id: subId, marker, snippet });
+    });
+
+    meta.push({ ruleId, numText, headingText, subs });
+  });
+  return meta;
+}
+
+/* build a per-chapter TOC and replace tocList contents temporarily with it */
+function generateDynamicTOC(chapterId){
+  // choose container that currently holds the injected HTML
+  const container = (pageShell.style.display !== 'none') ? pageFrame : mobileChapter;
+  if(!container) return;
+  const meta = ensureSubIds(container);
+
+  // build new TOC list
+  tocList.innerHTML = '';
+  // heading
+  const titleLi = document.createElement('li');
+  titleLi.style.padding = '6px 8px';
+  titleLi.style.fontWeight = '800';
+  titleLi.textContent = (meta.length && meta[0].headingText) ? meta[0].headingText.split('—')[0] : 'Arrangement of Rules';
+  tocList.appendChild(titleLi);
+
+  meta.forEach(m => {
+    const li = document.createElement('li');
+    li.style.margin = '6px 0';
+    const a = document.createElement('a');
+    a.href = '#' + m.ruleId;
+    a.textContent = (m.numText ? (m.numText + ' — ') : '') + m.headingText;
+    a.style.fontWeight = '700';
+    a.style.color = '#05204a';
+    a.style.textDecoration = 'none';
+    a.onclick = (e) => {
+      // close drawer and allow default anchor behavior (we will scroll afterwards)
+      tocDrawer.classList.remove('open');
+      btnMenu.classList.remove('open');
+      tocDrawer.setAttribute('aria-hidden','true');
+      btnMenu.setAttribute('aria-expanded','false');
+      // prevent default so we can programmatically scroll within injected content
+      e.preventDefault();
+      // scroll inside the correct container
+      setTimeout(()=> {
+        const el = document.getElementById(m.ruleId);
+        if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
+      }, 120);
+    };
+    li.appendChild(a);
+
+    if(m.subs && m.subs.length){
+      const subul = document.createElement('ul');
+      subul.style.listStyle = 'none';
+      subul.style.paddingLeft = '14px';
+      subul.style.marginTop = '6px';
+      m.subs.forEach(s => {
+        const sli = document.createElement('li');
+        sli.style.marginBottom = '4px';
+        const sa = document.createElement('a');
+        sa.href = '#' + s.id;
+        sa.textContent = (s.marker ? (s.marker + ' ') : '') + s.snippet;
+        sa.style.fontWeight = '400';
+        sa.style.color = '#234';
+        sa.style.textDecoration = 'none';
+        sa.onclick = (e) => {
+          tocDrawer.classList.remove('open');
+          btnMenu.classList.remove('open');
+          tocDrawer.setAttribute('aria-hidden','true');
+          btnMenu.setAttribute('aria-expanded','false');
+          e.preventDefault();
+          setTimeout(()=> {
+            const el = document.getElementById(s.id);
+            if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
+          }, 120);
+        };
+        sli.appendChild(sa);
+        subul.appendChild(sli);
+      });
+      li.appendChild(subul);
+    }
+    tocList.appendChild(li);
+  });
+}
+
+/* ---------- Close TOC drawer when any TOC item or link is clicked (fallback) ---------- */
 (function installTOCCloseHandler(){
   const toc = document.getElementById('tocList');
   if(!toc) return;
-
-  // Delegated click handler: closes drawer and lets existing handlers run
   toc.addEventListener('click', function(e){
-    // find nearest clickable element inside TOC (a link or a button-like item)
     const target = e.target.closest('a, button, .toc-item, .toc-sub');
     if(!target) return;
-
-    // Close the drawer immediately so UI responds fast
     if(tocDrawer && btnMenu){
       tocDrawer.classList.remove('open');
       btnMenu.classList.remove('open');
       tocDrawer.setAttribute('aria-hidden', 'true');
       btnMenu.setAttribute('aria-expanded', 'false');
     }
-
-    // If the clicked element is an <a href="#id"> style link, prevent full navigation
-    if(target.tagName && target.tagName.toLowerCase() === 'a'){
-      const href = target.getAttribute('href') || '';
-      if(href.startsWith('#')){
-        e.preventDefault();
-        const anchorId = href.slice(1);
-        // If you have a function to open anchor inside a chapter, call it:
-        // You must supply current chapter id variable or adapt as needed.
-        // Example: openAnchor(currentChapterId, anchorId);
-        // If your TOC items call openAnchor/openChapter via onclick already,
-        // the onclick handler will still run. If not, adapt as above.
-      }
-    }
-    // allow any inline onclicks or other handlers to continue — we only auto-close here.
   }, { passive: true });
 })();
-
 
 /* ---------- fetch helpers ---------- */
 async function fetchChapterRaw(id, bypass=false){
@@ -392,30 +600,41 @@ async function getHtml(id){
 
 /* ---------- render + navigation ---------- */
 async function openFromTOC(item){
-  tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
+  // always close drawer first (ensures it hides on selection)
+  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
   markStarted();
   if(item.type === 'fragment') await openFragment(item.id);
   else await openChapter(item.id, null);
 }
-async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter(chapterId, anchorId); }
+async function openAnchor(chapterId, anchorId){
+  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
+  markStarted();
+  await openChapter(chapterId, anchorId);
+}
 async function openFragment(id){
+  // close drawer
+  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); }
   const html = await getHtml(id);
   renderHtml(html);
+  // make per-chapter TOC & ensure ids
+  generateDynamicTOC(id);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
 async function openChapter(chId, anchor=null){
+  // close drawer
+  if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); }
   const html = await getHtml(chId);
   renderHtml(html);
+  // ensure ids and build per-chapter TOC
+  generateDynamicTOC(chId);
+
   if(anchor){
     setTimeout(()=> {
-      if(isDesktop()){
-        const el = pageFrame.querySelector('#' + anchor);
-        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-      } else {
-        const el = document.getElementById(anchor);
-        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-      }
+      const container = isDesktop() ? pageFrame : mobileChapter;
+      // prefer finding element in the document (ids were injected by generateDynamicTOC)
+      const el = document.getElementById(anchor) || container.querySelector('#' + anchor);
+      if(el) { el.scrollIntoView({behavior:'smooth', block:'start'}); el.setAttribute('tabindex','-1'); el.focus({ preventScroll:true }); }
     }, 150);
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
     saveLastRead({ kind:'chapter', id:chId, anchor });
@@ -829,7 +1048,7 @@ document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open'
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
 /* expose for debug */
-window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
+window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground, generateDynamicTOC };
 
 /* small reflow on resize — but DO NOT re-render while search panel is open or during short lock */
 let _rt = null;
@@ -842,12 +1061,9 @@ window.addEventListener('resize', ()=>{
   }, 180);
 });
 
-  
-
 if ('serviceWorker' in navigator) {
-  // register 'sw.js' relative to repo root so scope= /G-SR/
   navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
-                                                                                                                                                                               }
+}
 </script>
 </body>
 </html>
