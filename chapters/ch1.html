@@ -7,7 +7,7 @@
 <style>
   :root{
     --container-w:780px;
-    --num-col:88px;        /* desktop number column */
+    --num-col:48px;        /* desktop number column */
     --gutter:12px;         /* default gap between number and content */
     --marker-col:2.2rem;   /* width for the (1) marker inside each li */
     --font-body: "Times New Roman", Georgia, serif;
@@ -108,18 +108,18 @@
 
   .sub{ display:block; margin-top:6px; }
 
-  .sr-note{
-    margin:8px 0 12px 0;
-    padding:8px 10px;
-    border-left:3px solid #d0d8e0;
-    background:#fbfcfd;
-    color:#233445;
-    font-style:normal;
-    text-align: justify;
-    text-justify: inter-word;
-    font-size: 16px;
-    font-weight:400;
-  }
+  .sr-note {
+  font-size:16px;        /* SAME SIZE as termdef */
+  font-weight:400;       /* LIGHTER (as required) */
+  line-height:1.6;       /* MATCH termdef to avoid appearing smaller */
+  
+  
+  margin:10px 0 12px;
+  padding:10px 12px;
+  background:#fbfcfd;
+  border-left:3px solid #d0d8e0;
+  font-style:normal;
+}
 
   .termdef {
     font-size: 16px;
