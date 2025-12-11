@@ -109,14 +109,19 @@
   .sub{ display:block; margin-top:6px; }
 
   .sr-note {
-  font-size: 16px;
-    line-height: 1.6;
-    margin: 0;
-    padding-left: 0;
-    text-align: justify;
-    text-justify: inter-word;
-    color: #1b2b3a;
-  
+  font-size: 16px;          /* SAME size as termdef */
+  line-height: 1.6;
+  font-weight: 400;         /* lighter than termdef */
+  color: #1b2b3a;
+
+  margin: 10px 0 12px;      /* proper spacing so text does NOT look smaller */
+  padding: 0;               /* no padding, clean look */
+
+  text-align: justify;
+  text-justify: inter-word;
+
+  background: none !important;
+  border: none !important;
 }
 
   .termdef {
