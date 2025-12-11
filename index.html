@@ -337,6 +337,43 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
+  // ---------- Close TOC drawer when any TOC item or link is clicked ----------
+(function installTOCCloseHandler(){
+  const toc = document.getElementById('tocList');
+  if(!toc) return;
+
+  // Delegated click handler: closes drawer and lets existing handlers run
+  toc.addEventListener('click', function(e){
+    // find nearest clickable element inside TOC (a link or a button-like item)
+    const target = e.target.closest('a, button, .toc-item, .toc-sub');
+    if(!target) return;
+
+    // Close the drawer immediately so UI responds fast
+    if(tocDrawer && btnMenu){
+      tocDrawer.classList.remove('open');
+      btnMenu.classList.remove('open');
+      tocDrawer.setAttribute('aria-hidden', 'true');
+      btnMenu.setAttribute('aria-expanded', 'false');
+    }
+
+    // If the clicked element is an <a href="#id"> style link, prevent full navigation
+    if(target.tagName && target.tagName.toLowerCase() === 'a'){
+      const href = target.getAttribute('href') || '';
+      if(href.startsWith('#')){
+        e.preventDefault();
+        const anchorId = href.slice(1);
+        // If you have a function to open anchor inside a chapter, call it:
+        // You must supply current chapter id variable or adapt as needed.
+        // Example: openAnchor(currentChapterId, anchorId);
+        // If your TOC items call openAnchor/openChapter via onclick already,
+        // the onclick handler will still run. If not, adapt as above.
+      }
+    }
+    // allow any inline onclicks or other handlers to continue — we only auto-close here.
+  }, { passive: true });
+})();
+
+
 /* ---------- fetch helpers ---------- */
 async function fetchChapterRaw(id, bypass=false){
   try{
