@@ -1,6 +1,11 @@
-<!-- chapters/chapter1.html -->
-<article class="chapter-content"
-  <style>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chapter I — Preliminary</title>
+
+<style>
   :root{
     --container-w:780px;
     --num-col:80px;     /* width for number column */
@@ -16,16 +21,8 @@
     color:#0b1726;
     line-height:1.45;
     font-size:13.5px; /* adjust to resemble scan */
+    padding:22px 14px;
   }
-
-  /* top government header (centered small caps feel) */
-  .gov-header{
-    text-align:center;
-    margin-bottom:18px;
-  }
-  .gov-header .org{ font-weight:700; font-size:13px; letter-spacing:0.03em; color:#061229; }
-  .gov-header .dept{ font-weight:700; font-size:13px; margin-top:6px; color:#061229; }
-  .gov-header .subdept{ font-weight:700; font-size:13px; margin-top:6px; color:#061229; }
 
   /* CHAPTER title centered */
   .chapter-title{
@@ -83,7 +80,6 @@
     text-align:justify;
   }
 
-  /* If you want the numeric markers to look like (1) etc., put them inline */
   .hanging-list li .marker{
     display:inline-block;
     width:1.75em;
@@ -91,7 +87,6 @@
     font-weight:600;
   }
 
-  /* sub-sub items (a), (i) etc. — additional indent */
   .hanging-list .sub{
     margin-left: var(--indent);
     text-indent: -1.5em;
@@ -115,16 +110,17 @@
     .chapter-container{ line-height:1.4 }
   }
 </style>
+</head>
+<body>
 
-<article class="chapter-container">
-  
+<article class="chapter-container" aria-labelledby="chapter-heading">
 
-  <div class="chapter-title">
+  <div class="chapter-title" id="chapter-heading">
     <h2>CHAPTER I</h2>
     <h3>PRELIMINARY</h3>
   </div>
 
-  <!-- Example rule 1.01 -->
+  <!-- rule 1.01 -->
   <div class="rule" id="r1-01">
     <div class="num">1.01</div>
     <div class="content">
@@ -137,7 +133,7 @@
     </div>
   </div>
 
-  <!-- Example rule 1.02 (long definition list) -->
+  <!-- rule 1.02 -->
   <div class="rule" id="r1-02">
     <div class="num">1.02</div>
     <div class="content">
@@ -149,149 +145,128 @@
         <li><span class="marker">(3)</span> <strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</li>
         <li><span class="marker">(4)</span> <strong>“Approved special instructions”</strong> means special instructions approved of or prescribed by the Commissioner of Railway Safety.</li>
         <li><span class="marker">(5)</span> <strong>“Authorized officer”</strong> means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</li>
-      </ol>
 
-      <div class="sr-note">
-        <strong>S.R.1.02(5)(1)</strong><br>
-        The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
-      </div>
-
-      <!-- continue list (note start counting in HTML is visual only here) -->
-      <ol class="hanging-list">
         <li><span class="marker">(6)</span> <strong>“Authority to proceed”</strong> means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</li>
         <li><span class="marker">(7)</span> <strong>“Axle counter”</strong> means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</li>
         <li><span class="marker">(8)</span> <strong>“Block back”</strong> means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</li>
+        <li><span class="marker">(9)</span> <strong>“Block forward”</strong> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
+        <li><span class="marker">(10)</span> <strong>“Block section”</strong> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
+        <li><span class="marker">(11)</span> <strong>“Centralized Traffic Control”</strong> means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</li>
+        <li><span class="marker">(12)</span> <strong>“Centralized Traffic Control Operator”</strong> means the person on duty who may, for the time being, be responsible for the working of trains on the Centralized Traffic Control;</li>
+        <li><span class="marker">(13)</span> <strong>“Commissioner of Railway Safety”</strong> means an inspector appointed to exercise any functions under the Act, and includes an Additional Commissioner of Railway Safety;</li>
+        <li><span class="marker">(14)</span> <strong>“Competent railway servant”</strong> means a railway servant duly qualified to under take and perform the duties entrusted to him;</li>
+        <li><span class="marker">(15)</span> <strong>“Connections”</strong> when used with reference to a running line, means the points and crossings or other appliances used to connect such line with other lines or to cross it;</li>
+        <li><span class="marker">(16)</span> <strong>“Controller”</strong> means a railway servant on duty who may for the time being be responsible for regulating the working of traffic on a section of a railway provided with the system of speech communication;</li>
+        <li><span class="marker">(17)</span> <strong>“Day”</strong> means from sunrise to sunset;</li>
+        <li><span class="marker">(18)</span> <strong>“Direction of traffic”</strong> means —<br>
+          <span class="sub" style="display:block;"><span class="marker">(a)</span> on a double line, the direction for which the line is signalled;</span>
+          <span class="sub" style="display:block;"><span class="marker">(b)</span> on a single line, the direction for the time being established, under the system of working, to allow trains to move in that direction;</span>
+        </li>
+
+        <li><span class="marker">(19)</span> <strong>“Loco Pilot”</strong> means the engine driver or any other competent railway servant for the time being in charge of driving a train;</li>
+        <li><span class="marker">(20)</span> <strong>“Electrical communication instrument”</strong> means either a telephone or a Morse telegraph instrument;</li>
+        <li><span class="marker">(21)</span> <strong>“Facing and trailing points”</strong> : points are facing or trailing in accordance with the direction a train or vehicle moves over them. Points are said to be facing points when by their operation a train approaching them can be directly diverted from the line upon which it is running :</li>
+        <li><span class="marker">(22)</span> <strong>“Fixed signal”</strong> means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</li>
+
+        <li class="sr-note"><strong>S.R.1.02(22)(1)</strong><br>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</li>
+
+        <li><span class="marker">(23)</span> <strong>“Fouling mark”</strong> means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</li>
+        <li><span class="marker">(24)</span> <strong>“Gangman”</strong> means a railway servant employed on permanent way or work connected therewith;</li>
+
+        <li class="sr-note"><strong>S.R.1.02(24)(1)</strong><br>“Track Maintainer” means a railway servant employed on permanent way or work connected therewith :<br>Note: Henceforth wherever the designation mentioned as “Track Safety Man” shall be read as “Track Maintainer performing the duties of Track safety man”</li>
+
+        <li><span class="marker">(25)</span> <strong>“Gangmate”</strong> means the person in charge of a gang of workmen employed on permanent way or work connected therewith;</li>
+        <li><span class="marker">(26)</span> <strong>“Gateman”</strong> means a competent railway servant posted at a level crossing for working the gates;</li>
+        <li><span class="marker">(27)</span> <strong>“Goods train”</strong> means a train (other than a material train) intended solely or mainly for the carriage of animals or goods;</li>
+        <li><span class="marker">(28)</span> <strong>“Guards”</strong> means the railway servant in charge of a train and includes a Brakesman or any other railway servant who may for the time being, be performing the duties of a Guard;</li>
+        <li><span class="marker">(28A)</span> <strong>Indian Railway Automatic Train Protection System (IR-ATP)(Kavach)</strong>, means a radio communication-based control system, provided as an additional aid to Loco Pilots of functional Kavach fitted locomotives, in Kavach territory, the use of which shall in no way infringe or override the provisions (codes and manuals) of regular train operation required to be followed by Loco Pilot.</li>
+        <li><span class="marker">(29)</span> <strong>“Inspector of Way or Works”</strong> means any Inspector or Assistant Inspector responsible for the construction or maintenance of permanent way, points and signals, bridges or other works connected therewith;</li>
+        <li><span class="marker">(30)</span> <strong>“Interlocking”</strong> means an arrangement of signals, points and other appliances, operated from a panel or lever frame, so interconnected by mechanical locking or electrical locking or both that their operation must take place in proper sequence to ensure safety;</li>
+        <li><span class="marker">(31)</span> <strong>“Intermediate Block Post”</strong> means a class ‘C’ station on a single line or double line or multiple line remotely controlled from the block station in rear ;</li>
+        <li><span class="marker">(32)</span> <strong>“Intermediate Block Signalling”</strong> means an arrangement of signalling on single line or double line or multiple line in which a long block section is split into two portions each constituting a separate block section by providing an Intermediate Block Post;</li>
+        <li><span class="marker">(33)</span> <strong>“Isolation”</strong> means an arrangement, secured by the setting of points or other approved means, to protect the line so isolated from the danger of obstruction from other connected line or lines;</li>
+        <li><span class="marker">(34)</span> <strong>“last Stop signal”</strong> means the fixed Stop signal of a station controlling the entry of trains into the next block section;</li>
+        <li><span class="marker">(35)</span> <strong>“level crossing”</strong> means the intersection of road with railway track at the same level;</li>
+        <li><span class="marker">(36)</span> <strong>“level crossing gate”</strong> means any form of movable barrier, including a chain capable of being closed across the road at the level crossing, but does not include a wicket or a turnstile for the use of pedestrians.</li>
+
+        <li class="sr-note"><strong>S.R.1.02(36)</strong><br>(a) Level crossing gates located within Home signals in Multiple Aspect Signalling territory on single line sections are traffic gates controlled by Operating department.<br>(b) Level crossing gates other than traffic gates are Engineering gates.</li>
+
+        <li><span class="marker">(37)</span> <strong>“Line Clear”</strong> means the permission given from a block station to a block station in rear for a train to leave the latter and approach the former; or the permission obtained by a block station from a block station in advance for a train to leave the former and proceed towards the latter;</li>
+        <li><span class="marker">(38)</span> <strong>“main line”</strong> means the line ordinarily used for running trains through and between stations;</li>
+        <li><span class="marker">(39)</span> <strong>“material train”</strong> means a departmental train intended solely or mainly for carriage of railway material when picked up or put down or for execution of works, either between stations or within station limits;</li>
+        <li><span class="marker">(40)</span> <strong>“mixed train”</strong> means a train intended for the carriage of passengers and goods, or of passengers, animals and goods;</li>
+        <li><span class="marker">(41)</span> <strong>“multiple-aspect signalling”</strong> means a signalling arrangement in which signals display at any one time any one of the three or more aspects and in which the aspect of every signal is pre-warned by the aspect of the previous signal or signals;</li>
+        <li><span class="marker">(42)</span> <strong>“night”</strong> means from sunset to sunrise;</li>
+        <li><span class="marker">(43)</span> <strong>“obstruction”</strong> and its cognate expressions includes a train, vehicle or obstacle on or fouling a line or any condition which is dangerous to trains;</li>
+        <li><span class="marker">(44)</span> <strong>“overhead equipment”</strong> means the electrical conductors over the tracks together with their associated fittings, insulators and other attachments, by means of which they are suspended and registered in position for the purpose of electric traction;</li>
+        <li><span class="marker">(45)</span> <strong>“passenger train”</strong> means a train intended solely or mainly for the carriage of passengers and other coaching traffic, and includes a troop train;</li>
+        <li><span class="marker">(46)</span> <strong>“point and trap indicators”</strong> are not signals, but are appliances fitted to and working with points to indicate by day or by night the position in which the points are set;</li>
+        <li><span class="marker">(47)</span> <strong>“running line”</strong> means the line governed by one or more signals and includes connections, if any, used by a train when entering or leaving a station or when passing through a station or between stations;</li>
+        <li><span class="marker">(48)</span> <strong>“running train”</strong> means a train which has started under an authority to proceed and has not completed its journey;</li>
+        <li><span class="marker">(49)</span> <strong>“shunting”</strong> means the movement of a vehicle or vehicles with or without an engine or of any engine or any other self-propelled vehicle, for the purpose of attaching, detaching or transfer or for any other purpose;</li>
+        <li><span class="marker">(50)</span> <strong>“special instructions”</strong> means instructions issued from time to time by the authorized officer in respect to particular cases or special circumstances;</li>
+        <li><span class="marker">(51)</span> <strong>“station”</strong> means any place on a line of railway at which traffic is dealt with, or at which an authority to proceed is given under the system of working;</li>
+        <li><span class="marker">(52)</span> <strong>“station limits”</strong> means the portion of a railway which is under the control of a Station Master and is situated between the outermost signals of the station or as may be specified by special instructions;</li>
+        <li><span class="marker">(53)</span> <strong>“Station Master”</strong> means the person on duty who is for the time being responsible for the working of the traffic within station limits, and includes any person who is for the time being in independent charge of the working of any signals and responsible for the working of trains under the system of working in force;</li>
+
+        <li><span class="marker">(54)</span> <strong>“station section”</strong> means that section of station limits —<br>
+          <span class="sub" style="display:block;"><span class="marker">(1)</span> at a class ‘B’ station provided with two-aspect signals, which is included —</span>
+          <span class="sub" style="display:block;"><span class="marker">(a)</span> on a double line, between the Home signal and the last Stop signal of the station in either direction; or</span>
+          <span class="sub" style="display:block;"><span class="marker">(b)</span> on a single line —</span>
+          <span class="sub" style="display:block;"><span class="marker">(i)</span> between the Shunting Limit Boards or Advanced Starters (if any), or</span>
+          <span class="sub" style="display:block;"><span class="marker">(ii)</span> between the Home signals, if there are no Shunting Limit Boards or Advanced Starters, or</span>
+          <span class="sub" style="display:block;"><span class="marker">(iii)</span> between the outermost facing points, if there are no Home signals or Shunting Limit Boards or Advanced Starters;</span>
+
+          <span class="sub" style="display:block; margin-top:6px;"><span class="marker">(2)</span> at a class ‘B’ station provided with manually operated multiple-aspect or modified lower quadrant signals, which is included —</span>
+          <span class="sub" style="display:block;"><span class="marker">(a)</span> on a double line —</span>
+          <span class="sub" style="display:block;"><span class="marker">(i)</span> between the outermost facing points and the last Stop signal of the station in either direction, or</span>
+          <span class="sub" style="display:block;"><span class="marker">(ii)</span> between the Block Section Limit Board, where provided, and the last Stop signal of the station in either direction; or</span>
+          <span class="sub" style="display:block;"><span class="marker">(b)</span> on a single line —</span>
+          <span class="sub" style="display:block;"><span class="marker">(i)</span> between the Shunting Limit Boards or Advanced Starters (if any), or</span>
+          <span class="sub" style="display:block;"><span class="marker">(ii)</span> between the outermost facing points, if there are no Shunting Limit Boards or Advanced Starters;</span>
+        </li>
+
+        <li><span class="marker">(55)</span> <strong>“Subsidiary Rule”</strong> means a special instruction which is subservient to the General Rule to which it relates and shall not be at variance with any General Rule;</li>
+        <li><span class="marker">(56)</span> <strong>“system of working”</strong> means the system adopted for the time being for the working of trains on any portion of a railway;</li>
+        <li><span class="marker">(57)</span> <strong>“track circuit”</strong> means an electrical circuit provided to detect the presence of a vehicle on a portion of track, the rails of the track forming part of the circuit;</li>
+        <li><span class="marker">(58)</span> <strong>“train”</strong> means an engine with or without vehicles attached, or any self-propelled vehicle with or without a trailer, which cannot be readily lifted off the track;</li>
+        <li><span class="marker">(59)</span> <strong>“Train Examiner”</strong> means a railway servant duly qualified to examine trains and certify their fitness for safe running and includes any other railway servant who may for the time being be performing the duties of a Train Examiner;</li>
+        <li><span class="marker">(60)</span> <strong>“two-aspect signalling”</strong> means a signalling arrangement in which each signal displays at any one time either of the two aspects.</li>
       </ol>
 
     </div>
   </div>
 
-    
-      <li style="margin:0 0 10px;">(9) <span style="font-weight:600;">“Block forward”</span> means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</li>
-      <li style="margin:0 0 10px;">(10) <span style="font-weight:600;">“Block section”</span> means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</li>
-      <li style="margin:0 0 10px;">(11) <span style="font-weight:600;">“Centralized Traffic Control”</span> means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</li>
-      <li style="margin:0 0 10px;">(12) <span style="font-weight:600;">“Centralized Traffic Control Operator”</span> means the person on duty who may, for the time being, be responsible for the working of trains on the Centralized Traffic Control;</li>
-      <li style="margin:0 0 10px;">(13) <span style="font-weight:600;">“Commissioner of Railway Safety”</span> means an inspector appointed to exercise any functions under the Act, and includes an Additional Commissioner of Railway Safety;</li>
-      <li style="margin:0 0 10px;">(14) <span style="font-weight:600;">“Competent railway servant”</span> means a railway servant duly qualified to under take and perform the duties entrusted to him;</li>
-      <li style="margin:0 0 10px;">(15) <span style="font-weight:600;">“Connections”</span> when used with reference to a running line, means the points and crossings or other appliances used to connect such line with other lines or to cross it;</li>
-      <li style="margin:0 0 10px;">(16) <span style="font-weight:600;">“Controller”</span> means a railway servant on duty who may for the time being be responsible for regulating the working of traffic on a section of a railway provided with the system of speech communication;</li>
-      <li style="margin:0 0 10px;">(17) <span style="font-weight:600;">“Day”</span> means from sunrise to sunset;</li>
-      <li style="margin:0 0 10px;">(18) <span style="font-weight:600;">“Direction of traffic”</span> means —<br>
-        <span style="padding-left:12px;">(a) on a double line, the direction for which the line is signalled;</span><br>
-        <span style="padding-left:12px;">(b) on a single line, the direction for the time being established, under the system of working, to allow trains to move in that direction;</span>
-      </li>
+  <!-- rule 1.03 -->
+  <div class="rule" id="r1-03">
+    <div class="num">1.03</div>
+    <div class="content">
+      <div class="heading">CLASSIFICATION OF STATIONS —</div>
 
-      <li style="margin:0 0 10px;">(19) <span style="font-weight:600;">“Loco Pilot”</span> means the engine driver or any other competent railway servant for the time being in charge of driving a train;</li>
-      <li style="margin:0 0 10px;">(20) <span style="font-weight:600;">“Electrical communication instrument”</span> means either a telephone or a Morse telegraph instrument;</li>
-      <li style="margin:0 0 10px;">(21) <span style="font-weight:600;">“Facing and trailing points”</span> : points are facing or trailing in accordance with the direction a train or vehicle moves over them. Points are said to be facing points when by their operation a train approaching them can be directly diverted from the line upon which it is running :</li>
-      <li style="margin:0 0 10px;">(22) <span style="font-weight:600;">“Fixed signal”</span> means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</li>
-    </ol>
+      <ol class="hanging-list">
+        <li><span class="marker">(1)</span> Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</li>
 
-    <div style="margin:0 0 14px; padding-left:20px; font-style:italic; color:#233445;">
-      <small><strong>S.R.1.02(22)(1)</strong><br>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</small>
+        <li><span class="marker">(2)</span> Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</li>
+      </ol>
+
+      <div style="margin:0 0 12px; padding-left:20px; text-align:justify; text-justify:inter-word;">
+        <p style="margin:0 0 8px;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
+        <p style="margin:0 0 8px;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
+        <p style="margin:0 0 8px;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
+      </div>
+
+      <ol class="hanging-list">
+        <li><span class="marker">(3)</span> Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.</li>
+      </ol>
+
+      <div class="sr-note">
+        <strong>S.R.1.03(1)</strong><br>
+        Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station. The Station Working Rules for a “special class” stations shall have the approval of the “Commissioner of Railway Safety”.
+      </div>
     </div>
-
-    <ol start="23" style="margin:0 0 14px 20px; padding:0;">
-      <li style="margin:0 0 10px;">(23) <span style="font-weight:600;">“Fouling mark”</span> means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</li>
-      <li style="margin:0 0 10px;">(24) <span style="font-weight:600;">“Gangman”</span> means a railway servant employed on permanent way or work connected therewith;</li>
-    </ol>
-
-    <div style="margin:0 0 14px; padding-left:20px; font-style:italic; color:#233445;">
-      <small><strong>S.R.1.02(24)(1)</strong><br>“Track Maintainer” means a railway servant employed on permanent way or work connected therewith :<br>Note: Henceforth wherever the designation mentioned as “Track Safety Man” shall be read as “Track Maintainer performing the duties of Track safety man”</small>
-    </div>
-
-    <ol start="25" style="margin:0 0 14px 20px; padding:0;">
-      <li style="margin:0 0 10px;">(25) <span style="font-weight:600;">“Gangmate”</span> means the person in charge of a gang of workmen employed on permanent way or work connected therewith;</li>
-      <li style="margin:0 0 10px;">(26) <span style="font-weight:600;">“Gateman”</span> means a competent railway servant posted at a level crossing for working the gates;</li>
-      <li style="margin:0 0 10px;">(27) <span style="font-weight:600;">“Goods train”</span> means a train (other than a material train) intended solely or mainly for the carriage of animals or goods;</li>
-      <li style="margin:0 0 10px;">(28) <span style="font-weight:600;">“Guards”</span> means the railway servant in charge of a train and includes a Brakesman or any other railway servant who may for the time being, be performing the duties of a Guard;</li>
-      <li style="margin:0 0 10px;">(28A) <span style="font-weight:600;">Indian Railway Automatic Train Protection System (IR-ATP)(Kavach)</span>, means a radio communication-based control system, provided as an additional aid to Loco Pilots of functional Kavach fitted locomotives, in Kavach territory, the use of which shall in no way infringe or override the provisions (codes and manuals) of regular train operation required to be followed by Loco Pilot.</li>
-      <li style="margin:0 0 10px;">(29) <span style="font-weight:600;">“Inspector of Way or Works”</span> means any Inspector or Assistant Inspector responsible for the construction or maintenance of permanent way, points and signals, bridges or other works connected therewith;</li>
-      <li style="margin:0 0 10px;">(30) <span style="font-weight:600;">“Interlocking”</span> means an arrangement of signals, points and other appliances, operated from a panel or lever frame, so interconnected by mechanical locking or electrical locking or both that their operation must take place in proper sequence to ensure safety;</li>
-      <li style="margin:0 0 10px;">(31) <span style="font-weight:600;">“Intermediate Block Post”</span> means a class ‘C’ station on a single line or double line or multiple line remotely controlled from the block station in rear ;</li>
-      <li style="margin:0 0 10px;">(32) <span style="font-weight:600;">“Intermediate Block Signalling”</span> means an arrangement of signalling on single line or double line or multiple line in which a long block section is split into two portions each constituting a separate block section by providing an Intermediate Block Post;</li>
-      <li style="margin:0 0 10px;">(33) <span style="font-weight:600;">“Isolation”</span> means an arrangement, secured by the setting of points or other approved means, to protect the line so isolated from the danger of obstruction from other connected line or lines;</li>
-      <li style="margin:0 0 10px;">(34) <span style="font-weight:600;">“last Stop signal”</span> means the fixed Stop signal of a station controlling the entry of trains into the next block section;</li>
-      <li style="margin:0 0 10px;">(35) <span style="font-weight:600;">“level crossing”</span> means the intersection of road with railway track at the same level;</li>
-      <li style="margin:0 0 10px;">(36) <span style="font-weight:600;">“level crossing gate”</span> means any form of movable barrier, including a chain capable of being closed across the road at the level crossing, but does not include a wicket or a turnstile for the use of pedestrians.</li>
-    </ol>
-
-    <div style="margin:0 0 14px; padding-left:20px; font-style:italic; color:#233445;">
-      <small><strong>S.R.1.02(36)</strong><br>(a) Level crossing gates located within Home signals in Multiple Aspect Signalling territory on single line sections are traffic gates controlled by Operating department.<br>(b) Level crossing gates other than traffic gates are Engineering gates.</small>
-    </div>
-
-    <ol start="37" style="margin:0 0 14px 20px; padding:0;">
-      <li style="margin:0 0 10px;">(37) <span style="font-weight:600;">“Line Clear”</span> means the permission given from a block station to a block station in rear for a train to leave the latter and approach the former; or the permission obtained by a block station from a block station in advance for a train to leave the former and proceed towards the latter;</li>
-      <li style="margin:0 0 10px;">(38) <span style="font-weight:600;">“main line”</span> means the line ordinarily used for running trains through and between stations;</li>
-      <li style="margin:0 0 10px;">(39) <span style="font-weight:600;">“material train”</span> means a departmental train intended solely or mainly for carriage of railway material when picked up or put down or for execution of works, either between stations or within station limits;</li>
-      <li style="margin:0 0 10px;">(40) <span style="font-weight:600;">“mixed train”</span> means a train intended for the carriage of passengers and goods, or of passengers, animals and goods;</li>
-      <li style="margin:0 0 10px;">(41) <span style="font-weight:600;">“multiple-aspect signalling”</span> means a signalling arrangement in which signals display at any one time any one of the three or more aspects and in which the aspect of every signal is pre-warned by the aspect of the previous signal or signals;</li>
-      <li style="margin:0 0 10px;">(42) <span style="font-weight:600;">“night”</span> means from sunset to sunrise;</li>
-      <li style="margin:0 0 10px;">(43) <span style="font-weight:600;">“obstruction”</span> and its cognate expressions includes a train, vehicle or obstacle on or fouling a line or any condition which is dangerous to trains;</li>
-      <li style="margin:0 0 10px;">(44) <span style="font-weight:600;">“overhead equipment”</span> means the electrical conductors over the tracks together with their associated fittings, insulators and other attachments, by means of which they are suspended and registered in position for the purpose of electric traction;</li>
-      <li style="margin:0 0 10px;">(45) <span style="font-weight:600;">“passenger train”</span> means a train intended solely or mainly for the carriage of passengers and other coaching traffic, and includes a troop train;</li>
-      <li style="margin:0 0 10px;">(46) <span style="font-weight:600;">“point and trap indicators”</span> are not signals, but are appliances fitted to and working with points to indicate by day or by night the position in which the points are set;</li>
-      <li style="margin:0 0 10px;">(47) <span style="font-weight:600;">“running line”</span> means the line governed by one or more signals and includes connections, if any, used by a train when entering or leaving a station or when passing through a station or between stations;</li>
-      <li style="margin:0 0 10px;">(48) <span style="font-weight:600;">“running train”</span> means a train which has started under an authority to proceed and has not completed its journey;</li>
-      <li style="margin:0 0 10px;">(49) <span style="font-weight:600;">“shunting”</span> means the movement of a vehicle or vehicles with or without an engine or of any engine or any other self-propelled vehicle, for the purpose of attaching, detaching or transfer or for any other purpose;</li>
-      <li style="margin:0 0 10px;">(50) <span style="font-weight:600;">“special instructions”</span> means instructions issued from time to time by the authorized officer in respect to particular cases or special circumstances;</li>
-      <li style="margin:0 0 10px;">(51) <span style="font-weight:600;">“station”</span> means any place on a line of railway at which traffic is dealt with, or at which an authority to proceed is given under the system of working;</li>
-      <li style="margin:0 0 10px;">(52) <span style="font-weight:600;">“station limits”</span> means the portion of a railway which is under the control of a Station Master and is situated between the outermost signals of the station or as may be specified by special instructions;</li>
-      <li style="margin:0 0 10px;">(53) <span style="font-weight:600;">“Station Master”</span> means the person on duty who is for the time being responsible for the working of the traffic within station limits, and includes any person who is for the time being in independent charge of the working of any signals and responsible for the working of trains under the system of working in force;</li>
-    </ol>
-
-    <ol start="54" style="margin:0 0 14px 20px; padding:0;">
-      <li style="margin:0 0 10px;">(54) <span style="font-weight:600;">“station section”</span> means that section of station limits —<br>
-        <span style="padding-left:12px;">(1) at a class ‘B’ station provided with two-aspect signals, which is included —</span><br>
-        <span style="padding-left:20px;">(a) on a double line, between the Home signal and the last Stop signal of the station in either direction; or</span><br>
-        <span style="padding-left:20px;">(b) on a single line —</span><br>
-        <span style="padding-left:28px;">(i) between the Shunting Limit Boards or Advanced Starters (if any), or</span><br>
-        <span style="padding-left:28px;">(ii) between the Home signals, if there are no Shunting Limit Boards or Advanced Starters, or</span><br>
-        <span style="padding-left:28px;">(iii) between the outermost facing points, if there are no Home signals or Shunting Limit Boards or Advanced Starters;</span><br>
-        <span style="padding-left:12px;">(2) at a class ‘B’ station provided with manually operated multiple-aspect or modified lower quadrant signals, which is included —</span><br>
-        <span style="padding-left:20px;">(a) on a double line —</span><br>
-        <span style="padding-left:28px;">(i) between the outermost facing points and the last Stop signal of the station in either direction, or</span><br>
-        <span style="padding-left:28px;">(ii) between the Block Section Limit Board, where provided, and the last Stop signal of the station in either direction; or</span><br>
-        <span style="padding-left:20px;">(b) on a single line —</span><br>
-        <span style="padding-left:28px;">(i) between the Shunting Limit Boards or Advanced Starters (if any), or</span><br>
-        <span style="padding-left:28px;">(ii) between the outermost facing points, if there are no Shunting Limit Boards or Advanced Starters;</span>
-      </li>
-
-      <li style="margin:0 0 10px;">(55) <span style="font-weight:600;">“Subsidiary Rule”</span> means a special instruction which is subservient to the General Rule to which it relates and shall not be at variance with any General Rule;</li>
-      <li style="margin:0 0 10px;">(56) <span style="font-weight:600;">“system of working”</span> means the system adopted for the time being for the working of trains on any portion of a railway;</li>
-      <li style="margin:0 0 10px;">(57) <span style="font-weight:600;">“track circuit”</span> means an electrical circuit provided to detect the presence of a vehicle on a portion of track, the rails of the track forming part of the circuit;</li>
-      <li style="margin:0 0 10px;">(58) <span style="font-weight:600;">“train”</span> means an engine with or without vehicles attached, or any self-propelled vehicle with or without a trailer, which cannot be readily lifted off the track;</li>
-      <li style="margin:0 0 10px;">(59) <span style="font-weight:600;">“Train Examiner”</span> means a railway servant duly qualified to examine trains and certify their fitness for safe running and includes any other railway servant who may for the time being be performing the duties of a Train Examiner;</li>
-      <li style="margin:0 0 10px;">(60) <span style="font-weight:600;">“two-aspect signalling”</span> means a signalling arrangement in which each signal displays at any one time either of the two aspects.</li>
-    </ol>
-
-    <p style="margin:12px 0 14px; text-align:justify; text-justify:inter-word;">
-      <strong>1.03 CLASSIFICATION OF STATIONS :-</strong>
-    </p>
-
-    <p style="margin:0 0 12px; text-align:justify; text-justify:inter-word;">
-      (1) Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.
-    </p>
-
-    <p style="margin:0 0 12px; text-align:justify; text-justify:inter-word;">
-      (2) Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —
-    </p>
-
-    <div style="margin:0 0 12px; padding-left:20px; text-align:justify; text-justify:inter-word;">
-      <p style="margin:0 0 8px;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
-      <p style="margin:0 0 8px;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
-      <p style="margin:0 0 8px;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
-    </div>
-
-    <p style="margin:0 0 12px; text-align:justify; text-justify:inter-word;">
-      (3) Non-block stations or Class ‘D’ stations are stopping places which are situated between two consecutive block stations, and do not form the boundary of any block section.
-    </p>
-
-    <div style="margin:0 0 14px; padding-left:20px; font-style:italic; color:#233445;">
-      <small><strong>S.R.1.03(1)</strong><br>Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station. The Station Working Rules for a “special class” stations shall have the approval of the “Commissioner of Railway Safety”.</small>
-    </div>
-
   </div>
 
 </article>
 
+</body>
+</html>
