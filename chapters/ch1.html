@@ -3,195 +3,170 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>G&SR — Chapter I (2px gap layout)</title>
-
+<title>Chapter I — 2px gap layout (numbers flush left)</title>
 <style>
-:root{
-  --bg:#f6f9ff;
-  --card:#fff;
-  --kr:#0b63d6;
-  --kr2:#0b9cff;
-  --muted:#6b7280;
-  --header-h:64px;
-  --footer-h:60px;
-  --desktop-break:980px;
-  --page-gap:24px;
-  --page-max-width:1200px;
-
-  /* IMPORTANT: the small gap you asked for */
-  --rule-gap: 2px;        /* <-- 2px gap between number column and content column */
-
-  /* column widths (tweakable) */
-  --num-col:88px;        /* desktop number column */
-  --marker-col:2.2rem;   /* width for the (1) marker inside each li */
-
-  --base-font-family: "Times New Roman", Georgia, serif;
-  --base-font-size:16px;
-  --gutter:12px;
-}
-
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:var(--base-font-family);background:var(--bg);color:#071033;font-size:var(--base-font-size);}
-header{
-  position:fixed;left:0;right:0;top:0;height:var(--header-h);
-  display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
-}
-.header-left{width:44px;height:44px;display:flex;align-items:center;justify-content:flex-start}
-.header-center{flex:1;display:flex;align-items:center;justify-content:center}
-.header-right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-.brand{font-weight:800; font-size:1rem; text-align:center;}
-.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);cursor:pointer;color:#fff}
-.icon{width:18px;height:18px;display:block}
-
-main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-width:var(--page-max-width);margin:0 auto;min-height:320px}
-
-/* cover fallback */
-#cover{ width:100%; border-radius:16px; overflow:hidden; height:320px; position:relative; background:#111; box-shadow:0 12px 30px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; color:#fff; }
-#cover img{ max-width:100%; height:auto; display:block; object-fit:contain; }
-
-/* reader */
-#reader{ margin-top:18px; display:block; }
-.chapter-container{ max-width:var(--page-max-width); margin:0 auto; padding:18px 16px; background:var(--card); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
-
-/* typography */
-.chapter-title{ text-align:center; margin-bottom:10px; }
-.chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
-.chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
-
-/* RULE GRID: number column + content column
-   Keep as two columns on all viewports so number and heading remain inline */
-.rule{
-  display: grid;
-  /* number column + content column */
-  grid-template-columns: var(--num-col) 1fr;
-  column-gap: var(--rule-gap); /* the tiny 2px gap you requested */
-  align-items: start;   /* align top of number with top of heading */
-  margin:8px 0 14px;
-  gap:0;
-}
-
-/* GR number */
-.rule .num{
-  font-weight:800;
-  text-align:left;
-  color:#061229;
-  font-size:1rem;
-  margin:0;
-  padding:0;
-  line-height:1;
-  align-self:start;
-}
-
-/* content column: GR heading + body bold (per your instruction) */
-.rule .content{
-  color:#1b2b3a;
-  font-size:1rem;
-  font-weight:800; /* GR content bold */
-  margin:0;
-  padding:0;
-}
-
-/* heading-row keeps heading aligned at top and visually inline with the number */
-.heading-row{
-  display:flex;
-  align-items:flex-start;
-  gap:0.5rem;
-  margin:0 0 6px 0;
-}
-.heading{
-  font-weight:800;
-  font-size:1rem;
-  margin:0;
-  line-height:1.12;
-  text-align:left;
-  display:inline-block;   /* keeps it on the same row as number */
-  vertical-align: top;
-  color:#061229;
-  word-break:break-word;
-}
-
-/* term definition and paragraphs — same font size and weight as heading (GR) */
-.termdef {
-  font-size:16px;       /* same as heading/paragraph size you preferred */
-  line-height:1.6;
-  margin:0 0 12px;
-  padding-left:20px;
-  text-align:justify;
-  text-justify:inter-word;
-  color:#1b2b3a;
-  font-weight:800;      /* GR bold */
-}
-
-/* hanging-list: ensures markers and text align: marker column + content column */
-.hanging-list{
-  list-style:none;
-  margin:0;
-  padding:0;
-  display:block;
-}
-.hanging-list li{
-  display:grid;
-  grid-template-columns: var(--marker-col) 1fr;
-  column-gap:0.5rem;
-  margin:0 0 8px 0;
-  line-height:1.45;
-  font-weight:800;     /* GR content bold */
-  text-align:justify;
-}
-.hanging-list li .marker{
-  justify-self:start;
-  align-self:start;
-  font-weight:800;
-  white-space:nowrap;
-}
-
-/* S.R. notes: normal weight (not italic), left aligned under content column */
-.sr-note{
-  margin:8px 0 12px 0;
-  padding:8px 10px;
-  border-left:3px solid #d0d8e0;
-  background:#fbfcfd;
-  color:#233445;
-  font-style:normal;
-  font-size:0.94rem;
-  font-weight:400;
-}
-
-/* responsive tweaks: narrower number column on smaller screens to give more reading area */
-@media (max-width:980px){
   :root{
-    --num-col:66px;
-    --marker-col:1.9rem;
-  }
-  .chapter-container{ padding:16px; }
-}
-@media (max-width:640px){
-  :root{
-    --num-col:56px;
-    --marker-col:1.75rem;
-    --base-font-size:17px;
-  }
-  .chapter-container{ padding:14px; border-radius:10px; }
-  .heading{ font-size:1rem; }
-  .termdef{ font-size:16px; }
-}
-@media (max-width:420px){
-  :root{
-    --num-col:48px;
-    --marker-col:1.4rem;
-  }
-  .heading{ font-size:15.2px; }
-  .termdef{ font-size:15.2px; padding-left:18px; }
-}
+    --bg: #ffffff;
+    --text: #0b1726;
+    --muted: #6b7280;
+    --header-h: 64px;
 
-/* make sure scroll-to-anchor doesn't hide under the fixed header */
-.chapter-container [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
+    /* Desktop default column width for the "1.01" column */
+    --num-col: 82px;
 
-/* small print adjustments */
-@media print{
-  :root{ --num-col:72px; --base-font-size:12.5px; }
-  .chapter-container{ padding:12mm; line-height:1.4; }
-}
+    /* Marker column for list markers like (1), (2) inside definitions */
+    --marker-col: 2.0rem;
+
+    /* tiny gap between number column and content column */
+    --rule-gap: 2px;
+
+    --font-family: "Times New Roman", Georgia, serif;
+    --base-font-size: 16px;
+  }
+
+  html { font-size: calc(var(--base-font-size)); }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family: var(--font-family);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  main{ padding: 18px 14px 60px; max-width:980px; margin:0 auto; }
+
+  .chapter-container{
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  }
+
+  .chapter-title { text-align:center; margin-bottom:10px; }
+  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
+  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
+
+  /* RULE: two columns (number | content). Keep as two columns at all sizes
+     so the number and heading remain inline. The gap is exactly 2px. */
+  .rule{
+    display: grid;
+    grid-template-columns: var(--num-col) 1fr;
+    column-gap: var(--rule-gap); /* 2px gap between number and content */
+    align-items: start;
+    margin: 8px 0 14px;
+    width:100%;
+  }
+
+  /* Number column: flush-left appearance */
+  .rule .num{
+    font-weight:800;
+    color: #061229;
+    font-size: 1rem;
+    margin:0;
+    padding:0;
+    line-height: 1;
+    text-align: left;     /* left aligned inside column */
+    align-self: start;
+  }
+
+  /* Content column */
+  .rule .content{
+    margin:0;
+    padding:0;
+    font-weight:800;      /* GR rule headings + content must be bold */
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* Heading row (keeps heading aligned near top of number) */
+  .heading-row{
+    display:flex;
+    align-items:flex-start;
+    gap:0.25rem;
+    margin:0 0 6px 0;
+  }
+  .heading{
+    display:inline-block;
+    font-weight:800;
+    font-size: 16px;
+    margin:0;
+    line-height:1.25;
+    vertical-align:top;
+    color:#061229;
+    word-break:break-word;
+  }
+
+  /* Term definition block — same visual size as heading for readability on mobile */
+  .termdef{
+    font-size:16px;
+    line-height:1.6;
+    margin:0 0 12px 0;
+    padding-left: 18px;      /* indent inside content column so text doesn't touch marker */
+    text-align:justify;
+    text-justify:inter-word;
+    font-weight:800;         /* GR text bold */
+  }
+
+  /* Hanging list (markers + definition column). Keeps definition lines aligned. */
+  .hanging-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .hanging-list li{
+    display:grid;
+    grid-template-columns: var(--marker-col) 1fr;
+    column-gap:0.5rem;
+    margin:0 0 8px 0;
+    line-height:1.45;
+    font-weight:800; /* GR bold */
+    text-align:justify;
+  }
+  .hanging-list .marker{
+    align-self:start;
+    justify-self:start;
+    white-space:nowrap;
+    font-weight:800;
+  }
+  .hanging-list .marker, .hanging-list .termdef-inline{
+    font-size:15.5px;
+  }
+
+  /* S.R. notes — normal weight, not italic */
+  .sr-note{
+    margin:8px 0 12px 0;
+    padding:8px 10px;
+    border-left:3px solid #d0d8e0;
+    background:#fbfcfd;
+    color:#233445;
+    font-style:normal;
+    font-size:0.94rem;
+    font-weight:400;  /* normal weight for SR */
+  }
+
+  /* Anchors should not hide under fixed header (if you use a header) */
+  .chapter-container [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
+
+  /* ---------- Responsive: make number narrower to free width for content ---------- */
+  @media (max-width:980px){
+    :root{ --num-col:66px; --marker-col:1.8rem; }
+    .chapter-container{ padding:16px; }
+  }
+
+  @media (max-width:640px){
+    :root{ --num-col:50px; --marker-col:1.6rem; --base-font-size:16px; }
+    .chapter-container{ padding:14px;border-radius:8px; }
+    .heading{ font-size:15.6px; }
+    .termdef{ font-size:15.6px; padding-left:16px; }
+  }
+
+  @media (max-width:420px){
+    :root{ --num-col:44px; --marker-col:1.4rem; }
+    .heading{ font-size:15.2px; }
+    .termdef{ font-size:15.2px; padding-left:14px; }
+  }
 </style>
 </head>
 <body>
@@ -202,7 +177,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
         <h3>PRELIMINARY</h3>
       </div>
 
-      <!-- 1.01 (number and heading inline on same row) -->
+      <!-- 1.01 -->
       <div class="rule" id="s101">
         <div class="num">1.01</div>
         <div class="content">
@@ -223,7 +198,7 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
         </div>
       </div>
 
-      <!-- 1.02 (definitions) -->
+      <!-- 1.02 -->
       <div class="rule" id="s102">
         <div class="num">1.02</div>
         <div class="content">
@@ -284,10 +259,10 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
             </li>
           </ol>
 
-          <div style="margin:0 0 12px; text-align:justify; text-justify:inter-word;">
-            <p style="margin:0 0 8px; font-weight:800; padding-left:20px;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
-            <p style="margin:0 0 8px; font-weight:800; padding-left:20px;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
-            <p style="margin:0 0 8px; font-weight:800; padding-left:20px;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
+          <div style="margin:0 0 12px 0;">
+            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
+            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
+            <p style="margin:0 0 8px 0; padding-left:14px; font-weight:800;"><strong>Class ‘C’ stations</strong> — block huts, where Line Clear may not be given for a train, unless the whole of the last preceding train, has passed complete at least 400 meters beyond the Home signal and is continuing its journey. This will also include an Intermediate Block Post.</p>
           </div>
 
           <div class="sr-note">
