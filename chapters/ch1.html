@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Chapter I — 2px gap layout (numbers flush left)</title>
+<title>Chapter I — 2px gap, numbers flush left on mobile</title>
 <style>
   :root{
     --bg: #ffffff;
@@ -11,20 +11,16 @@
     --muted: #6b7280;
     --header-h: 64px;
 
-    /* Desktop default column width for the "1.01" column */
+    /* default desktop number column */
     --num-col: 82px;
-
-    /* Marker column for list markers like (1), (2) inside definitions */
     --marker-col: 2.0rem;
-
-    /* tiny gap between number column and content column */
-    --rule-gap: 2px;
-
+    --rule-gap: 2px;         /* exact 2px gap between number and content */
     --font-family: "Times New Roman", Georgia, serif;
     --base-font-size: 16px;
+    --container-max: 980px;
   }
 
-  html { font-size: calc(var(--base-font-size)); }
+  html { font-size: var(--base-font-size); }
   body{
     margin:0;
     background:var(--bg);
@@ -34,53 +30,58 @@
     -moz-osx-font-smoothing:grayscale;
   }
 
-  main{ padding: 18px 14px 60px; max-width:980px; margin:0 auto; }
+  /* main full-bleed container — on mobile we will remove side padding so numbers can go to edge */
+  main{
+    padding: 18px 14px 60px;
+    max-width:var(--container-max);
+    margin:0 auto;
+    box-sizing:border-box;
+  }
 
   .chapter-container{
     background: #fff;
     border-radius: 8px;
     padding: 18px 16px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    box-sizing:border-box;
   }
 
   .chapter-title { text-align:center; margin-bottom:10px; }
   .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
   .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  /* RULE: two columns (number | content). Keep as two columns at all sizes
-     so the number and heading remain inline. The gap is exactly 2px. */
+  /* RULE grid: number column + content column. Keep two columns at all sizes. */
   .rule{
     display: grid;
     grid-template-columns: var(--num-col) 1fr;
-    column-gap: var(--rule-gap); /* 2px gap between number and content */
+    column-gap: var(--rule-gap); /* exact 2px gap */
     align-items: start;
     margin: 8px 0 14px;
     width:100%;
   }
 
-  /* Number column: flush-left appearance */
+  /* GR number */
   .rule .num{
     font-weight:800;
-    color: #061229;
+    color:#061229;
     font-size: 1rem;
     margin:0;
     padding:0;
     line-height: 1;
-    text-align: left;     /* left aligned inside column */
+    text-align:left;
     align-self: start;
   }
 
-  /* Content column */
+  /* content column: heading + bold GR body */
   .rule .content{
     margin:0;
     padding:0;
-    font-weight:800;      /* GR rule headings + content must be bold */
+    font-weight:800;      /* GR headings + content bold */
     color: var(--text);
     font-size: 16px;
     line-height: 1.55;
   }
 
-  /* Heading row (keeps heading aligned near top of number) */
   .heading-row{
     display:flex;
     align-items:flex-start;
@@ -90,7 +91,7 @@
   .heading{
     display:inline-block;
     font-weight:800;
-    font-size: 16px;
+    font-size:16px;
     margin:0;
     line-height:1.25;
     vertical-align:top;
@@ -98,18 +99,18 @@
     word-break:break-word;
   }
 
-  /* Term definition block — same visual size as heading for readability on mobile */
+  /* Term definitions inside content column */
   .termdef{
     font-size:16px;
     line-height:1.6;
     margin:0 0 12px 0;
-    padding-left: 18px;      /* indent inside content column so text doesn't touch marker */
+    padding-left: 18px; /* small indent so text doesn't jam into marker column */
     text-align:justify;
     text-justify:inter-word;
-    font-weight:800;         /* GR text bold */
+    font-weight:800;    /* GR content bold */
   }
 
-  /* Hanging list (markers + definition column). Keeps definition lines aligned. */
+  /* hanging list (markers like (1),(2)) */
   .hanging-list{
     list-style:none;
     margin:0;
@@ -121,7 +122,7 @@
     column-gap:0.5rem;
     margin:0 0 8px 0;
     line-height:1.45;
-    font-weight:800; /* GR bold */
+    font-weight:800;   /* GR bold */
     text-align:justify;
   }
   .hanging-list .marker{
@@ -134,7 +135,6 @@
     font-size:15.5px;
   }
 
-  /* S.R. notes — normal weight, not italic */
   .sr-note{
     margin:8px 0 12px 0;
     padding:8px 10px;
@@ -143,29 +143,69 @@
     color:#233445;
     font-style:normal;
     font-size:0.94rem;
-    font-weight:400;  /* normal weight for SR */
+    font-weight:400; /* normal weight for SR */
   }
 
-  /* Anchors should not hide under fixed header (if you use a header) */
+  /* anchors offset (if using fixed header) */
   .chapter-container [id] { scroll-margin-top: calc(var(--header-h) + 8px); }
 
-  /* ---------- Responsive: make number narrower to free width for content ---------- */
+  /* ---------------- Responsive: mobile full-bleed numbers ---------------- */
   @media (max-width:980px){
     :root{ --num-col:66px; --marker-col:1.8rem; }
     .chapter-container{ padding:16px; }
   }
 
+  /* On small screens we remove outer main side padding and remove container left padding
+     so the number column reaches the extreme left edge of the viewport.
+     We still keep a small right padding to avoid text touching the right edge.
+  */
   @media (max-width:640px){
-    :root{ --num-col:50px; --marker-col:1.6rem; --base-font-size:16px; }
-    .chapter-container{ padding:14px;border-radius:8px; }
+    :root{ --num-col:44px; --marker-col:1.6rem; }
+
+    /* remove page-level side padding so content can go full-bleed */
+    main{
+      padding-left: 0;
+      padding-right: 0;
+      max-width: 100vw;
+      margin: 0;
+    }
+
+    /* remove left padding of the inner container so it is flush with viewport */
+    .chapter-container{
+      padding-left: 0;
+      padding-right: 14px; /* keep a little right breathing space */
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* force the number column to sit at the very left edge */
+    .rule{
+      grid-template-columns: var(--num-col) calc(100% - var(--num-col));
+      column-gap: var(--rule-gap);
+    }
+
+    /* ensure the number column itself has no internal left padding */
+    .rule .num{ padding-left: 6px; } /* small breathing from absolute edge; set to 0 if you want exact pixel to edge */
+
+    /* reduce heading/content font slightly */
     .heading{ font-size:15.6px; }
-    .termdef{ font-size:15.6px; padding-left:16px; }
+    .termdef{ font-size:15.6px; padding-left:14px; }
   }
 
+  /* very narrow phones */
   @media (max-width:420px){
-    :root{ --num-col:44px; --marker-col:1.4rem; }
+    :root{ --num-col:40px; --marker-col:1.4rem; }
+    .chapter-container{ padding-right:12px; }
     .heading{ font-size:15.2px; }
-    .termdef{ font-size:15.2px; padding-left:14px; }
+    .termdef{ font-size:15.2px; padding-left:12px; }
+    .rule .num{ padding-left:6px; }
+  }
+
+  /* print tweaks */
+  @media print{
+    :root{ --num-col:72px; --base-font-size:12.5px; }
+    main{ padding:12mm; }
+    .chapter-container{ box-shadow:none; border-radius:0; }
   }
 </style>
 </head>
