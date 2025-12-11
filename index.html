@@ -20,16 +20,18 @@
   --bg:#f6f9ff; --card:#fff; --kr:#0b63d6; --kr2:#0b9cff; --muted:#6b7280;
   --header-h:64px; --footer-h:60px; --desktop-break:980px; --page-gap:24px; --page-max-width:1200px;
   --update-interval-ms:900000; /* 15 minutes */
-
-  /* unified typography */
-  --base-font-size: 17px;  /* increase/decrease as you prefer (16-18 good) */
-  --base-line-height: 1.55;
-  --heading-weight: 800;
-  --body-font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica;
   --highlight-color: #fff59d;
+
+  /* typography */
+  --base-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, Helvetica, "Times New Roman", serif;
+  --base-font-size: 16px; /* slightly increased for mobile readability */
+  --rule-num-width: 84px; /* room for "1.01" */
+  --gutter:12px;
 }
+
+/* reset + base */
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:var(--body-font);background:var(--bg);color:#071033}
+html,body{height:100%;margin:0;font-family:var(--base-font-family);background:var(--bg);color:#071033;font-size:var(--base-font-size);}
 header{
   position:fixed;left:0;right:0;top:0;height:var(--header-h);
   display:flex;align-items:center;padding:10px 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));color:#fff;z-index:1200;
@@ -101,62 +103,114 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 .search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
 @keyframes highlight-pulse { 0%{ box-shadow:0 0 0 6px rgba(255,245,157,0.18) inset; } 100%{ box-shadow:0 0 0 0 rgba(255,245,157,0.0) inset; } }
 
-/* ---------- UNIFIED TYPOGRAPHY FOR CONTENT + TOC ---------- */
-.chapter-content,
-.mobile-chapter,
-.doc-body,
-.doc-chapter,
-.toc-list,
-.toc-list .toc-item,
-.toc-list .toc-sub {
-  font-size: var(--base-font-size);
-  line-height: var(--base-line-height);
-  font-family: var(--body-font);
-  color: #1b2b3a;
-}
+/* fragments content basics */
+.chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-size:var(--base-font-size); line-height:1.6; font-family:var(--base-font-family); color:#1b2b3a; }
+.chapter-content p{ margin:0 0 14px; }
 
-.chapter-content p,
-.mobile-chapter p,
-.doc-body p {
-  font-size: var(--base-font-size);
-  line-height: var(--base-line-height);
-  margin: 0 0 14px;
-}
-
-/* chapter heading styles (kept bold) */
-.chapter-content .heading,
-.mobile-chapter .heading,
-.doc-title {
-  font-weight: var(--heading-weight);
-  font-size: calc(var(--base-font-size) + 0px);
-  margin: 0 0 10px;
-  text-align: left;
-}
-
-/* TOC list visuals */
-#tocList{ list-style:none;padding:0;margin:0; max-height:60vh; overflow:auto; }
-.toc-list .toc-item,
-.toc-list .toc-sub {
-  padding: 6px 8px;
-  cursor: pointer;
-  user-select: none;
-}
-.toc-list .toc-sub { padding-left: 20px; font-weight:700; }
-
-/* fragments content */
-.chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-.chapter-content .signature{ margin-top:24px; text-align:center; font-style:italic; color:#05204a; font-weight:600; }
-
-/* TOC drawer + footer */
+/* TOC drawer */
 #tocDrawer{position:fixed;left:12px;top:84px;bottom:100px;width:340px;max-width:92vw;background:var(--card);border-radius:14px;padding:12px;box-shadow:0 18px 40px rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translateY(-10px);transition:.24s;z-index:1300}
 #tocDrawer.open{opacity:1;pointer-events:auto;transform:none}
 .toc-title{font-weight:800;margin:4px 0 12px;font-size:1.05rem;color:#05204a}
-footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;display:flex;justify-content:center;gap:12px;box-shadow:0 -6px 18px rgba(0,0,0,.05);z-index:1200}
-.nav-small button{background:#fff;border:1px solid #ccc;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+.toc-list .toc-item{ font-weight:700; color:#05204a; padding:6px 8px; cursor:pointer; }
+.toc-list .toc-sub{ font-weight:800; color:#05204a; padding:6px 8px 6px 20px; cursor:pointer; }
 
 /* small utils */
 .hidden{display:none !important}
 .small-muted{color:#6b7280;font-size:0.95rem}
+
+/* ------ Styling for injected chapter HTML (rules/number alignment, headings) ------ */
+
+/* Make .rule show number and content inline and vertically aligned */
+.page-frame .rule,
+.mobile-chapter .rule {
+  display:flex;
+  gap:var(--gutter);
+  align-items:flex-start;
+  margin:8px 0 14px;
+  width:100%;
+}
+
+/* number column (1.01 etc) */
+.page-frame .rule .num,
+.mobile-chapter .rule .num {
+  width:var(--rule-num-width);
+  min-width:64px;
+  font-weight:800;
+  color:#061229;
+  padding-top:2px;
+  flex:0 0 var(--rule-num-width);
+}
+
+/* content column */
+.page-frame .rule .content,
+.mobile-chapter .rule .content {
+  flex:1 1 auto;
+}
+
+/* heading of the rule — bold and left aligned and on same line as number */
+.page-frame .rule .heading,
+.mobile-chapter .rule .heading {
+  font-weight:800;
+  text-align:left;
+  margin:0 0 8px 0;
+  font-size:1.02rem;
+  display:block;
+  /* ensure not hidden by header when scrolled to */
+  scroll-margin-top: calc(var(--header-h) + 8px);
+}
+
+/* term/definitions (first-line content) — match heading font-weight for GRs */
+.page-frame .rule .termdef,
+.mobile-chapter .rule .termdef,
+.page-frame .rule .content > p,
+.mobile-chapter .rule .content > p {
+  font-weight:800;
+  margin:0 0 10px 0;
+  line-height:1.55;
+}
+
+/* Hanging lists inside content — use normal weight but keep spacing */
+.page-frame .hanging-list li,
+.mobile-chapter .hanging-list li,
+.page-frame .rule .content ol li,
+.mobile-chapter .rule .content ol li {
+  font-weight:800; /* user wanted rule content bold — keep as requested */
+  margin:0 0 8px 0;
+}
+
+/* S.R. notes style — normal font, not italic (user requested) */
+.page-frame .sr-note,
+.mobile-chapter .sr-note {
+  margin:8px 0 12px 0;
+  padding:10px 12px;
+  border-left:3px solid #d0d8e0;
+  background:#fbfcfd;
+  color:#233445;
+  font-style:normal;
+  font-size:12.5px;
+  font-weight:400;
+}
+
+/* make .termdef class (single line defs) match the block below for mobile readability */
+.termdef { font-size:1rem; line-height:1.6; }
+
+/* Ensure any anchor targets inside loaded chapters aren't hidden by header */
+.chapter [id],
+.mobile-chapter [id],
+.page-frame .chapter [id] {
+  scroll-margin-top: calc(var(--header-h) + 8px);
+}
+
+/* Small responsiveness tweaks */
+@media(max-width:640px){
+  :root{ --rule-num-width:68px; --base-font-size:17px; }
+  .page-frame{ padding:14px; }
+  .mobile-chapter{ padding:16px; border-radius:10px; }
+  .page-frame .rule .heading, .mobile-chapter .rule .heading{ font-size:1rem; }
+}
+
+/* fewer widows/orphans on headings */
+.page-frame .rule .heading { line-height:1.25; }
 </style>
 </head>
 <body>
@@ -197,7 +251,7 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 
   <nav id="tocDrawer" aria-hidden="true" aria-label="Arrangement of Rules">
     <div class="toc-title">ARRANGEMENT OF RULES</div>
-    <ul id="tocList" class="toc-list" role="list"></ul>
+    <ul id="tocList" class="toc-list" role="list" style="list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto"></ul>
   </nav>
 
   <main>
@@ -228,6 +282,12 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
   </footer>
 
 <script>
+/* Keep your JS mostly the same — only small changes:
+   - safer anchor scrolling uses CSS scroll-margin-top and CSS.escape for id selectors
+   - ensure TOC auto-closes on click (delegated)
+   - minor adjustments preserved
+*/
+
 const DESKTOP_BREAK = 980;
 const VISITED_FLAG = 'gkr_had_started_reading';
 const LAST_READ_KEY = 'gkr_last_read';
@@ -313,16 +373,9 @@ function buildTOC(){
     btn.textContent = item.label;
     btn.style.padding = '6px 8px';
     btn.style.cursor = 'pointer';
-
-    // close drawer immediately then open
-    btn.onclick = ()=> {
-      if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
-      openFromTOC(item);
-    };
-
+    btn.onclick = ()=> openFromTOC(item);
     li.appendChild(btn);
     tocList.appendChild(li);
-
     if(item.children){
       item.children.forEach(ch=>{
         const sli = document.createElement('li');
@@ -331,13 +384,7 @@ function buildTOC(){
         sbtn.textContent = ch.label;
         sbtn.style.padding = '6px 8px 6px 20px';
         sbtn.style.cursor = 'pointer';
-
-        // close drawer then open anchor
-        sbtn.onclick = ()=> {
-          if(tocDrawer){ tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); tocDrawer.setAttribute('aria-hidden','true'); btnMenu.setAttribute('aria-expanded','false'); }
-          openAnchor(item.id, ch.anchor);
-        };
-
+        sbtn.onclick = ()=> openAnchor(item.id, ch.anchor);
         sli.appendChild(sbtn);
         tocList.appendChild(sli);
       });
@@ -346,7 +393,7 @@ function buildTOC(){
 }
 buildTOC();
 
-/* ---------- TOC toggle ---------- */
+/* TOC toggle */
 btnMenu.addEventListener('click', ()=>{
   const open = tocDrawer.classList.toggle('open');
   btnMenu.classList.toggle('open', open);
@@ -360,7 +407,24 @@ document.addEventListener('click', (e)=>{
   btnMenu.classList.remove('open');
 });
 
-/* ---------- fetch helpers ---------- */
+/* Ensure drawer closes when any TOC item inside is clicked (delegated) */
+(function installTOCCloseHandler(){
+  const toc = tocList;
+  if(!toc) return;
+  toc.addEventListener('click', function(e){
+    const target = e.target.closest('.toc-item, .toc-sub, a, button');
+    if(!target) return;
+    if(tocDrawer && btnMenu){
+      tocDrawer.classList.remove('open');
+      btnMenu.classList.remove('open');
+      tocDrawer.setAttribute('aria-hidden', 'true');
+      btnMenu.setAttribute('aria-expanded', 'false');
+    }
+    // allow other click handlers to run (openChapter/openAnchor) — we only close automatically here
+  }, { passive: true });
+})();
+
+/* fetch helpers */
 async function fetchChapterRaw(id, bypass=false){
   try{
     const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
@@ -376,7 +440,7 @@ async function getHtml(id){
   return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
 }
 
-/* ---------- render + navigation ---------- */
+/* render + navigation */
 async function openFromTOC(item){
   tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
   markStarted();
@@ -384,32 +448,31 @@ async function openFromTOC(item){
   else await openChapter(item.id, null);
 }
 async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter(chapterId, anchorId); }
-
 async function openFragment(id){
   const html = await getHtml(id);
   renderHtml(html);
   currentFlatIndex = FLAT.findIndex(f=>f.kind==='fragment' && f.id===id);
   saveLastRead({ kind:'fragment', id });
 }
-
 async function openChapter(chId, anchor=null){
   const html = await getHtml(chId);
   renderHtml(html);
-
   if(anchor){
-    // wait for render then find anchor within the correct container
+    // Wait a little for content to render then scroll anchor into view.
     setTimeout(()=> {
-      if(isDesktop()){
-        // pageFrame contains injected chapter; search within it
-        const container = pageFrame;
-        const el = container.querySelector('#' + CSS.escape(anchor));
-        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-      } else {
-        const container = mobileChapter;
-        const el = container.querySelector('#' + CSS.escape(anchor));
-        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      try {
+        if(isDesktop()){
+          const el = pageFrame.querySelector('#' + CSS.escape(anchor));
+          if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        } else {
+          const el = mobileChapter.querySelector('#' + CSS.escape(anchor));
+          if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      } catch(err){
+        const el2 = document.getElementById(anchor);
+        if(el2) el2.scrollIntoView({behavior:'smooth', block:'start'});
       }
-    }, 150);
+    }, 140);
 
     currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
     saveLastRead({ kind:'chapter', id:chId, anchor });
@@ -424,8 +487,6 @@ function renderHtml(html, highlight=null){
   lastHtml = html;
   cover.style.display = 'none';
   reader.style.display = 'block';
-
-  // remove previous highlights
   removeExistingHighlights();
 
   if(isDesktop()){
@@ -436,7 +497,6 @@ function renderHtml(html, highlight=null){
     const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
     if(it && it.kind === 'chapter') restorePageScrollIfAny(it.id);
     pageFrame.setAttribute('tabindex','-1'); pageFrame.focus();
-
     if(highlight && highlight.query) highlightAllInContainer(pageFrame, highlight.query);
   } else {
     pageShell.style.display = 'none';
@@ -446,11 +506,11 @@ function renderHtml(html, highlight=null){
     const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
     if(it && it.kind === 'chapter') restoreWindowScrollIfAny(it.id);
     mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus();
-
     if(highlight && highlight.query) highlightAllInContainer(mobileChapter, highlight.query);
   }
 }
 
+/* highlight functions (unchanged) */
 function removeExistingHighlights(){
   const prevs = document.querySelectorAll('mark.search-highlight');
   prevs.forEach(m => {
@@ -461,8 +521,6 @@ function removeExistingHighlights(){
     parent.normalize();
   });
 }
-
-/* highlight ALL occurrences of query inside `container` (text nodes). */
 function highlightAllInContainer(container, rawQuery){
   if(!rawQuery) return 0;
   const q = String(rawQuery).trim();
@@ -522,11 +580,10 @@ function highlightAllInContainer(container, rawQuery){
     try{ first.scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
     setTimeout(()=> { if(first) first.classList.remove('search-highlight'); }, 2200);
   }
-
   return matches;
 }
 
-/* prev/next */
+/* prev/next navigation */
 nextBtn.addEventListener('click', ()=>{
   if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
   if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
@@ -537,12 +594,11 @@ prevBtn.addEventListener('click', ()=>{
 });
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
-/* last-read helpers */
+/* last-read helpers + scroll savers (unchanged) */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-/* scroll savers */
 let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachPageSaverIfNeeded(){ detachPageSaver(); const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null; if(!it || it.kind!=='chapter') return; pageSaver.id = it.id; pageSaver.handler = ()=> { const now = Date.now(); if(now - pageSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} clearTimeout(pageSaver.timer); pageSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700); pageSaver.lastSaved = now; }; pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true }); }
 function detachPageSaver(){ try{ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); }catch(e){} pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
@@ -558,7 +614,7 @@ function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type=
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
-/* ---------- SEARCH ---------- */
+/* SEARCH (unchanged, but kept here) */
 function openSearchPanel(){
   window.__gkr_search_open = true;
   searchPanel.style.display = 'flex';
@@ -572,15 +628,37 @@ function openSearchPanel(){
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
   }
   setTimeout(()=> {
-    try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length); }catch(e){}
+    try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){}
   }, 420);
   searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true });
   searchPanel.addEventListener('click', stopTouchBubble, { passive:true });
   window.__gkr_search_resize_lock = true;
   setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900);
 }
-function closeSearchPanel(){ window.__gkr_search_open = false; searchPanel.style.display = 'none'; searchPanel.setAttribute('aria-hidden','true'); searchPanel.removeEventListener('touchstart', stopTouchBubble); searchPanel.removeEventListener('click', stopTouchBubble); window.__gkr_search_resize_lock = false; }
-function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length); }catch(e){} }
+function closeSearchPanel(){
+  window.__gkr_search_open = false;
+  searchPanel.style.display = 'none';
+  searchPanel.setAttribute('aria-hidden','true');
+  searchPanel.removeEventListener('touchstart', stopTouchBubble);
+  searchPanel.removeEventListener('click', stopTouchBubble);
+  window.__gkr_search_resize_lock = false;
+}
+function clearSearch(){
+  searchInput.value = '';
+  lastQuery = '';
+  lastResults = [];
+  try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){}
+  searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
+  removeExistingHighlights();
+  try{
+    const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null;
+    if(it && it.kind === 'chapter'){
+      if(isDesktop()) restorePageScrollIfAny(it.id);
+      else restoreWindowScrollIfAny(it.id);
+    }
+  }catch(e){}
+  try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){}
+}
 function stopTouchBubble(e){ e.stopPropagation(); }
 let _debT = null;
 function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
@@ -634,30 +712,19 @@ async function performSearch(q){
 async function openFragmentOrChapterAndHighlight(id, query){
   const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
   const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-  if(isFragment){
-    await openFragment(id);
-  } else if(isChapter){
-    await openChapter(id, null);
-  } else {
-    await openFragment(id);
-  }
+  if(isFragment) await openFragment(id);
+  else if(isChapter) await openChapter(id, null);
+  else await openFragment(id);
   const container = isDesktop() ? pageFrame : mobileChapter;
   setTimeout(async ()=> {
     try{
-      if(!isDesktop()){
-        mobileChapter.setAttribute('tabindex','-1');
-        mobileChapter.focus({ preventScroll: true });
-      } else {
-        pageFrame.setAttribute('tabindex','-1');
-        pageFrame.focus({ preventScroll: true });
-      }
+      if(!isDesktop()){ mobileChapter.setAttribute('tabindex','-1'); mobileChapter.focus({ preventScroll: true }); }
+      else { pageFrame.setAttribute('tabindex','-1'); pageFrame.focus({ preventScroll: true }); }
     }catch(e){}
     let matches = 0;
     try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
     if(matches === 0){
-      setTimeout(()=> {
-        try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
-      }, 320);
+      setTimeout(()=> { try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){} }, 320);
     }
   }, 420);
 }
@@ -673,9 +740,7 @@ searchInput.addEventListener('keydown', (e)=> {
   if(e.key === 'Escape'){ closeSearchPanel(); return; }
   if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }
 });
-searchInput.addEventListener('input', ()=> {
-  debouncePerformSearch(searchInput.value, 160);
-});
+searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.value, 160); });
 
 (function restoreSearchState(){
   const q = localStorage.getItem(SEARCH_Q_KEY) || '';
@@ -686,7 +751,7 @@ searchInput.addEventListener('input', ()=> {
   }catch(e){ lastResults = []; }
 })();
 
-/* ---------- initial load + background updater ---------- */
+/* initial load + background updater */
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
 function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); }
 
@@ -711,12 +776,11 @@ window.addEventListener('load', async ()=>{
   showCover();
 });
 
+/* helpers and misc */
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } }
-
-/* popstate/back */
+function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
-/* click outside TOC to close */
 document.addEventListener('click',(e)=>{ if(!tocDrawer.classList.contains('open')) return; if(e.target.closest('#tocDrawer')||e.target.closest('#btnMenu')) return; tocDrawer.classList.remove('open'); btnMenu.classList.remove('open'); });
 document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPanel.style.display === 'flex') closeSearchPanel(); else tocDrawer.classList.remove('open'); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); btnMenu.click(); } });
 
@@ -731,6 +795,10 @@ window.addEventListener('resize', ()=>{
     if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
   }, 180);
 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
+}
 </script>
 </body>
 </html>
