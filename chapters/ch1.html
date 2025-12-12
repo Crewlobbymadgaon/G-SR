@@ -7,20 +7,20 @@
 <style>
   :root{
     --container-w:780px;
-    --num-col:48px;        /* desktop number column */
-    --gutter:12px;         /* default gap between number and content */
-    --marker-col:2.2rem;   /* width for the (1) marker inside each li */
+    --num-col:48px;        /* number column width */
+    --gutter:12px;         /* gap between number and content */
+    --marker-col:48px;     /* match number column for vertical alignment */
     --font-body: "Times New Roman", Georgia, serif;
     --base-font-size: 15px;
   }
 
-  html { font-size: calc(var(--base-font-size) + 0.02vw); }
+  html{ font-size: calc(var(--base-font-size) + 0.02vw); }
   body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
   .chapter-container{
     max-width:var(--container-w);
     margin:0 auto;
-    font-family: var(--font-body);
+    font-family:var(--font-body);
     line-height:1.45;
     font-size:1rem;
     padding:22px 20px;
@@ -28,155 +28,84 @@
   }
 
   .chapter-title{ text-align:center; margin-bottom:10px; }
-  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; letter-spacing:0.02em; }
+  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
   .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  /* Two-column grid: number + content */
   .rule{
-    display: grid;
+    display:grid;
     grid-template-columns: var(--num-col) 1fr;
     column-gap: var(--gutter);
-    align-items: start;
+    align-items:start;
     margin:8px 0 14px;
-    gap:0;
   }
 
   .rule .num{
     font-weight:800;
-    text-align:left;
     color:#061229;
     font-size:1rem;
-    margin:0;
-    padding:0;
-    line-height:1;
-    align-self:start;
+    padding-left:6px;
   }
 
   .rule .content{
-    color:#1b2b3a;
     font-size:1rem;
-    font-weight:800; /* GR content bold as requested */
-    margin:0;
-    padding:0;
-  }
-
-  .heading-row{
-    display:flex;
-    align-items:flex-start;
-    gap:0.5rem;
-    margin:0 0 6px 0;
-  }
-  .heading{
     font-weight:800;
-    font-size:1rem;
-    margin:0;
-    line-height:1.12;
-    text-align:left;
-    word-break:break-word;
-    display:inline-block;
-    vertical-align: top;
+    color:#1b2b3a;
   }
 
-  .hanging-list{
-    list-style:none;
-    margin:0;
-    padding:0;
-    display:block;
-  }
+  .heading-row{ margin:0 0 6px 0; }
+  .heading{ font-weight:800; font-size:1rem; margin:0; }
 
+  /* lists */
+  .hanging-list{ list-style:none; margin:0; padding:0; }
   .hanging-list li{
     display:grid;
-    grid-template-columns: var(--marker-col) 1fr;
+    grid-template-columns: var(--marker-col) 1fr; /* matches number column */
     column-gap: var(--gutter);
     margin:0 0 8px 0;
-    line-height:1.45;
+    font-weight:800;
+  }
+  .hanging-list li .marker{
+    text-align:right;
+    padding-right:0px; /* marker shifted slightly left */
+    white-space:nowrap;
+    margin-left :-4px;
+  }
+  .termdef{
+    font-size:1rem;
+    line-height:1.6;
+    color:#1b2b3a;
     font-weight:800;
     text-align:justify;
+    text-justify:inter-word;
   }
 
-  .hanging-list li .marker{
-    justify-self:start;
-    align-self:start;
-    font-weight:800;
-    white-space:nowrap;
-  }
-  .hanging-list li .termdef{
-    margin:0;
-    padding:0;
-    font-weight:800;
+  .sr-note{
+    font-size:1.05rem;
+    line-height:1.6;
+    font-weight:400;
+    color:#1b2b3a;
+    margin:10px 0 12px;
+    text-align:justify;
+    text-justify:inter-word;
   }
 
-  .sub{ display:block; margin-top:6px; }
-
-  .sr-note {
-  font-size: 16px;          /* SAME size as termdef */
-  line-height: 1.6;
-  font-weight: 400;         /* lighter than termdef */
-  color: #1b2b3a;
-
-  margin: 10px 0 12px;      /* proper spacing so text does NOT look smaller */
-  padding: 0;               /* no padding, clean look */
-
-  text-align: justify;
-  text-justify: inter-word;
-
-  background: none !important;
-  border: none !important;
-}
-
-  .termdef {
-    font-size: 16px;
-    line-height: 1.6;
-    margin: 0;
-    padding-left: 0;
-    text-align: justify;
-    text-justify: inter-word;
-    color: #1b2b3a;
-  }
-
-  .chapter [id] { scroll-margin-top: 72px; }
-
-  /* Desktop / medium sizes */
-  @media (max-width:900px){
-    :root{ --num-col:66px; --marker-col:1.9rem; --container-w:720px; }
-    .chapter-container{ padding:18px 16px; }
-  }
-
-  /* ===== MOBILE: put number at extreme left of viewport and content only 2px away =====
-     Key points:
-     - container padding-left set to 0 so grid's left column can sit at viewport left
-     - small inner left padding for the number so it's not flush against the device chrome (6px)
-     - column-gap (--gutter) forced to 2px
-     - content has zero extra left padding so it starts immediately after that 2px gap
-  */
+  /* Mobile adjustments */
   @media (max-width:640px){
     :root{
       --num-col:56px;
-      --marker-col:1.75rem;
+      --marker-col:56px;
+      --gutter:2px;
       --container-w:100%;
-      --gutter:2px;         /* <-- the requested 2px gap */
     }
-    .chapter-container{
-      padding-top:12px;
-      padding-right:10px;
-      padding-bottom:12px;
-      padding-left:0;       /* let the number column sit at extreme left */
-      max-width:100%;
-    }
-
-    /* slight inner spacing for the number so it doesn't touch browser edge */
+    .chapter-container{ padding:12px 10px; }
     .rule .num{ padding-left:6px; }
-
-    /* ensure content doesn't add left padding and uses the 2px gap only */
-    .rule .content{ padding-left:0; }
-
-    /* tighten marker gap */
-    .hanging-list li{ column-gap: var(--gutter); }
+    .heading-row{ margin-bottom:4px; }
+    .hanging-list li{ grid-template-columns: var(--marker-col) 1fr; column-gap:var(--gutter); }
+    .hanging-list li .marker{ padding-right:1px; }
   }
 
   @media (max-width:420px){
-    :root{ --num-col:48px; --marker-col:1.4rem; --gutter:2px; }
-    .chapter-container{ padding-top:10px; padding-right:8px; padding-bottom:10px; padding-left:0; }
+    :root{ --num-col:48px; --marker-col:48px; }
     .heading{ font-size:0.98rem; }
     .hanging-list li{ font-size:0.96rem; }
   }
@@ -191,89 +120,80 @@
 </style>
 </head>
 <body>
-
 <article class="chapter-container" aria-labelledby="chapter-heading">
   <div class="chapter-title" id="chapter-heading">
     <h2>CHAPTER I</h2>
     <h3>PRELIMINARY</h3>
   </div>
 
+  <!-- RULE 1.01 -->
   <div class="rule" id="s101">
     <div class="num">1.01</div>
     <div class="content">
-      <div class="heading-row">
-        <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
-      </div>
+      <div class="heading-row"><div class="heading">SHORT TITLE AND COMMENCEMENT</div></div>
       <ol class="hanging-list">
-        <li>
-          <div class="marker">(1)</div>
-          <div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div>
-        </li>
-        <li>
-          <div class="marker">(2)</div>
-          <div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div>
-        </li>
+        <li><div class="marker">(1)</div><div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div></li>
+        <li><div class="marker">(2)</div><div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div></li>
       </ol>
     </div>
   </div>
 
+  <!-- RULE 1.02 -->
   <div class="rule" id="s102">
     <div class="num">1.02</div>
     <div class="content">
-      <div class="heading-row">
-        <div class="heading">DEFINITIONS — in these rules, unless the context otherwise requires:</div>
-      </div>
+      <div class="heading-row"><div class="heading">DEFINITIONS — In these rules, unless the context otherwise requires —</div></div>
+
       <ol class="hanging-list">
-        <li>
-          <div class="marker">(1)</div>
-          <div class="termdef"><strong>“Act”</strong> means The Railways Act, 1989 (24 of 1989);</div>
-        </li>
-        <li>
-          <div class="marker">(2)</div>
-          <div class="termdef"><strong>“Adequate distance”</strong> means the distance sufficient to ensure safety;</div>
-        </li>
-        <li>
-          <div class="marker">(3)</div>
-          <div class="termdef"><strong>“Approach lighting”</strong> means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div>
-        </li>
+        <li><div class="marker">(1)</div><div class="termdef">“Act” means The Railways Act, 1989 (24 of 1989);</div></li>
+        <li><div class="marker">(2)</div><div class="termdef">“Adequate distance” means the distance sufficient to ensure safety;</div></li>
+        <li><div class="marker">(3)</div><div class="termdef">“approach lighting” means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div></li>
+        <li><div class="marker">(4)</div><div class="termdef">“approved special instructions” means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div></li>
+        <li><div class="marker">(5)</div><div class="termdef">“authorized officer” means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div></li>
       </ol>
 
-      <div class="sr-note">
-        <strong>S.R.1.02(5)(1)</strong><br>
-        The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
-      </div>
-    </div>
-  </div>
+      <div class="sr-note"><strong>S.R.1.02(5)(1)</strong><br/>The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.</div>
 
-  <div class="rule" id="s103">
-    <div class="num">1.03</div>
-    <div class="content">
-      <div class="heading-row">
-        <div class="heading">CLASSIFICATION OF STATIONS —</div>
-      </div>
-      <ol class="hanging-list">
-        <li>
-          <div class="marker">(1)</div>
-          <div class="termdef">Stations shall, for the purpose of these rules, be divided into two categories — block stations and non-block stations.</div>
-        </li>
-        <li>
-          <div class="marker">(2)</div>
-          <div class="termdef">Block stations are those at which the Loco Pilot must obtain an authority to proceed under the system of working to enter the block section with his train; and under the Absolute Block System consists of three classes —</div>
-        </li>
+      <ol class="hanging-list" start="6">
+        <li><div class="marker">(6)</div><div class="termdef">“authority to proceed” means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</div></li>
+        <li><div class="marker">(7)</div><div class="termdef">“axle counter” means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</div></li>
+        <li><div class="marker">(8)</div><div class="termdef">“block back” means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</div></li>
+        <li><div class="marker">(9)</div><div class="termdef">“block forward” means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</div></li>
+        <li><div class="marker">(10)</div><div class="termdef">“block section” means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</div></li>
+        <li><div class="marker">(11)</div><div class="termdef">“Centralized Traffic Control” means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</div></li>
+        <li><div class="marker">(12)</div><div class="termdef">“Centralized Traffic Control Operator” means the person on duty who may, for the time being, be responsible for the working of trains on the Centralized Traffic Control;</div></li>
+        <li><div class="marker">(13)</div><div class="termdef">“Commissioner of Railway Safety” means an inspector appointed to exercise any functions under the Act, and includes an Additional Commissioner of Railway Safety;</div></li>
+        <li><div class="marker">(14)</div><div class="termdef">“competent railway servant” means a railway servant duly qualified to under take and perform the duties entrusted to him;</div></li>
+        <li><div class="marker">(15)</div><div class="termdef">“connections” when used with reference to a running line, means the points and crossings or other appliances used to connect such line with other lines or to cross it;</div></li>
+        <li><div class="marker">(16)</div><div class="termdef">“Controller” means a railway servant on duty who may for the time being be responsible for regulating the working of traffic on a section of a railway provided with the system of speech communication;</div></li>
+        <li><div class="marker">(17)</div><div class="termdef">“day” means from sunrise to sunset;</div></li>
+        <li><div class="marker">(18)</div><div class="termdef">“direction of traffic” means —<br/>
+          <span style="display:block; margin-left:0.2rem;">(a) on a double line, the direction for which the line is signaled;</span>
+          <span style="display:block; margin-left:0.2rem;">(b) on a single line, the direction for the time being established, under the system of working, to allow trains to move in that direction;</span>
+        </div></li>
+        <li><div class="marker">(19)</div><div class="termdef">“Loco Pilot” means the engine driver or any other competent railway servant for the time being in charge of driving a train;</div></li>
+        <li><div class="marker">(20)</div><div class="termdef">“electrical communication instrument” means either a telephone or a Morse telegraph instrument;</div></li>
+        <li><div class="marker">(21)</div><div class="termdef">“facing and trailing points”: points are facing or trailing in accordance with the direction a train or vehicle moves over them. Points are said to be facing points when by their operation a train approaching them can be directly diverted from the line upon which it is running;</div></li>
+        <li><div class="marker">(22)</div><div class="termdef">“fixed signal” means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</div></li>
       </ol>
 
-      <div style="margin:0 0 12px; padding-left:0; text-align:justify; text-justify:inter-word;">
-        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘A’ stations</strong> — where Line Clear may not be given for a train unless the line on which it is intended to receive the train is clear for at least 400 meters beyond the Home signal, or up to the Starter;</p>
-        <p style="margin:0 0 8px; font-weight:800;"><strong>Class ‘B’ stations</strong> — where Line Clear may be given for a train before the line has been cleared for the reception of the train within the station section; and</p>
-      </div>
+      <div class="sr-note"><strong>S.R.1.02(22)(1)</strong><br/>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</div>
 
-      <div class="sr-note">
-        <strong>S.R.1.03(1)</strong><br>
-        Special Class stations — Definition of — Any station which is not worked under “A”, “B”, “C”, “D” class conditions is termed as “special class” station.
-      </div>
+      <ol class="hanging-list" start="23">
+        <li><div class="marker">(23)</div><div class="termdef">“fouling mark” means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</div></li>
+        <li><div class="marker">(24)</div><div class="termdef">“Gangman” means a railway servant employed on permanent way or work connected therewith;</div></li>
+      </ol>
+
+      <div class="sr-note"><strong>S.R.1.02(24)(1)</strong><br/>“Track Maintainer” means a railway servant employed on permanent way or work connected therewith: <br/><em>Note:</em> Henceforth wherever the designation mentioned as “Track Safety Man” shall be read as “Track Maintainer performing the duties of Track safety man”.</div>
+
+      <ol class="hanging-list" start="25">
+        <li><div class="marker">(25)</div><div class="termdef">“Gangmate” means the person in charge of a gang of workmen employed on permanent way or work connected therewith;</div></li>
+        <li><div class="marker">(26)</div><div class="termdef">“Gateman” means a competent railway servant posted at a level crossing for working the gates;</div></li>
+        <li><div class="marker">(27)</div><div class="termdef">“Goods train” means a train (other than a material train) intended solely or mainly for the carriage of animals or goods;</div></li>
+      </ol>
+
     </div>
   </div>
-
 </article>
 </body>
 </html>
