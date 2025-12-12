@@ -395,176 +395,91 @@ async function openFragment(id){
   saveLastRead({ kind:'fragment', id });
   updateNavButtons();
 }
+async function openChapter(chId, anchor=null){
+  const html = await getHtml(chId);
+  renderHtml(html);
 
-/* ---------- REPLACED: iframe-based chapter rendering (openChapter + openFragmentOrChapterAndHighlight) ---------- */
-
-/**
- * openChapter(chId, anchor)
- * - Renders chapters inside an iframe for visual parity with standalone pages.
- * - Keeps same signature so callers don't need changes.
- */
-async function openChapter(chId, anchor = null){
-  try {
-    markStarted();
-  } catch(e){ /* markStarted may be defined elsewhere; ignore if not */ }
-
-  // Hide cover, show the reader shell (same as your render flow)
-  try {
-    cover.style.display = 'none';
-    reader.style.display = 'block';
-    pageShell.style.display = 'flex';
-    mobileReader.style.display = 'none';
-  } catch(e){ /* elements may be present in your environment */ }
-
-  // Build iframe URL including anchor (hash)
-  let iframeUrl = `chapters/${encodeURIComponent(chId)}.html`;
   if(anchor){
-    iframeUrl += `#${encodeURIComponent(anchor)}`;
-  }
+    // robust anchor scroll with header offset
+    setTimeout(()=> {
+      try {
+        const headerOffset = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64) + 8;
+        let el = null;
 
-  // Clear previous content and create iframe
-  try {
-    pageFrame.innerHTML = '';
-  } catch(e){}
+        // prefer desktop container or mobile container as rendered
+        const container = isDesktop() ? pageFrame : mobileChapter;
 
-  const iframe = document.createElement('iframe');
-  iframe.src = iframeUrl;
-  iframe.title = chId;
-  iframe.setAttribute('aria-label', `Chapter ${chId}`);
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = '0';
-  iframe.style.display = 'block';
-  iframe.style.background = 'white';
-  iframe.loading = 'eager';
-  iframe.dataset.chapterId = chId;
+        // try exact id in container
+        el = container.querySelector('#' + CSS.escape(anchor));
+        // fallback: try matching anchor id directly on document (in case markup put ids at root)
+        if(!el) el = document.getElementById(anchor);
 
-  // Append iframe to pageFrame
-  try {
-    pageFrame.appendChild(iframe);
-  } catch(e){ /* fallback if pageFrame not present */ }
-
-  // Update nav state & save last read
-  try {
-    currentFlatIndex = FLAT.findIndex(f => (f.kind === 'chapter' && f.id === chId) || (f.kind === 'anchor' && f.chapter === chId && f.anchor === anchor));
-    saveLastRead({ kind:'chapter', id:chId, anchor: anchor || null });
-    updateNavButtons();
-  } catch(e){ /* ignore if helpers missing */ }
-
-  // Focus and anchor handling on load (same-origin)
-  iframe.addEventListener('load', () => {
-    try {
-      iframe.contentWindow && iframe.contentWindow.focus();
-
-      if(anchor){
-        try {
-          const doc = iframe.contentDocument;
-          const tgt = doc && (doc.getElementById(anchor) || doc.querySelector(`[name="${anchor}"]`));
-          if(tgt) {
-            tgt.scrollIntoView({ behavior: 'auto', block: 'start' });
-          } else {
-            iframe.contentWindow.location.hash = decodeURIComponent(anchor);
+        // fallback: try common alternate id forms (helpful if chapter uses r1-01 while TOC uses s101)
+        if(!el){
+          // e.g. s101 -> try r1-01: take digits from anchor and format 'r<chapter>-<num>'
+          const digits = (anchor.match(/\d+/g) || []).join('');
+          if(digits.length === 3){
+            const major = digits.slice(0,1);
+            const minor = digits.slice(1);
+            const alt = `r${major}-${minor.padStart(2,'0')}`; // r1-01
+            el = container.querySelector('#' + CSS.escape(alt)) || document.getElementById(alt);
           }
-        } catch(e){}
-      }
-    } catch(e){}
-  }, { once: true });
-
-  // Fallback: if iframe doesn't load within 6s, fetch & inject as a fallback
-  const fallbackTimer = setTimeout(async () => {
-    try {
-      const docReady = (() => {
-        try {
-          return iframe.contentDocument && iframe.contentDocument.readyState === 'complete';
-        } catch(e){ return false; }
-      })();
-
-      if(!docReady){
-        let raw = cache && cache[chId] ? cache[chId] : '';
-        if(!raw){
-          try {
-            const res = await fetch(`chapters/${chId}.html`, { cache: 'no-store' });
-            if(res.ok) raw = await res.text();
-          } catch(err){ raw = ''; }
         }
-        if(raw){
-          try {
-            pageFrame.innerHTML = raw;
-            try { attachPageSaverIfNeeded(); } catch(e){}
-            if(anchor){
-              setTimeout(()=> {
-                try {
-                  const container = isDesktop() ? pageFrame : mobileChapter;
-                  const el = container.querySelector('#' + (window.CSS && CSS.escape ? CSS.escape(anchor) : anchor));
-                  if(el) {
-                    el.scrollIntoView({ behavior:'auto', block:'start' });
+
+        if(el){
+          // compute element position relative to container or document and scroll with offset
+          if(isDesktop()){
+            // pageFrame is scroll container
+            const containerTop = pageFrame.getBoundingClientRect().top;
+            const elTop = el.getBoundingClientRect().top;
+            const scrollTop = pageFrame.scrollTop + (elTop - containerTop) - headerOffset;
+            pageFrame.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+          } else {
+            // document scroll
+            const elRect = el.getBoundingClientRect();
+            const target = window.scrollY + elRect.top - headerOffset;
+            window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+          }
+        } else {
+          // last-resort: find a heading that contains the TOC label text and scroll to it
+          // (only if TOC entry exists)
+          const tocEntry = TOC.find(ch => ch.type==='chapter' && ch.id===chId);
+          if(tocEntry && tocEntry.children){
+            const child = tocEntry.children.find(c => c.anchor === anchor);
+            if(child){
+              const txt = child.label.split(' ').slice(1).join(' '); // approximate
+              const nodes = (isDesktop() ? pageFrame : mobileChapter).querySelectorAll('h2, .heading, p, .termdef');
+              for(const n of nodes){
+                if(n.textContent && n.textContent.trim().startsWith(txt.substring(0,12))){
+                  // scroll to node
+                  if(isDesktop()){
+                    const containerTop = pageFrame.getBoundingClientRect().top;
+                    const nodeTop = n.getBoundingClientRect().top;
+                    const scrollTop = pageFrame.scrollTop + (nodeTop - containerTop) - headerOffset;
+                    pageFrame.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+                  } else {
+                    const nodeRect = n.getBoundingClientRect();
+                    const target = window.scrollY + nodeRect.top - headerOffset;
+                    window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
                   }
-                } catch(e){}
-              }, 180);
+                  break;
+                }
+              }
             }
-          } catch(e){}
+          }
         }
+      } catch(err){
+        // ignore
       }
-    } catch(e){}
-    clearTimeout(fallbackTimer);
-  }, 6000);
-}
-
-/**
- * openFragmentOrChapterAndHighlight(id, query)
- * - When opening chapters from search, we want highlighting to work.
- * - If `id` is a chapter and `query` is non-empty, fetch & inject the chapter HTML (so highlightAllInContainer can run).
- * - Otherwise (normal TOC open or chapter open w/o query) use iframe-based openChapter (visual parity).
- */
-async function openFragmentOrChapterAndHighlight(id, query){
-  const isChapter = typeof TOC !== 'undefined' && TOC.some(it => it.type === 'chapter' && it.id === id);
-  const isFragment = typeof TOC !== 'undefined' && TOC.some(it => it.type === 'fragment' && it.id === id);
-
-  if(isFragment){
-    if(typeof openFragment === 'function'){
-      await openFragment(id);
-      return;
-    } else {
-      try {
-        const raw = await fetch(`chapters/${id}.html`, { cache: 'no-store' }).then(r => r.ok ? r.text() : '');
-        if(raw) renderHtml(raw, { query: query || '' });
-      } catch(e){}
-      return;
-    }
+    }, 150);
+    currentFlatIndex = FLAT.findIndex(f=>f.kind==='anchor' && f.chapter===chId && f.anchor===anchor);
+    saveLastRead({ kind:'chapter', id:chId, anchor });
+  } else {
+    currentFlatIndex = FLAT.findIndex(f=>f.kind==='chapter' && f.id===chId);
+    saveLastRead({ kind:'chapter', id:chId, anchor:null });
   }
-
-  const q = (query || '').trim();
-  if(isChapter && q){
-    try { markStarted(); } catch(e){}
-    let raw = (typeof cache !== 'undefined' && cache[id]) ? cache[id] : '';
-    if(!raw){
-      try {
-        const res = await fetch(`chapters/${id}.html`, { cache: 'no-store' });
-        if(res.ok) raw = await res.text();
-      } catch(err){ raw = ''; }
-      if(typeof cache !== 'undefined' && raw) try { cache[id] = raw; } catch(e){}
-    }
-
-    if(!raw){
-      await openChapter(id, null);
-      return;
-    }
-
-    try {
-      renderHtml(raw, { query: q });
-      currentFlatIndex = (typeof FLAT !== 'undefined') ? FLAT.findIndex(f => (f.kind === 'chapter' && f.id === id) || (f.kind === 'anchor' && f.chapter === id)) : -1;
-      saveLastRead({ kind:'chapter', id, anchor: null });
-      updateNavButtons();
-    } catch(e){
-      await openChapter(id, null);
-    }
-    return;
-  }
-
-  await openChapter(id, null);
+  updateNavButtons();
 }
-
-/* ---------- END replaced functions ---------- */
 
 function renderHtml(html, highlight=null){
   lastHtml = html;
@@ -785,6 +700,32 @@ async function performSearch(q){
   }
 
   renderSearchResults(results);
+}
+
+async function openFragmentOrChapterAndHighlight(id, query){
+  const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
+  const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
+  if(isFragment){ await openFragment(id); } else if(isChapter){ await openChapter(id, null); } else { await openFragment(id); }
+
+  const container = isDesktop() ? pageFrame : mobileChapter;
+  setTimeout(async ()=> {
+    try{
+      if(!isDesktop()){
+        mobileChapter.setAttribute('tabindex','-1');
+        mobileChapter.focus({ preventScroll: true });
+      } else {
+        pageFrame.setAttribute('tabindex','-1');
+        pageFrame.focus({ preventScroll: true });
+      }
+    }catch(e){}
+    let matches = 0;
+    try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
+    if(matches === 0){
+      setTimeout(()=> {
+        try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
+      }, 320);
+    }
+  }, 420);
 }
 
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
