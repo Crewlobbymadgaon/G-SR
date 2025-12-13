@@ -84,127 +84,74 @@
     text-justify:inter-word;
   }
 
-  /* Mobile adjustments */
+  /* ===============================
+   MOBILE — CANONICAL FIX
+   =============================== */
 @media (max-width:640px){
+
   :root{
     --num-col:56px;
-    --marker-col:44px;     /* ⬅ reduce marker width on mobile */
-    --gutter:4px;          /* ⬅ slightly more breathing space */
+    --marker-col:42px;   /* single constant marker width */
+    --gutter:6px;
     --container-w:100%;
   }
 
-  .chapter-container{ padding:12px 10px; }
-  .rule .num{ padding-left:6px; }
-  .heading-row{ margin-bottom:4px; }
+  .chapter-container{
+    padding:12px 10px;
+  }
 
-  /* base hanging list */
+  /* RULE header number */
+  .rule .num{
+    padding-left:6px;
+  }
+
+  /* ALL hanging lists — ALL DEPTHS */
+  .hanging-list,
+  .hanging-list ol,
+  .hanging-list ul{
+    margin:0;
+    padding:0;
+  }
+
   .hanging-list li{
+    display:grid;
     grid-template-columns: var(--marker-col) 1fr;
     column-gap: var(--gutter);
+    align-items:flex-start;
+    margin-bottom:8px;
   }
 
   .hanging-list li .marker{
-    padding-right:2px;
+    text-align:right;
+    white-space:nowrap;
     font-weight:700;
+    padding-right:2px;
   }
 
-  /* ✅ KEY FIX: prevent runaway right indentation */
-  .hanging-list{
-    margin-left: 0;
-  }
-
-  .hanging-list .hanging-list{
-    margin-left: 8px;
-  }
-
-  .hanging-list .hanging-list .hanging-list{
-    margin-left: 14px;
-  }
-
-  .hanging-list .hanging-list .hanging-list .hanging-list{
-    margin-left: 18px;
-  }
-
-  /* improve readability on narrow screens */
-  .termdef{
+  .hanging-list li .termdef{
     line-height:1.65;
     text-align:left;
-  }
-}
-@media (max-width:640px){
-  .marker{ font-size:0.95rem; }
-  .termdef{ font-size:1rem; }
-}
-
-/* 🔥 REAL FIX: mobile nested list correction */
-@media (max-width:640px){
-
-  /* only affect NESTED hanging lists */
-  .hanging-list .hanging-list li{
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  /* marker stays fixed width */
-  .hanging-list .hanging-list li .marker{
-    flex: 0 0 34px;
-    text-align: right;
-  }
-
-  /* text takes full width */
-  .hanging-list .hanging-list li .termdef{
-    flex: 1 1 auto;
-    min-width: 0;
+    min-width:0;          /* 🔑 prevents right-edge squeeze */
+    word-break:normal;
+    hyphens:auto;
   }
 }
 
+/* EXTRA SMALL SCREENS */
 @media (max-width:420px){
-  .hanging-list .hanging-list li .marker{
-    flex-basis: 30px;
-  }
-}
-
- @media (max-width:420px){
   :root{
-    --num-col:46px;        /* slightly tighter */
-    --marker-col:40px;     /* KEY: prevents right-edge squeeze */
-  }
-
-  .heading{
-    font-size:0.98rem;
+    --num-col:46px;
+    --marker-col:36px;
   }
 
   .hanging-list li{
     font-size:0.96rem;
   }
 
-  /* reduce deep nesting indentation */
-  .hanging-list .hanging-list{
-    margin-left: 6px;
-  }
-
-  .hanging-list .hanging-list .hanging-list{
-    margin-left: 10px;
-  }
-
-  .hanging-list .hanging-list .hanging-list .hanging-list{
-    margin-left: 14px;
-  }
-
-  .hanging-list li .marker{
-    padding-right:1px;
-    font-weight:700;
-  }
-
-  .termdef{
-    line-height:1.65;
-    text-align:left;
-    word-break:normal;
-    hyphens:auto;
+  .heading{
+    font-size:0.98rem;
   }
 }
-
 
   @media print{
     :root{ --container-w:720px; --base-font-size:12.5px; }
