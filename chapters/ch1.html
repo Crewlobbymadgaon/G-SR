@@ -170,6 +170,23 @@
   border-radius:2px;
 }
 
+/* controlled indent for (1), (2) under a definition */
+.subclause{
+  margin-left: 24px;   /* desktop & tablet */
+}
+
+/* mobile tuning */
+@media (max-width:640px){
+  .subclause{
+    margin-left: 14px;  /* slight shift, still readable */
+  }
+}
+
+@media (max-width:420px){
+  .subclause{
+    margin-left: 10px;
+  }
+}
 
 </style>
 
@@ -394,17 +411,19 @@
     </div>
   </li>
     
-
-      <li>
+<li>
   <div class="marker">(54)</div>
   <div class="termdef">
-    “Station section” means that section of station limits —
+    “station section” means that section of station limits —
+  </div>
+</li>
 
-    <ol class="hanging-list" style="margin-top:8px">
-      <li>
-        <div class="marker">(1)</div>
-        <div class="termdef">
-          at a class ‘B’ station provided with two-aspect signals, which is included —
+<li class="subclause">
+  <div class="marker">(1)</div>
+  <div class="termdef">
+    at a class ‘B’ station provided with two-aspect signals, which is included —
+  </div>
+</li>
 
           <ol class="hanging-list" style="margin-top:6px">
             <li>
