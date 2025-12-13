@@ -771,6 +771,25 @@ async function performSearch(q){
 
   renderSearchResults(results);
 }
+function restorePageScrollIfAny(chId){
+  const iframe = document.getElementById('chapterFrame');
+  if(!iframe) return;
+
+  let y = 0;
+  try{
+    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
+    y = raw ? Number(raw) || 0 : 0;
+  }catch(e){}
+
+  iframe.addEventListener('load', () => {
+    try{
+      iframe.contentWindow.scrollTo({
+        top: y,
+        behavior: 'auto'
+      });
+    }catch(e){}
+  }, { once:true });
+}
 
 async function openFragmentOrChapter(id){
   const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
