@@ -297,9 +297,9 @@ const cover = document.getElementById('cover');
 const reader = document.getElementById('reader');
 const pageShell = document.getElementById('pageShell');
 const pageFrame = document.getElementById('pageFrame');
-const pageChapter = document.getElementById('pageChapter');
+
 const mobileReader = document.getElementById('mobileReader');
-const mobileChapter = document.getElementById('mobileChapter');
+
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
@@ -757,7 +757,7 @@ searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.v
 (function restoreSearchState(){ const q = localStorage.getItem(SEARCH_Q_KEY) || ''; lastQuery = q; try{ const raw = localStorage.getItem(SEARCH_R_KEY); if(raw) lastResults = JSON.parse(raw) || []; }catch(e){ lastResults = []; }})();
 
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); updateNavButtons(); }
+function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); updateNavButtons(); }
 
 async function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> updateAllBackground().catch(()=>{})); }
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
