@@ -610,10 +610,21 @@ function renderSearchResults(list){
     const escaped = escapeHtml(String(r.snippet || ''));
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
     div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
-    div.onclick = async ()=> {
-      await openFragmentOrChapterAndHighlight(r.id, q || searchInput.value);
-      closeSearchPanel();
-    };
+    div.onclick = async () => {
+  const query = q || searchInput.value;
+
+  await openFragmentOrChapter(r.id);
+
+  const iframe = getActiveFrame();
+
+  iframe.onload = () => {
+    highlightInIframe(iframe, query);
+  };
+
+  closeSearchPanel();
+};
+
+
     searchResults.appendChild(div);
   });
 }
@@ -665,30 +676,76 @@ async function performSearch(q){
   renderSearchResults(results);
 }
 
-async function openFragmentOrChapterAndHighlight(id, query){
+async function openFragmentOrChapter(id){
   const isChapter = TOC.some(it => it.type === 'chapter' && it.id === id);
   const isFragment = TOC.some(it => it.type === 'fragment' && it.id === id);
-  if(isFragment){ await openFragment(id); } else if(isChapter){ await openChapter(id, null); } else { await openFragment(id); }
 
-  const container = isDesktop() ? pageFrame : mobileChapter;
-  setTimeout(async ()=> {
-    try{
-      if(!isDesktop()){
-        mobileChapter.setAttribute('tabindex','-1');
-        mobileChapter.focus({ preventScroll: true });
-      } else {
-        pageFrame.setAttribute('tabindex','-1');
-        pageFrame.focus({ preventScroll: true });
+  if(isFragment){
+    await openFragment(id);
+  } else if(isChapter){
+    await openChapter(id, null);
+  } else {
+    await openFragment(id);
+  }
+}
+function highlightInIframe(iframe, query){
+  if(!query) return;
+
+  try{
+    const doc = iframe.contentDocument;
+    if(!doc) return;
+
+    const esc = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const re = new RegExp(esc, 'gi');
+
+    const walker = doc.createTreeWalker(
+      doc.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node){
+          if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const p = node.parentElement;
+          if(!p) return NodeFilter.FILTER_REJECT;
+          if(['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
       }
-    }catch(e){}
-    let matches = 0;
-    try{ matches = highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){ matches = 0; }
-    if(matches === 0){
-      setTimeout(()=> {
-        try{ highlightAllInContainer(container, query || (localStorage.getItem(SEARCH_Q_KEY) || '')); }catch(e){}
-      }, 320);
+    );
+
+    const nodes = [];
+    let n;
+    while(n = walker.nextNode()) nodes.push(n);
+
+    nodes.forEach(textNode=>{
+      const text = textNode.nodeValue;
+      if(!re.test(text)) return;
+      re.lastIndex = 0;
+
+      const frag = doc.createDocumentFragment();
+      let last = 0, m;
+
+      while((m = re.exec(text))){
+        if(m.index > last){
+          frag.appendChild(doc.createTextNode(text.slice(last, m.index)));
+        }
+        const mark = doc.createElement('mark');
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        last = m.index + m[0].length;
+      }
+
+      if(last < text.length){
+        frag.appendChild(doc.createTextNode(text.slice(last)));
+      }
+
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+
+    const first = doc.querySelector('mark');
+    if(first){
+      first.scrollIntoView({ block:'center', behavior:'smooth' });
     }
-  }, 420);
+  }catch(e){}
 }
 
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
@@ -760,6 +817,66 @@ if ('serviceWorker' in navigator) {
     } catch (err) {}
   }, { passive: true, capture: false });
 })();
+
+  function highlightInIframe(iframe, query){
+  if(!query) return;
+
+  try{
+    const doc = iframe.contentDocument;
+    if(!doc) return;
+
+    const esc = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const re = new RegExp(esc, 'gi');
+
+    const walker = doc.createTreeWalker(
+      doc.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node){
+          if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const p = node.parentElement;
+          if(!p) return NodeFilter.FILTER_REJECT;
+          if(['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      }
+    );
+
+    const nodes = [];
+    let n;
+    while(n = walker.nextNode()) nodes.push(n);
+
+    nodes.forEach(textNode=>{
+      const text = textNode.nodeValue;
+      if(!re.test(text)) return;
+      re.lastIndex = 0;
+
+      const frag = doc.createDocumentFragment();
+      let last = 0, m;
+      while((m = re.exec(text))){
+        if(m.index > last){
+          frag.appendChild(doc.createTextNode(text.slice(last, m.index)));
+        }
+        const mark = doc.createElement('mark');
+        mark.style.background = '#fff59d';
+        mark.style.padding = '0 2px';
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        last = m.index + m[0].length;
+      }
+      if(last < text.length){
+        frag.appendChild(doc.createTextNode(text.slice(last)));
+      }
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+
+    const first = doc.querySelector('mark');
+    if(first){
+      first.scrollIntoView({ block:'center', behavior:'smooth' });
+    }
+  }catch(e){}
+}
+
 </script>
 </body>
 </html>
