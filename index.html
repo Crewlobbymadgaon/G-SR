@@ -222,7 +222,18 @@ header .prev, header .next, header .header-nav, header .nav-small, header .heade
     <section id="reader" aria-live="polite" tabindex="-1" style="display:none;">
       <div class="page-shell" id="pageShell" style="display:none;">
         <div class="book-page" id="bookPage" role="region" aria-label="Book page">
-          <div class="page-frame" id="pageFrame"><div class="chapter" id="pageChapter"><!-- injected --></div></div>
+          <div class="page-frame" id="pageFrame">
+  <iframe
+    id="chapterFrame"
+    style="width:100%;height:100%;border:none;"
+    sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+  ></iframe>
+</div>
+          <iframe
+  id="mobileChapterFrame"
+  style="width:100%;min-height:100vh;border:none;"
+  sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+></iframe>
         </div>
       </div>
 
