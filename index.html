@@ -162,7 +162,12 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 header .prev, header .next, header .header-nav, header .nav-small, header .header-forward, header .header-back {
   display: none !important;
 }
-
+/* Prevent reader styles from leaking INTO chapters */
+.page-frame .chapter,
+.mobile-chapter {
+  font-family: initial;
+  line-height: initial;
+}
 </style>
 </head>
 <body>
