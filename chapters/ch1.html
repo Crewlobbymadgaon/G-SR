@@ -112,6 +112,11 @@
 
   /* ensure no unintended left offset on direct children */
   .rule .content > * { margin-left:0; padding-left:0; }
+  /* Offset anchor scroll for fixed header in parent */
+[id]{
+  scroll-margin-top: 80px; /* header height + spacing */
+}
+
 </style>
 
 <article class="chapter-container" aria-labelledby="chapter-heading">
