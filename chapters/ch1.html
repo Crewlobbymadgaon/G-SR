@@ -85,25 +85,98 @@
   }
 
   /* Mobile adjustments */
-  @media (max-width:640px){
-    :root{
-      --num-col:56px;
-      --marker-col:56px;
-      --gutter:2px;
-      --container-w:100%;
-    }
-    .chapter-container{ padding:12px 10px; }
-    .rule .num{ padding-left:6px; }
-    .heading-row{ margin-bottom:4px; }
-    .hanging-list li{ grid-template-columns: var(--marker-col) 1fr; column-gap:var(--gutter); }
-    .hanging-list li .marker{ padding-right:1px; }
+@media (max-width:640px){
+  :root{
+    --num-col:56px;
+    --marker-col:44px;     /* ⬅ reduce marker width on mobile */
+    --gutter:4px;          /* ⬅ slightly more breathing space */
+    --container-w:100%;
   }
 
-  @media (max-width:420px){
-    :root{ --num-col:48px; --marker-col:48px; }
-    .heading{ font-size:0.98rem; }
-    .hanging-list li{ font-size:0.96rem; }
+  .chapter-container{ padding:12px 10px; }
+  .rule .num{ padding-left:6px; }
+  .heading-row{ margin-bottom:4px; }
+
+  /* base hanging list */
+  .hanging-list li{
+    grid-template-columns: var(--marker-col) 1fr;
+    column-gap: var(--gutter);
   }
+
+  .hanging-list li .marker{
+    padding-right:2px;
+    font-weight:700;
+  }
+
+  /* ✅ KEY FIX: prevent runaway right indentation */
+  .hanging-list{
+    margin-left: 0;
+  }
+
+  .hanging-list .hanging-list{
+    margin-left: 8px;
+  }
+
+  .hanging-list .hanging-list .hanging-list{
+    margin-left: 14px;
+  }
+
+  .hanging-list .hanging-list .hanging-list .hanging-list{
+    margin-left: 18px;
+  }
+
+  /* improve readability on narrow screens */
+  .termdef{
+    line-height:1.65;
+    text-align:left;
+  }
+}
+@media (max-width:640px){
+  .marker{ font-size:0.95rem; }
+  .termdef{ font-size:1rem; }
+}
+
+
+ @media (max-width:420px){
+  :root{
+    --num-col:46px;        /* slightly tighter */
+    --marker-col:40px;     /* KEY: prevents right-edge squeeze */
+  }
+
+  .heading{
+    font-size:0.98rem;
+  }
+
+  .hanging-list li{
+    font-size:0.96rem;
+  }
+
+  /* reduce deep nesting indentation */
+  .hanging-list .hanging-list{
+    margin-left: 6px;
+  }
+
+  .hanging-list .hanging-list .hanging-list{
+    margin-left: 10px;
+  }
+
+  .hanging-list .hanging-list .hanging-list .hanging-list{
+    margin-left: 14px;
+  }
+
+  .hanging-list li .marker{
+    padding-right:1px;
+    font-weight:700;
+  }
+
+  .termdef{
+    line-height:1.65;
+    text-align:left;
+    word-break:normal;
+    hyphens:auto;
+  }
+}
+
 
   @media print{
     :root{ --container-w:720px; --base-font-size:12.5px; }
