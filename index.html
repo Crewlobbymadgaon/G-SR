@@ -297,9 +297,9 @@ const cover = document.getElementById('cover');
 const reader = document.getElementById('reader');
 const pageShell = document.getElementById('pageShell');
 const pageFrame = document.getElementById('pageFrame');
-const pageChapter = document.getElementById('pageChapter');
+
 const mobileReader = document.getElementById('mobileReader');
-const mobileChapter = document.getElementById('mobileChapter');
+
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
@@ -427,12 +427,9 @@ async function openChapter(chId, anchor = null){
   pageShell.style.display = isDesktop() ? 'flex' : 'none';
   mobileReader.style.display = isDesktop() ? 'none' : 'block';
 
-  // build URL with anchor (native browser scrolling)
-  const url = anchor
+  iframe.src = anchor
     ? `chapters/${chId}.html#${anchor}`
     : `chapters/${chId}.html`;
-
-  iframe.src = url;
 
   if(anchor){
     currentFlatIndex = FLAT.findIndex(
@@ -447,6 +444,15 @@ async function openChapter(chId, anchor = null){
   }
 
   updateNavButtons();
+
+  /* ✅ ADD THESE */
+  if(isDesktop()){
+    restorePageScrollIfAny(chId);
+    attachPageSaverIfNeeded();
+  } else {
+    restoreWindowScrollIfAny(chId);
+    attachWindowSaverIfNeeded();
+  }
 }
 
 
@@ -569,10 +575,100 @@ function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.string
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
-let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
-function attachPageSaverIfNeeded(){ detachPageSaver(); const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null; if(!it || it.kind!=='chapter') return; pageSaver.id = it.id; pageSaver.handler = ()=> { const now = Date.now(); if(now - pageSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} clearTimeout(pageSaver.timer); pageSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + pageSaver.id, String(Math.floor(pageFrame.scrollTop || 0))); }catch(e){} }, 700); pageSaver.lastSaved = now; }; pageFrame.addEventListener('scroll', pageSaver.handler, { passive:true }); }
-function detachPageSaver(){ try{ if(pageSaver.handler) pageFrame.removeEventListener('scroll', pageSaver.handler); if(pageSaver.timer) clearTimeout(pageSaver.timer); }catch(e){} pageSaver={ timer:null, lastSaved:0, id:null, handler:null }; }
-function restorePageScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> pageFrame.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
+let pageSaver = {
+  timer: null,
+  lastSaved: 0,
+  id: null,
+  handler: null,
+  win: null
+};
+
+function attachPageSaverIfNeeded() {
+  detachPageSaver();
+
+  const it =
+    currentFlatIndex >= 0 && currentFlatIndex < FLAT.length
+      ? FLAT[currentFlatIndex]
+      : null;
+
+  if (!it || it.kind !== 'chapter') return;
+
+  pageSaver.id = it.id;
+
+  const iframe = document.getElementById('chapterFrame');
+  if (!iframe) return;
+
+  const getScrollY = () => {
+    try {
+      return iframe.contentWindow
+        ? Math.floor(iframe.contentWindow.scrollY || 0)
+        : 0;
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  pageSaver.handler = () => {
+    const now = Date.now();
+    if (now - pageSaver.lastSaved > 800) {
+      try {
+        localStorage.setItem(
+          SCROLL_PREFIX + pageSaver.id,
+          String(getScrollY())
+        );
+      } catch (e) {}
+      pageSaver.lastSaved = now;
+    }
+
+    clearTimeout(pageSaver.timer);
+    pageSaver.timer = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          SCROLL_PREFIX + pageSaver.id,
+          String(getScrollY())
+        );
+      } catch (e) {}
+    }, 700);
+  };
+
+  iframe.addEventListener('load', () => {
+  try{
+    pageSaver.win = iframe.contentWindow;
+    pageSaver.win.addEventListener(
+      'scroll',
+      pageSaver.handler,
+      { passive:true }
+    );
+  }catch(e){}
+}, { once:true });
+
+}
+
+function detachPageSaver(){
+  try{
+    if(pageSaver.win && pageSaver.handler){
+      pageSaver.win.removeEventListener('scroll', pageSaver.handler);
+    }
+    if(pageSaver.timer) clearTimeout(pageSaver.timer);
+  }catch(e){}
+  pageSaver = { timer:null, lastSaved:0, id:null, handler:null, win:null };
+}
+
+  const iframe = document.getElementById('chapterFrame');
+  if(!iframe) return;
+
+  let y = 0;
+  try{
+    const raw = localStorage.getItem(SCROLL_PREFIX + chId);
+    y = raw ? Number(raw) || 0 : 0;
+  }catch(e){}
+
+  iframe.addEventListener('load', () => {
+    try{
+      iframe.contentWindow.scrollTo({ top: y, behavior: 'auto' });
+    }catch(e){}
+  }, { once: true });
+}
 
 let winSaver = { timer:null, lastSaved:0, id:null, handler:null };
 function attachWindowSaverIfNeeded(){ detachWindowSaver(); const it = (currentFlatIndex>=0 && currentFlatIndex<FLAT.length)?FLAT[currentFlatIndex]:null; if(!it || it.kind!=='chapter') return; winSaver.id = it.id; winSaver.handler = ()=> { const now = Date.now(); if(now - winSaver.lastSaved > 800) try{ localStorage.setItem(SCROLL_PREFIX + winSaver.id, String(Math.floor(window.scrollY || 0))); }catch(e){} clearTimeout(winSaver.timer); winSaver.timer = setTimeout(()=> { try{ localStorage.setItem(SCROLL_PREFIX + winSaver.id, String(Math.floor(window.scrollY || 0))); }catch(e){} }, 700); winSaver.lastSaved = now; }; window.addEventListener('scroll', winSaver.handler, { passive:true }); }
@@ -688,65 +784,7 @@ async function openFragmentOrChapter(id){
     await openFragment(id);
   }
 }
-function highlightInIframe(iframe, query){
-  if(!query) return;
 
-  try{
-    const doc = iframe.contentDocument;
-    if(!doc) return;
-
-    const esc = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const re = new RegExp(esc, 'gi');
-
-    const walker = doc.createTreeWalker(
-      doc.body,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode(node){
-          if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-          const p = node.parentElement;
-          if(!p) return NodeFilter.FILTER_REJECT;
-          if(['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-          return NodeFilter.FILTER_ACCEPT;
-        }
-      }
-    );
-
-    const nodes = [];
-    let n;
-    while(n = walker.nextNode()) nodes.push(n);
-
-    nodes.forEach(textNode=>{
-      const text = textNode.nodeValue;
-      if(!re.test(text)) return;
-      re.lastIndex = 0;
-
-      const frag = doc.createDocumentFragment();
-      let last = 0, m;
-
-      while((m = re.exec(text))){
-        if(m.index > last){
-          frag.appendChild(doc.createTextNode(text.slice(last, m.index)));
-        }
-        const mark = doc.createElement('mark');
-        mark.textContent = m[0];
-        frag.appendChild(mark);
-        last = m.index + m[0].length;
-      }
-
-      if(last < text.length){
-        frag.appendChild(doc.createTextNode(text.slice(last)));
-      }
-
-      textNode.parentNode.replaceChild(frag, textNode);
-    });
-
-    const first = doc.querySelector('mark');
-    if(first){
-      first.scrollIntoView({ block:'center', behavior:'smooth' });
-    }
-  }catch(e){}
-}
 
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
@@ -757,44 +795,72 @@ searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.v
 (function restoreSearchState(){ const q = localStorage.getItem(SEARCH_Q_KEY) || ''; lastQuery = q; try{ const raw = localStorage.getItem(SEARCH_R_KEY); if(raw) lastResults = JSON.parse(raw) || []; }catch(e){ lastResults = []; }})();
 
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; pageChapter.innerHTML=''; mobileChapter.innerHTML=''; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); updateNavButtons(); }
+function showCover(){
+  currentFlatIndex = -1;
+  cover.style.display = 'flex';
+  reader.style.display = 'none';
+  pageShell.style.display = 'none';
+  mobileReader.style.display = 'none';
+  detachPageSaver();
+  detachWindowSaver();
+  history.replaceState({}, '', './');
+  updateNavButtons();
+}
+
 
 async function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> updateAllBackground().catch(()=>{})); }
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
 
-window.addEventListener('load', async ()=>{
-  startBackgroundUpdater();
-  try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+window.addEventListener('load', async () => {
+  /* 1️⃣ Register Service Worker FIRST */
+  try {
+    if ('serviceWorker' in navigator) {
+      await navigator.serviceWorker.register('sw.js');
+    }
+  } catch (e) {
+    console.warn('SW registration failed', e);
+  }
+
+  /* 2️⃣ Restore last state */
   const hadStarted = localStorage.getItem(VISITED_FLAG);
   const last = loadLastRead();
-  if(!hadStarted){
-  showCover();
-  // ensure iframe is never empty
-  const iframe = getActiveFrame();
-  iframe.src = 'about:blank';
-  return;
-}
+
+  if (!hadStarted) {
+    showCover();
+
+    // ensure iframe is never empty (prevents Android blank screen)
+    const iframe = getActiveFrame();
+    iframe.src = 'data:text/html,<html><body></body></html>';
+
+    // 3️⃣ start background work ONLY after UI is ready
+    startBackgroundUpdater();
+    return;
+  }
 
   if (last) {
-  try {
-    if (last.kind === 'fragment') {
-      await openFragment(last.id);
-      setFlatIndexFromLast(last);
-      return;
-    }
+    try {
+      if (last.kind === 'fragment') {
+        await openFragment(last.id);
+        setFlatIndexFromLast(last);
+        startBackgroundUpdater();
+        return;
+      }
 
-    if (last.kind === 'chapter') {
-      await openChapter(last.id, last.anchor || null);
-      setFlatIndexFromLast(last);
-      return;
+      if (last.kind === 'chapter') {
+        await openChapter(last.id, last.anchor || null);
+        setFlatIndexFromLast(last);
+        startBackgroundUpdater();
+        return;
+      }
+    } catch (err) {
+      console.warn('Last-read restore failed, falling back to cover', err);
     }
-  } catch (err) {
-    console.warn('Last-read restore failed, falling back to cover', err);
   }
-}
 
-/* ALWAYS have a fallback */
-showCover();
+  /* 4️⃣ Absolute fallback */
+  showCover();
+  startBackgroundUpdater();
+});
 
 
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } updateNavButtons(); }
@@ -809,9 +875,7 @@ window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBa
 
 
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
-}
+
 
 /* UX: close search panel when clicking anywhere outside it (desktop & mobile) */
 (function installGlobalClickToCloseSearch(){
