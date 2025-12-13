@@ -136,6 +136,34 @@
   .termdef{ font-size:1rem; }
 }
 
+/* 🔥 REAL FIX: mobile nested list correction */
+@media (max-width:640px){
+
+  /* only affect NESTED hanging lists */
+  .hanging-list .hanging-list li{
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  /* marker stays fixed width */
+  .hanging-list .hanging-list li .marker{
+    flex: 0 0 34px;
+    text-align: right;
+  }
+
+  /* text takes full width */
+  .hanging-list .hanging-list li .termdef{
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+@media (max-width:420px){
+  .hanging-list .hanging-list li .marker{
+    flex-basis: 30px;
+  }
+}
 
  @media (max-width:420px){
   :root{
