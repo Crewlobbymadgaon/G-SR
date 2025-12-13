@@ -215,6 +215,33 @@
     flex-basis: 26px;
   }
 }
+/* ===== HIERARCHY INDENT (MOVE WHOLE ROW) ===== */
+
+/* (1), (2) under (54) */
+.hanging-list li.subclause{
+  margin-left: 18px;
+}
+
+/* (a), (b) under (1)/(2) */
+.hanging-list li.level-a{
+  margin-left: 36px;
+}
+
+/* (i), (ii), (iii) under (a)/(b) */
+.hanging-list li.level-i{
+  margin-left: 54px;
+}
+@media (max-width:640px){
+  .hanging-list li.subclause{ margin-left: 12px; }
+  .hanging-list li.level-a{  margin-left: 24px; }
+  .hanging-list li.level-i{  margin-left: 36px; }
+}
+
+@media (max-width:420px){
+  .hanging-list li.subclause{ margin-left: 10px; }
+  .hanging-list li.level-a{  margin-left: 18px; }
+  .hanging-list li.level-i{  margin-left: 28px; }
+}
 
 
 
