@@ -414,9 +414,31 @@ async function openFragment(id){
 
   iframe.src = `chapters/${id}.html`;
 
-  currentFlatIndex = FLAT.findIndex(f => f.kind === 'fragment' && f.id === id);
+ syncFlatIndex('fragment', id);
+
   saveLastRead({ kind:'fragment', id });
   updateNavButtons();
+}
+function syncFlatIndex(kind, chId, anchor = null){
+  for(let i = 0; i < FLAT.length; i++){
+    const it = FLAT[i];
+
+    if(kind === 'fragment' && it.kind === 'fragment' && it.id === chId){
+      currentFlatIndex = i;
+      return;
+    }
+
+    if(kind === 'chapter' && !anchor && it.kind === 'chapter' && it.id === chId){
+      currentFlatIndex = i;
+      return;
+    }
+
+    if(kind === 'chapter' && anchor && it.kind === 'anchor'
+        && it.chapter === chId && it.anchor === anchor){
+      currentFlatIndex = i;
+      return;
+    }
+  }
 }
 
 async function openChapter(chId, anchor = null){
@@ -434,20 +456,16 @@ async function openChapter(chId, anchor = null){
 
   iframe.src = url;
 
-  if(anchor){
-    currentFlatIndex = FLAT.findIndex(
-      f => f.kind === 'anchor' && f.chapter === chId && f.anchor === anchor
-    );
-    saveLastRead({ kind:'chapter', id:chId, anchor });
-  } else {
-    currentFlatIndex = FLAT.findIndex(
-      f => f.kind === 'chapter' && f.id === chId
-    );
-    saveLastRead({ kind:'chapter', id:chId, anchor:null });
-  }
+  syncFlatIndex('chapter', chId, anchor);
 
-  updateNavButtons();
-}
+saveLastRead({
+  kind: 'chapter',
+  id: chId,
+  anchor: anchor || null
+});
+
+updateNavButtons();
+
 
 
 function renderHtml(html, highlight=null){
@@ -874,6 +892,22 @@ window.addEventListener('resize', ()=>{
     }
   }catch(e){}
 }
+  function syncFlatIndex(kind, chId, anchor = null){
+  for(let i = 0; i < FLAT.length; i++){
+    const it = FLAT[i];
+    if(kind === 'fragment' && it.kind === 'fragment' && it.id === chId){
+      currentFlatIndex = i; return;
+    }
+    if(kind === 'chapter' && !anchor && it.kind === 'chapter' && it.id === chId){
+      currentFlatIndex = i; return;
+    }
+    if(kind === 'chapter' && anchor && it.kind === 'anchor'
+        && it.chapter === chId && it.anchor === anchor){
+      currentFlatIndex = i; return;
+    }
+  }
+}
+
 
 </script>
 </body>
