@@ -182,21 +182,40 @@
   padding-left: 36px;
 }
 
-/* (i), (ii), (iii) under (a)/(b) */
-.level-i .termdef{
-  padding-left: 54px;
+/* ============================
+   FIX FOR (i), (ii), (iii)
+   ============================ */
+
+.level-i{
+  display: flex !important;      /* override grid */
+  align-items: flex-start;
+  gap: 6px;
 }
+
+.level-i .marker{
+  flex: 0 0 34px;                /* fixed marker width */
+  text-align: right;
+  white-space: nowrap;
+}
+
+.level-i .termdef{
+  flex: 1 1 auto;                /* FULL WIDTH TEXT */
+  padding-left: 0 !important;    /* 🔥 remove squeeze */
+  min-width: 0;
+}
+
 @media (max-width:640px){
-  .subclause .termdef{ padding-left: 12px; }
-  .level-a .termdef{ padding-left: 22px; }
-  .level-i .termdef{ padding-left: 32px; }
+  .level-i .marker{
+    flex-basis: 30px;
+  }
 }
 
 @media (max-width:420px){
-  .subclause .termdef{ padding-left: 10px; }
-  .level-a .termdef{ padding-left: 18px; }
-  .level-i .termdef{ padding-left: 26px; }
+  .level-i .marker{
+    flex-basis: 26px;
+  }
 }
+
 
 
 </style>
