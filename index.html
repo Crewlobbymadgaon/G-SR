@@ -1,12 +1,10 @@
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>G&SR</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b63d6">
 
 <style>
 :root{
@@ -20,62 +18,111 @@
   --page-max-width:1200px;
   --base-font: Inter, system-ui, Arial, serif;
 }
+
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:var(--base-font);background:var(--bg)}
-header{
-  position:fixed;top:0;left:0;right:0;height:var(--header-h);
-  display:flex;align-items:center;gap:10px;
-  padding:0 14px;background:linear-gradient(90deg,var(--kr),var(--kr2));
-  color:#fff;z-index:1000;
+html,body{
+  margin:0;height:100%;
+  font-family:var(--base-font);
+  background:var(--bg);
 }
+
+header{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);
+  display:flex;align-items:center;
+  padding:0 14px;
+  background:linear-gradient(90deg,var(--kr),var(--kr2));
+  color:#fff;
+  z-index:1000;
+}
+
 .brand{flex:1;text-align:center;font-weight:800}
 .icon-btn{
-  width:40px;height:40px;border-radius:8px;
+  width:40px;height:40px;
+  border-radius:8px;
   background:rgba(255,255,255,.15);
-  border:0;color:#fff;font-size:18px;cursor:pointer;
+  border:0;color:#fff;
+  font-size:18px;cursor:pointer;
 }
+
 main{
-  padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);
+  padding:calc(var(--header-h) + 12px) 16px
+          calc(var(--footer-h) + 16px);
   max-width:var(--page-max-width);
   margin:0 auto;
 }
+
 #cover{
-  height:60vh;background:#111;color:#fff;
-  display:flex;align-items:center;justify-content:center;
+  height:60vh;
+  background:#111;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border-radius:14px;
 }
+
 #reader{display:none}
-.page-shell{display:none}
+
+.page-shell{
+  display:none;
+}
+
 .book-page{
-  background:#fff;border-radius:10px;
+  background:#fff;
+  border-radius:10px;
   height:calc(100vh - var(--header-h) - var(--footer-h) - 24px);
-  overflow:hidden;
+  overflow:auto;
+  padding:20px;
 }
-.page-frame{height:100%;width:100%}
-iframe{border:0;width:100%;height:100%}
+
+.chapter{
+  max-width:900px;
+  margin:0 auto;
+  line-height:1.6;
+}
+
 footer{
-  position:fixed;bottom:0;left:0;right:0;
+  position:fixed;
+  bottom:0;left:0;right:0;
   height:var(--footer-h);
-  display:flex;justify-content:center;gap:20px;
-  background:#fff;border-top:1px solid #ddd;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  background:#fff;
+  border-top:1px solid #ddd;
 }
+
 footer button{
-  padding:6px 12px;font-weight:700;border-radius:8px;
-  border:1px solid #ccc;background:#fff;cursor:pointer;
+  padding:6px 12px;
+  font-weight:700;
+  border-radius:8px;
+  border:1px solid #ccc;
+  background:#fff;
+  cursor:pointer;
 }
+
 #tocDrawer{
-  position:fixed;left:10px;top:80px;
-  width:300px;background:#fff;border-radius:12px;
+  position:fixed;
+  left:10px;
+  top:80px;
+  width:300px;
+  background:#fff;
+  border-radius:12px;
   box-shadow:0 20px 40px rgba(0,0,0,.2);
-  padding:10px;display:none;z-index:1200;
+  padding:10px;
+  display:none;
+  z-index:1200;
 }
 #tocDrawer.open{display:block}
-.toc-item,.toc-sub{padding:6px 8px;cursor:pointer;font-weight:700}
-.toc-sub{padding-left:24px}
-.fragment{
-  background:#fff;border-radius:12px;
-  padding:16px;line-height:1.6;
+
+.toc-item,.toc-sub{
+  padding:6px 8px;
+  cursor:pointer;
+  font-weight:700;
 }
+.toc-sub{padding-left:24px}
+
 @media(min-width:980px){
   .page-shell{display:flex;justify-content:center}
   .book-page{width:100%}
@@ -98,15 +145,11 @@ footer button{
   <section id="cover">G&SR Rule Book</section>
 
   <section id="reader">
-    <div class="page-shell" id="pageShell">
+    <div class="page-shell">
       <div class="book-page">
-        <div class="page-frame">
-          <iframe id="chapterFrame"></iframe>
-        </div>
+        <div class="chapter" id="chapterContainer"></div>
       </div>
     </div>
-
-    <div id="mobileFragment" class="fragment"></div>
   </section>
 </main>
 
@@ -139,9 +182,7 @@ TOC.forEach(i=>{
 
 const cover=document.getElementById('cover');
 const reader=document.getElementById('reader');
-const pageShell=document.getElementById('pageShell');
-const frame=document.getElementById('chapterFrame');
-const frag=document.getElementById('mobileFragment');
+const container=document.getElementById('chapterContainer');
 const tocDrawer=document.getElementById('tocDrawer');
 const tocList=document.getElementById('tocList');
 const prevBtn=document.getElementById('prevBtn');
@@ -150,7 +191,7 @@ const btnMenu=document.getElementById('btnMenu');
 
 let idx=-1;
 
-/* TOC */
+/* Build TOC */
 TOC.forEach(it=>{
   const d=document.createElement('div');
   d.className='toc-item';
@@ -168,6 +209,12 @@ TOC.forEach(it=>{
 
 btnMenu.onclick=()=>tocDrawer.classList.toggle('open');
 
+/* Load helpers */
+async function loadHtml(path){
+  const r=await fetch(path);
+  return r.ok ? r.text() : `<p>Missing ${path}</p>`;
+}
+
 /* Open logic */
 function open(it){
   tocDrawer.classList.remove('open');
@@ -177,31 +224,37 @@ function open(it){
 function openAnchor(id,a){openChapter(id,a)}
 
 async function openFragment(id){
-  const res=await fetch(`fragments/${id}.html`);
-  frag.innerHTML=await res.text();
-  cover.style.display='none';
-  reader.style.display='block';
-  pageShell.style.display='none';
-  frag.style.display='block';
+  const html=await loadHtml(`fragments/${id}.html`);
+  showReader();
+  container.innerHTML=html;
   idx=FLAT.findIndex(x=>x.k==='f'&&x.id===id);
   updateNav();
 }
 
-function openChapter(id,anchor){
-  cover.style.display='none';
-  reader.style.display='block';
-  frag.style.display='none';
-  pageShell.style.display='flex';
-  frame.src=`chapters/${id}.html`;
-  frame.onload=()=>{ if(anchor) frame.contentWindow.location.hash=anchor };
+async function openChapter(id,anchor){
+  const html=await loadHtml(`chapters/${id}.html`);
+  showReader();
+  container.innerHTML=html;
+  if(anchor){
+    setTimeout(()=>{
+      const el=document.getElementById(anchor);
+      if(el) el.scrollIntoView({behavior:'smooth'});
+    },50);
+  }
   idx=FLAT.findIndex(x=>x.k==='c'&&x.id===id);
   updateNav();
+}
+
+function showReader(){
+  cover.style.display='none';
+  reader.style.display='block';
 }
 
 function updateNav(){
   prevBtn.disabled=idx<=0;
   nextBtn.disabled=idx>=FLAT.length-1;
 }
+
 prevBtn.onclick=()=>{ if(idx>0) go(FLAT[idx-1]) };
 nextBtn.onclick=()=>{ if(idx<FLAT.length-1) go(FLAT[idx+1]) };
 
@@ -210,8 +263,7 @@ function go(it){
   if(it.k==='c') openChapter(it.id,null);
   if(it.k==='a') openChapter(it.c,it.a);
 }
-
-/* start */
 </script>
+
 </body>
 </html>
