@@ -312,7 +312,7 @@ const searchClear = document.getElementById('searchClear');
 
 let cache = {};
 let currentFlatIndex = -1;
-let lastHtml = null;
+
 let bgTimer = null;
 let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
 let lastResults = [];
@@ -767,13 +767,35 @@ window.addEventListener('load', async ()=>{
   try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
   const hadStarted = localStorage.getItem(VISITED_FLAG);
   const last = loadLastRead();
-  if(!hadStarted){ showCover(); return; }
-  if(last){
-    if(last.kind === 'fragment'){ await openFragment(last.id); setFlatIndexFromLast(last); return; }
-    if(last.kind === 'chapter'){ await openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
-  }
+  if(!hadStarted){
   showCover();
-});
+  // ensure iframe is never empty
+  const iframe = getActiveFrame();
+  iframe.src = 'about:blank';
+  return;
+}
+
+  if (last) {
+  try {
+    if (last.kind === 'fragment') {
+      await openFragment(last.id);
+      setFlatIndexFromLast(last);
+      return;
+    }
+
+    if (last.kind === 'chapter') {
+      await openChapter(last.id, last.anchor || null);
+      setFlatIndexFromLast(last);
+      return;
+    }
+  } catch (err) {
+    console.warn('Last-read restore failed, falling back to cover', err);
+  }
+}
+
+/* ALWAYS have a fallback */
+showCover();
+
 
 function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } updateNavButtons(); }
 function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
@@ -785,15 +807,7 @@ document.addEventListener('keydown',(e)=>{ if(e.key === 'Escape'){ if(searchPane
 
 window._GSR = { TOC, FLAT, openFragment, openChapter, performSearch, updateAllBackground };
 
-let _rt = null;
-window.addEventListener('resize', ()=>{
-  clearTimeout(_rt);
-  _rt = setTimeout(()=> {
-    if(window.__gkr_search_open) return;
-    if(window.__gkr_search_resize_lock) return;
-    if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
-  }, 180);
-});
+
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').then(()=>console.log('sw registered')).catch(console.error);
