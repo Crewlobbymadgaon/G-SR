@@ -206,33 +206,106 @@
 /* (1), (2) under (54) */
 .hanging-list li.subclause{
   margin-left: 18px;
+<style>
+:root{
+  --container-w:780px;
+  --num-col:48px;
+  --marker-col:48px;
+  --gutter:12px;
+  --font-body:"Times New Roman", Georgia, serif;
+  --base-font-size:15px;
 }
 
-/* (a), (b) under (1)/(2) */
-.hanging-list li.level-a{
-  margin-left: 37px;
+html{ font-size:calc(var(--base-font-size) + 0.02vw); }
+body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
+
+.chapter-container{
+  max-width:var(--container-w);
+  margin:0 auto;
+  padding:22px 20px;
+  font-family:var(--font-body);
+  line-height:1.45;
+  box-sizing:border-box;
 }
 
-/* (i), (ii), (iii) under (a)/(b) */
-.hanging-list li.level-i{
-  margin-left: 55px;
+.chapter-title{ text-align:center; margin-bottom:10px; }
+.chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
+.chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
+
+/* RULE HEADER */
+.rule{
+  display:grid;
+  grid-template-columns:var(--num-col) 1fr;
+  column-gap:var(--gutter);
+  margin:8px 0 14px;
 }
+.rule .num{ font-weight:800; padding-left:6px; }
+.rule .content{ font-weight:800; }
+
+/* HEADING ALIGNMENT */
+.heading-row{
+  padding-left:calc(var(--marker-col) + var(--gutter));
+}
+.heading{ font-weight:800; }
+
+/* HANGING LIST — CORE */
+.hanging-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+
+.hanging-list li{
+  display:grid;
+  grid-template-columns:var(--marker-col) 1fr;
+  column-gap:var(--gutter);
+  margin:0 0 8px 0;
+}
+
+.marker{
+  text-align:right;
+  white-space:nowrap;
+  font-weight:800;
+}
+
+.termdef{
+  text-align:justify;
+  line-height:1.6;
+}
+
+/* HIERARCHY INDENT — MOVE WHOLE ROW */
+.hanging-list li.subclause{ margin-left:18px; }
+.hanging-list li.level-a{  margin-left:37px; }
+.hanging-list li.level-i{  margin-left:55px; }
+
+/* MOBILE */
 @media (max-width:640px){
-  .hanging-list li.subclause{ margin-left: 12px; }
-  .hanging-list li.level-a{  margin-left: 25px; }
-  .hanging-list li.level-i{  margin-left: 37px; }
+  :root{
+    --num-col:56px;
+    --marker-col:42px;
+    --gutter:6px;
+    --container-w:100%;
+  }
+  .chapter-container{ padding:12px 10px; }
+  .termdef{ text-align:left; hyphens:auto; }
+  .hanging-list li.subclause{ margin-left:12px; }
+  .hanging-list li.level-a{  margin-left:25px; }
+  .hanging-list li.level-i{  margin-left:37px; }
 }
 
 @media (max-width:420px){
-  .hanging-list li.subclause{ margin-left: 10px; }
-  .hanging-list li.level-a{  margin-left: 19px; }
-  .hanging-list li.level-i{  margin-left: 29px; }
-}
-.heading-row{
-  padding-left: calc(var(--marker-col) + var(--gutter));
+  :root{
+    --num-col:46px;
+    --marker-col:36px;
+  }
+  .hanging-list li{ font-size:0.96rem; }
 }
 
-
+/* PRINT */
+@media print{
+  :root{ --container-w:720px; --base-font-size:12.5px; }
+  .chapter-container{ padding:12mm; line-height:1.4; }
+}
 </style>
 
 <article class="chapter-container" aria-labelledby="chapter-heading">
