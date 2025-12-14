@@ -1,11 +1,15 @@
-// sw.js — stable PWA + iframe + offline chapters (GitHub Pages safe)
 
-const VERSION = 'v2';
+// sw.js — FULL OFFLINE-FIRST READER (GitHub Pages safe)
+
+const VERSION = 'v3';
 const STATIC_CACHE = `gkr-static-${VERSION}`;
 const CHAPTER_CACHE = `gkr-chapters-${VERSION}`;
 
-// IMPORTANT: relative URLs only (GitHub Pages)
+/* ===============================
+   STATIC APP SHELL
+   =============================== */
 const STATIC_ASSETS = [
+  './',
   'index.html',
   'manifest.json',
   'assets/icon-192.png',
@@ -14,18 +18,51 @@ const STATIC_ASSETS = [
   'assets/cover-1600.webp'
 ];
 
-// INSTALL
-self.addEventListener('install', evt => {
-  evt.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_ASSETS))
-      .then(() => self.skipWaiting())
+/* ===============================
+   📘 ALL CHAPTERS — PRE-CACHED
+   =============================== */
+const CHAPTERS = [
+  'chapters/notification.html',
+  'chapters/resolution.html',
+  'chapters/documents_accompanying.html',
+  'chapters/ch1.html',
+  'chapters/ch2.html',
+  'chapters/ch3.html',
+  'chapters/ch4.html',
+  'chapters/ch5.html',
+  'chapters/ch6.html',
+  'chapters/ch7.html',
+  'chapters/ch8.html',
+  'chapters/ch9.html',
+  'chapters/ch10.html',
+  'chapters/ch11.html',
+  'chapters/ch12.html',
+  'chapters/ch13.html',
+  'chapters/ch14.html',
+  'chapters/ch15.html',
+  'chapters/ch16.html',
+  'chapters/ch17.html',
+  'chapters/ch18.html',
+  'chapters/appendix.html'
+];
+
+/* ===============================
+   INSTALL — CACHE EVERYTHING
+   =============================== */
+self.addEventListener('install', event => {
+  event.waitUntil(
+    Promise.all([
+      caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS)),
+      caches.open(CHAPTER_CACHE).then(cache => cache.addAll(CHAPTERS))
+    ]).then(() => self.skipWaiting())
   );
 });
 
-// ACTIVATE
-self.addEventListener('activate', evt => {
-  evt.waitUntil(
+/* ===============================
+   ACTIVATE — CLEAN OLD CACHES
+   =============================== */
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
@@ -36,33 +73,35 @@ self.addEventListener('activate', evt => {
   );
 });
 
-// FETCH
-self.addEventListener('fetch', evt => {
-  const req = evt.request;
+/* ===============================
+   FETCH HANDLER
+   =============================== */
+self.addEventListener('fetch', event => {
+  const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
 
-  /* ===============================
-     1️⃣ CHAPTER FILES (iframe)
-     cache-first, offline-safe
-     =============================== */
-  if (url.pathname.includes('/chapters/')) {
-    evt.respondWith(
+  /* -------------------------------
+     1️⃣ CHAPTER FILES (iframe-safe)
+     cache-first
+     ------------------------------- */
+  if (url.pathname.startsWith('/chapters/')) {
+    event.respondWith(
       caches.open(CHAPTER_CACHE).then(async cache => {
-        const cached = await cache.match(req);
+        const cached = await cache.match(url.pathname);
         if (cached) return cached;
 
         try {
           const fresh = await fetch(req);
           if (fresh && fresh.status === 200) {
-            cache.put(req, fresh.clone());
+            cache.put(url.pathname, fresh.clone());
           }
           return fresh;
         } catch {
           return new Response(
             `<h2 style="font-family:serif;padding:20px">
-              Chapter not available offline
+              Chapter available after first online load
             </h2>`,
             { headers: { 'Content-Type': 'text/html' } }
           );
@@ -72,16 +111,15 @@ self.addEventListener('fetch', evt => {
     return;
   }
 
-  /* ===============================
-     2️⃣ APP SHELL / NAVIGATION
-     network-first, fallback cache
-     =============================== */
+  /* -------------------------------
+     2️⃣ NAVIGATION (App Shell)
+     ------------------------------- */
   if (req.mode === 'navigate') {
-    evt.respondWith(
+    event.respondWith(
       fetch(req)
         .then(resp => {
           const copy = resp.clone();
-          caches.open(STATIC_CACHE).then(c => c.put(req, copy));
+          caches.open(STATIC_CACHE).then(c => c.put('index.html', copy));
           return resp;
         })
         .catch(() => caches.match('index.html'))
@@ -89,14 +127,14 @@ self.addEventListener('fetch', evt => {
     return;
   }
 
-  /* ===============================
-     3️⃣ OTHER ASSETS (images, etc.)
-     cache-first
-     =============================== */
-  evt.respondWith(
+  /* -------------------------------
+     3️⃣ OTHER ASSETS
+     ------------------------------- */
+  event.respondWith(
     caches.match(req).then(cached =>
-      cached || fetch(req).then(resp => {
-        if (resp && resp.status === 200 && resp.type === 'basic') {
+      cached ||
+      fetch(req).then(resp => {
+        if (resp && resp.status === 200) {
           const copy = resp.clone();
           caches.open(STATIC_CACHE).then(c => c.put(req, copy));
         }
