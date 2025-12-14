@@ -566,7 +566,7 @@ nextBtn.addEventListener('click', gotoNext);
 prevBtn.addEventListener('click', gotoPrev);
 
 function gotoNext(){
-  // If on cover → go to first item
+  // From cover → go to first item
   if(currentFlatIndex === -1){
     if(FLAT.length > 0){
       openFlatItem(FLAT[0], 0);
@@ -580,13 +580,32 @@ function gotoNext(){
 }
 
 function gotoPrev(){
-  if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
-  else showCover();
+  // If already on cover → do nothing
+  if(currentFlatIndex === -1){
+    return;
+  }
+
+  // If first readable item → go back to cover
+  if(currentFlatIndex === 0){
+    showCover();
+    return;
+  }
+
+  // Normal backward navigation
+  if(currentFlatIndex > 0){
+    openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
+  }
 }
+
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
 function updateNavButtons(){
-  const hasPrev = currentFlatIndex > 0;
+  // Prev enabled only if not on cover
+  const hasPrev = currentFlatIndex !== -1;
+
+  // Next enabled if:
+  // - on cover and items exist
+  // - OR inside normal range
   const hasNext =
     (currentFlatIndex === -1 && FLAT.length > 0) ||
     (currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1);
@@ -594,6 +613,7 @@ function updateNavButtons(){
   prevBtn.disabled = !hasPrev;
   nextBtn.disabled = !hasNext;
 }
+
 
 
 /* last-read helpers & scroll savers */
@@ -789,7 +809,17 @@ searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.v
 (function restoreSearchState(){ const q = localStorage.getItem(SEARCH_Q_KEY) || ''; lastQuery = q; try{ const raw = localStorage.getItem(SEARCH_R_KEY); if(raw) lastResults = JSON.parse(raw) || []; }catch(e){ lastResults = []; }})();
 
 function isDesktop(){ return window.innerWidth >= DESKTOP_BREAK; }
-function showCover(){ currentFlatIndex = -1; cover.style.display = 'flex'; reader.style.display = 'none'; pageShell.style.display = 'none'; mobileReader.style.display = 'none'; detachPageSaver(); detachWindowSaver(); history.replaceState({}, '', './'); updateNavButtons(); }
+function showCover(){
+  currentFlatIndex = -1;
+  cover.style.display = 'flex';
+  reader.style.display = 'none';
+  pageShell.style.display = 'none';
+  mobileReader.style.display = 'none';
+  detachPageSaver();
+  detachWindowSaver();
+  history.replaceState({}, '', './');
+  updateNavButtons();
+}
 
 async function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> updateAllBackground().catch(()=>{})); }
 async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
