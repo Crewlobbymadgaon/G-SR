@@ -191,23 +191,15 @@
   text-align: right;
   white-space: nowrap;
 }
-
-.level-i .termdef{
-  flex: 1 1 auto;                /* FULL WIDTH TEXT */
-  padding-left: 0 !important;    /* 🔥 remove squeeze */
-  min-width: 0;
+:root{
+  --marker-col: 48px;
 }
 
 @media (max-width:640px){
-  .level-i .marker{
-    flex-basis: 30px;
-  }
+  :root{ --marker-col: 30px; }
 }
-
 @media (max-width:420px){
-  .level-i .marker{
-    flex-basis: 26px;
-  }
+  :root{ --marker-col: 26px; }
 }
 /* ===== HIERARCHY INDENT (MOVE WHOLE ROW) ===== */
 
