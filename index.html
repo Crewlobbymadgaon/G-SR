@@ -600,12 +600,8 @@ function gotoPrev(){
 function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment') openFragment(it.id); else if(it.kind === 'chapter') openChapter(it.id, null); else if(it.kind === 'anchor') openChapter(it.chapter, it.anchor); }
 
 function updateNavButtons(){
-  // Prev enabled only if not on cover
   const hasPrev = currentFlatIndex !== -1;
 
-  // Next enabled if:
-  // - on cover and items exist
-  // - OR inside normal range
   const hasNext =
     (currentFlatIndex === -1 && FLAT.length > 0) ||
     (currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1);
@@ -613,6 +609,7 @@ function updateNavButtons(){
   prevBtn.disabled = !hasPrev;
   nextBtn.disabled = !hasNext;
 }
+
 
 
 
@@ -826,19 +823,99 @@ async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.l
 
 window.addEventListener('load', async ()=>{
   startBackgroundUpdater();
-  try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+
+  try{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    }
+  }catch(e){}
+
   const hadStarted = localStorage.getItem(VISITED_FLAG);
   const last = loadLastRead();
-  if(!hadStarted){ showCover(); return; }
-  if(last){
-    if(last.kind === 'fragment'){ await openFragment(last.id); setFlatIndexFromLast(last); return; }
-    if(last.kind === 'chapter'){ await openChapter(last.id, last.anchor || null); setFlatIndexFromLast(last); return; }
+
+  // FIRST TIME → show cover
+  if(!hadStarted || !last){
+    showCover();
+    return;
   }
+
+  try{
+    if(last.kind === 'fragment'){
+      await openFragment(last.id);
+      setFlatIndexFromLast(last);
+      updateNavButtons();
+      return;
+    }
+
+    if(last.kind === 'chapter'){
+      await openChapter(last.id, last.anchor || null);
+      setFlatIndexFromLast(last);
+      updateNavButtons();
+      return;
+    }
+  }catch(err){
+    console.warn('Restore failed, fallback to cover', err);
+  }
+
   showCover();
 });
 
-function setFlatIndexFromLast(last){ for(let i=0;i<FLAT.length;i++){ const it = FLAT[i]; if(last.kind === 'fragment' && it.kind === 'fragment' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'chapter' && it.id===last.id){ currentFlatIndex = i; return; } if(last.kind === 'chapter' && it.kind === 'anchor' && it.chapter===last.id && it.anchor===last.anchor){ currentFlatIndex = i; return; } } updateNavButtons(); }
-function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+
+function setFlatIndexFromLast(last){
+  for(let i = 0; i < FLAT.length; i++){
+    const it = FLAT[i];
+
+    // ✅ MOST SPECIFIC FIRST (anchor)
+    if(
+      last.kind === 'chapter' &&
+      last.anchor &&
+      it.kind === 'anchor' &&
+      it.chapter === last.id &&
+      it.anchor === last.anchor
+    ){
+      currentFlatIndex = i;
+      updateNavButtons();
+      return;
+    }
+
+    // chapter without anchor
+    if(
+      last.kind === 'chapter' &&
+      !last.anchor &&
+      it.kind === 'chapter' &&
+      it.id === last.id
+    ){
+      currentFlatIndex = i;
+      updateNavButtons();
+      return;
+    }
+
+    // fragment
+    if(
+      last.kind === 'fragment' &&
+      it.kind === 'fragment' &&
+      it.id === last.id
+    ){
+      currentFlatIndex = i;
+      updateNavButtons();
+      return;
+    }
+  }
+
+  // fallback safety
+  currentFlatIndex = -1;
+  updateNavButtons();
+}
+
+function loadLastRead(){
+  try{
+    const raw = localStorage.getItem(LAST_READ_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){
+    return null;
+  }
+}
+
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
 /* close TOC when clicking outside */
