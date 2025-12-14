@@ -1,248 +1,270 @@
 
+
 <style>
-  :root{
-    --container-w:780px;
-    --num-col:48px;
-    --gutter:12px;
-    --marker-col:48px;
-    --font-body:"Times New Roman", Georgia, serif;
-    --base-font-size:15px;
-  }
+/* ===== SAME CSS AS CH1 (UNCHANGED) ===== */
+:root{
+  --container-w:780px;
+  --num-col:48px;
+  --gutter:12px;
+  --marker-col:48px;
+  --font-body: "Times New Roman", Georgia, serif;
+  --base-font-size: 15px;
+}
 
-  html{ font-size:calc(var(--base-font-size) + 0.02vw); }
-  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
+html{ font-size: calc(var(--base-font-size) + 0.02vw); }
+body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
-  .chapter-container{
-    max-width:var(--container-w);
-    margin:0 auto;
-    font-family:var(--font-body);
-    line-height:1.45;
-    font-size:1rem;
-    padding:22px 20px;
-    box-sizing:border-box;
-  }
+.chapter-container{
+  max-width:var(--container-w);
+  margin:0 auto;
+  font-family:var(--font-body);
+  line-height:1.45;
+  font-size:1rem;
+  padding:22px 20px;
+}
 
-  .chapter-title{ text-align:center; margin-bottom:10px; }
-  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
-  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
+.chapter-title{ text-align:center; margin-bottom:10px; }
+.chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
+.chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  .rule{
-    display:grid;
-    grid-template-columns:var(--num-col) 1fr;
-    column-gap:var(--gutter);
-    margin:8px 0 14px;
-  }
+.rule{
+  display:grid;
+  grid-template-columns: var(--num-col) 1fr;
+  column-gap: var(--gutter);
+  margin:8px 0 14px;
+}
 
-  .rule .num{
-    font-weight:800;
-    padding-left:6px;
-  }
+.rule .num{ font-weight:800; padding-left:6px; }
+.rule .content{ font-weight:800; }
 
-  .rule .content{ font-weight:800; }
+.heading{ font-weight:800; margin:0 0 6px; }
 
-  .heading{ font-weight:800; margin:0 0 6px 0; }
+.hanging-list{ list-style:none; margin:0; padding:0; }
+.hanging-list li{
+  display:grid;
+  grid-template-columns: var(--marker-col) 1fr;
+  column-gap:var(--gutter);
+  margin-bottom:8px;
+}
+.marker{ text-align:right; white-space:nowrap; margin-left:-4px; }
+.termdef{ line-height:1.6; text-align:justify; }
 
-  .hanging-list{ list-style:none; margin:0; padding:0; }
-  .hanging-list li{
-    display:grid;
-    grid-template-columns:var(--marker-col) 1fr;
-    column-gap:var(--gutter);
-    margin-bottom:8px;
-    font-weight:800;
-  }
+.sr-note{
+  font-weight:400;
+  margin:10px 0 12px;
+  text-align:justify;
+}
 
-  .marker{
-    text-align:right;
-    white-space:nowrap;
-  }
+/* hierarchy indent */
+.hanging-list li.subclause{ margin-left:18px; }
+.hanging-list li.level-a{ margin-left:37px; }
+.hanging-list li.level-i{ margin-left:55px; }
 
-  .termdef{
-    line-height:1.6;
-    text-align:justify;
-    text-justify:inter-word;
-  }
-
-  .sr-note{
-    font-size:1.05rem;
-    font-weight:400;
-    margin:10px 0 12px;
-    line-height:1.6;
-    text-align:justify;
-  }
-
-  @media(max-width:640px){
-    :root{
-      --num-col:56px;
-      --marker-col:42px;
-      --gutter:6px;
-      --container-w:100%;
-    }
-    .chapter-container{ padding:12px 10px; }
-    .termdef{ text-align:left; hyphens:auto; }
-  }
-
-  @media(max-width:420px){
-    :root{ --num-col:46px; --marker-col:36px; }
-  }
-
-  [id]{ scroll-margin-top:80px; }
+@media(max-width:640px){
+  .hanging-list li.subclause{ margin-left:12px; }
+  .hanging-list li.level-a{ margin-left:25px; }
+  .hanging-list li.level-i{ margin-left:37px; }
+}
 </style>
+</head>
 
-<article class="chapter-container" aria-labelledby="chapter-heading">
+<body>
+<article class="chapter-container">
 
-  <div class="chapter-title" id="chapter-heading">
-    <h2>CHAPTER II</h2>
-    <h3>RULES APPLYING TO RAILWAY SERVANTS GENERALLY</h3>
+<!-- ===================== -->
+<!-- CHAPTER TITLE -->
+<!-- ===================== -->
+<div class="chapter-title">
+  <h2>CHAPTER II</h2>
+  <h3>GENERAL RULES</h3>
+</div>
+
+<!-- ===================== -->
+<!-- RULE 2.01 -->
+<!-- ===================== -->
+<div class="rule" id="s201">
+  <div class="num">2.01</div>
+  <div class="content">
+    <div class="heading">SUPPLY OF COPIES OF RULES</div>
+
+    <ol class="hanging-list">
+
+      <li class="level-a">
+        <div class="marker">(a)</div>
+        <div class="termdef">The Railway Administration shall supply —</div>
+      </li>
+
+      <li class="level-i">
+        <div class="marker">(i)</div>
+        <div class="termdef">a copy of these rules to each station,</div>
+      </li>
+
+      <li class="level-i">
+        <div class="marker">(ii)</div>
+        <div class="termdef">to each locomotive running shed, and</div>
+      </li>
+
+      <li class="level-i">
+        <div class="marker">(iii)</div>
+        <div class="termdef">to such other offices as it may prescribe.</div>
+      </li>
+
+      <li class="level-a">
+        <div class="marker">(b)</div>
+        <div class="termdef">to each railway servant on whom responsibility is placed by these rules.</div>
+      </li>
+
+      <li class="level-a">
+        <div class="marker">(c)</div>
+        <div class="termdef">to any railway servant a translation as prescribed by special instructions.</div>
+      </li>
+
+    </ol>
   </div>
+</div>
 
-  <!-- RULE 2.01 -->
-  <div class="rule" id="s201">
-    <div class="num">2.01</div>
-    <div class="content">
-      <div class="heading">SUPPLY OF COPIES OF RULES</div>
+<!-- ===================== -->
+<!-- RULE 2.02 -->
+<!-- ===================== -->
+<div class="rule" id="s202">
+  <div class="num">2.02</div>
+  <div class="content">
+    <div class="heading">OBLIGATION TO POSSESS RULE BOOK</div>
 
-      <ol class="hanging-list">
-        <li><div class="marker">(a)</div><div class="termdef">The Railway Administration shall supply —</div></li>
-        <li><div class="marker">(i)</div><div class="termdef">a copy of these rules to each station,</div></li>
-        <li><div class="marker">(ii)</div><div class="termdef">to each locomotive running shed, and</div></li>
-        <li><div class="marker">(iii)</div><div class="termdef">to such other offices as it may prescribe.</div></li>
-        <li><div class="marker">(b)</div><div class="termdef">to each railway servant on whom responsibility is placed by these rules.</div></li>
-        <li><div class="marker">(c)</div><div class="termdef">to any railway servant a translation as prescribed by special instructions.</div></li>
-      </ol>
+    <ol class="hanging-list">
+      <li class="level-a"><div class="marker">(a)</div><div class="termdef">be provided with a copy of these rules,</div></li>
+      <li class="level-a"><div class="marker">(b)</div><div class="termdef">keep the same readily available while on duty,</div></li>
+      <li class="level-a"><div class="marker">(c)</div><div class="termdef">produce the same on demand by superiors,</div></li>
+      <li class="level-a"><div class="marker">(d)</div><div class="termdef">obtain a new copy if lost or defaced, and</div></li>
+      <li class="level-a"><div class="marker">(e)</div><div class="termdef">ensure staff under him comply with this rule.</div></li>
+    </ol>
+  </div>
+</div>
 
-      <div class="sr-note">
-        <strong>S.R.2.01(1)</strong><br/>
-        Copies supplied may be hard copy or electronic copy or relevant extracts thereof.
-      </div>
+<!-- ===================== -->
+<!-- RULE 2.03 -->
+<!-- ===================== -->
+<div class="rule" id="s203">
+  <div class="num">2.03</div>
+  <div class="content">
+    <div class="heading">KNOWLEDGE OF RULES</div>
+
+    <ol class="hanging-list">
+      <li class="level-a"><div class="marker">(a)</div><div class="termdef">be conversant with rules relating to his duties,</div></li>
+      <li class="level-a"><div class="marker">(b)</div><div class="termdef">pass prescribed examinations,</div></li>
+      <li class="level-a"><div class="marker">(c)</div><div class="termdef">ensure staff under him comply with clauses (a) and (b),</div></li>
+      <li class="level-a"><div class="marker">(d)</div><div class="termdef">explain rules to staff where necessary.</div></li>
+    </ol>
+
+    <div class="sr-note">
+      <strong>S.R.2.03(1)</strong><br/>
+      Train crews and Guards of adjoining Railways must be conversant with Subsidiary Rules and local instructions of this Railway.
+    </div>
+
+    <div class="sr-note">
+      <strong>S.R.2.03(2)</strong><br/>
+      Railway servants prescribed spectacles must possess two pairs while on duty.
     </div>
   </div>
+</div>
 
-  <!-- RULE 2.02 -->
-  <div class="rule" id="s202">
-    <div class="num">2.02</div>
-    <div class="content">
-      <div class="heading">UPKEEP OF THE COPY OF RULES</div>
+<!-- ===================== -->
+<!-- RULE 2.04 -->
+<!-- ===================== -->
+<div class="rule" id="s204">
+  <div class="num">2.04</div>
+  <div class="content">
+    <div class="heading">ASSISTANCE IN OBSERVANCE OF RULES</div>
+    <p class="termdef">Every railway servant shall render assistance and report promptly any breach of rules.</p>
+  </div>
+</div>
 
-      <ol class="hanging-list">
-        <li><div class="marker">(a)</div><div class="termdef">keep his copy readily available when on duty,</div></li>
-        <li><div class="marker">(b)</div><div class="termdef">keep it posted with all corrections,</div></li>
-        <li><div class="marker">(c)</div><div class="termdef">produce the same on demand by superiors,</div></li>
-        <li><div class="marker">(d)</div><div class="termdef">obtain a new copy if lost or defaced, and</div></li>
-        <li><div class="marker">(e)</div><div class="termdef">ensure staff under him comply with this rule.</div></li>
-      </ol>
+<!-- ===================== -->
+<!-- RULE 2.05 -->
+<!-- ===================== -->
+<div class="rule" id="s205">
+  <div class="num">2.05</div>
+  <div class="content">
+    <div class="heading">PREVENTION OF TRESPASS, DAMAGE OR LOSS</div>
+
+    <ol class="hanging-list">
+      <li class="subclause"><div class="marker">(1)</div><div class="termdef">responsible for security of railway property under his charge.</div></li>
+      <li class="subclause"><div class="marker">(2)</div><div class="termdef">endeavour to prevent trespass, theft, injury and fire.</div></li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===================== -->
+<!-- RULE 2.06 -->
+<!-- ===================== -->
+<div class="rule" id="s206">
+  <div class="num">2.06</div>
+  <div class="content">
+    <div class="heading">OBEDIENCE TO RULES AND ORDERS</div>
+    <p class="termdef">Every railway servant shall obey all rules and lawful orders.</p>
+  </div>
+</div>
+
+<!-- ===================== -->
+<!-- RULE 2.07 -->
+<!-- ===================== -->
+<div class="rule" id="s207">
+  <div class="num">2.07</div>
+  <div class="content">
+    <div class="heading">ATTENDANCE FOR DUTY</div>
+    <p class="termdef">Every railway servant shall attend duty as fixed by the Railway Administration.</p>
+  </div>
+</div>
+
+<!-- ===================== -->
+<!-- RULE 2.08 -->
+<!-- ===================== -->
+<div class="rule" id="s208">
+  <div class="num">2.08</div>
+  <div class="content">
+    <div class="heading">ABSENCE FROM DUTY</div>
+
+    <ol class="hanging-list">
+      <li class="subclause"><div class="marker">(1)</div><div class="termdef">No railway servant shall absent himself without permission.</div></li>
+      <li class="subclause"><div class="marker">(2)</div><div class="termdef">Illness shall be reported immediately.</div></li>
+    </ol>
+
+    <div class="sr-note">
+      <strong>S.R.2.08</strong><br/>
+      Unauthorized absence renders the servant liable to disciplinary action.
     </div>
   </div>
+</div>
 
-  <!-- RULE 2.03 -->
-  <div class="rule" id="s203">
-    <div class="num">2.03</div>
-    <div class="content">
-      <div class="heading">KNOWLEDGE OF RULES</div>
-
-      <ol class="hanging-list">
-        <li><div class="marker">(a)</div><div class="termdef">be conversant with rules relating to his duties,</div></li>
-        <li><div class="marker">(b)</div><div class="termdef">pass prescribed examinations,</div></li>
-        <li><div class="marker">(c)</div><div class="termdef">ensure staff under him comply with clauses (a) and (b),</div></li>
-        <li><div class="marker">(d)</div><div class="termdef">explain rules to staff where necessary.</div></li>
-      </ol>
-
-      <div class="sr-note">
-        <strong>S.R.2.03(1)</strong><br/>
-        Train crews and Guards of adjoining Railways must be conversant with Subsidiary Rules and local instructions of this Railway.
-      </div>
-
-      <div class="sr-note">
-        <strong>S.R.2.03(2)</strong><br/>
-        Railway servants prescribed spectacles must possess two pairs while on duty.
-      </div>
-    </div>
+<!-- ===================== -->
+<!-- RULE 2.09 -->
+<!-- ===================== -->
+<div class="rule" id="s209">
+  <div class="num">2.09</div>
+  <div class="content">
+    <div class="heading">TAKING ALCOHOL OR DRUGS</div>
+    <p class="termdef">No railway servant shall be under influence of alcohol or drugs while on duty or within eight hours before duty.</p>
   </div>
+</div>
 
-  <!-- RULE 2.04 -->
-  <div class="rule" id="s204">
-    <div class="num">2.04</div>
-    <div class="content">
-      <div class="heading">ASSISTANCE IN OBSERVANCE OF RULES</div>
-      <p class="termdef">
-        Every railway servant shall render assistance and report promptly any breach of rules.
-      </p>
-    </div>
+<!-- ===================== -->
+<!-- RULE 2.10 -->
+<!-- ===================== -->
+<div class="rule" id="s210">
+  <div class="num">2.10</div>
+  <div class="content">
+    <div class="heading">CONDUCT OF RAILWAY SERVANTS</div>
+
+    <ol class="hanging-list">
+      <li class="level-a"><div class="marker">(a)</div><div class="termdef">be neat and tidy,</div></li>
+      <li class="level-a"><div class="marker">(b)</div><div class="termdef">be prompt and courteous,</div></li>
+      <li class="level-a"><div class="marker">(c)</div><div class="termdef">not solicit illegal gratification,</div></li>
+      <li class="level-a"><div class="marker">(d)</div><div class="termdef">assist the public correctly,</div></li>
+      <li class="level-a"><div class="marker">(e)</div><div class="termdef">give name and designation when asked.</div></li>
+    </ol>
   </div>
+</div>
 
-  <!-- RULE 2.05 -->
-  <div class="rule" id="s205">
-    <div class="num">2.05</div>
-    <div class="content">
-      <div class="heading">PREVENTION OF TRESPASS, DAMAGE OR LOSS</div>
+</article>
 
-      <ol class="hanging-list">
-        <li><div class="marker">(1)</div><div class="termdef">responsible for security of railway property under his charge.</div></li>
-        <li><div class="marker">(2)</div><div class="termdef">endeavour to prevent trespass, theft, injury and fire.</div></li>
-      </ol>
-    </div>
-  </div>
-
-  <!-- RULE 2.06 -->
-  <div class="rule" id="s206">
-    <div class="num">2.06</div>
-    <div class="content">
-      <div class="heading">OBEDIENCE TO RULES AND ORDERS</div>
-      <p class="termdef">Every railway servant shall obey all rules and lawful orders.</p>
-    </div>
-  </div>
-
-  <!-- RULE 2.07 -->
-  <div class="rule" id="s207">
-    <div class="num">2.07</div>
-    <div class="content">
-      <div class="heading">ATTENDANCE FOR DUTY</div>
-      <p class="termdef">Every railway servant shall attend duty as fixed by the Railway Administration.</p>
-    </div>
-  </div>
-
-  <!-- RULE 2.08 -->
-  <div class="rule" id="s208">
-    <div class="num">2.08</div>
-    <div class="content">
-      <div class="heading">ABSENCE FROM DUTY</div>
-
-      <ol class="hanging-list">
-        <li><div class="marker">(1)</div><div class="termdef">No railway servant shall absent himself without permission.</div></li>
-        <li><div class="marker">(2)</div><div class="termdef">Illness shall be reported immediately.</div></li>
-      </ol>
-
-      <div class="sr-note">
-        <strong>S.R.2.08</strong><br/>
-        Unauthorized absence renders the servant liable to disciplinary action.
-      </div>
-    </div>
-  </div>
-
-  <!-- RULE 2.09 -->
-  <div class="rule" id="s209">
-    <div class="num">2.09</div>
-    <div class="content">
-      <div class="heading">TAKING ALCOHOL OR DRUGS</div>
-      <p class="termdef">
-        No railway servant shall be under influence of alcohol or drugs while on duty or within eight hours before duty.
-      </p>
-    </div>
-  </div>
-
-  <!-- RULE 2.10 -->
-  <div class="rule" id="s210">
-    <div class="num">2.10</div>
-    <div class="content">
-      <div class="heading">CONDUCT OF RAILWAY SERVANTS</div>
-
-      <ol class="hanging-list">
-        <li><div class="marker">(a)</div><div class="termdef">be neat and tidy,</div></li>
-        <li><div class="marker">(b)</div><div class="termdef">be prompt and courteous,</div></li>
-        <li><div class="marker">(c)</div><div class="termdef">not solicit illegal gratification,</div></li>
-        <li><div class="marker">(d)</div><div class="termdef">assist the public correctly,</div></li>
-        <li><div class="marker">(e)</div><div class="termdef">give name and designation when asked.</div></li>
-      </ol>
-    </div>
-  </div>
-
-                                            </article>
+                            
