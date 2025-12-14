@@ -566,9 +566,19 @@ nextBtn.addEventListener('click', gotoNext);
 prevBtn.addEventListener('click', gotoPrev);
 
 function gotoNext(){
-  if(currentFlatIndex === -1){ if(FLAT.length > 0) openFlatItem(FLAT[0], 0); return; }
-  if(currentFlatIndex < FLAT.length - 1) openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
+  // If on cover → go to first item
+  if(currentFlatIndex === -1){
+    if(FLAT.length > 0){
+      openFlatItem(FLAT[0], 0);
+    }
+    return;
+  }
+
+  if(currentFlatIndex < FLAT.length - 1){
+    openFlatItem(FLAT[currentFlatIndex + 1], currentFlatIndex + 1);
+  }
 }
+
 function gotoPrev(){
   if(currentFlatIndex > 0) openFlatItem(FLAT[currentFlatIndex - 1], currentFlatIndex - 1);
   else showCover();
@@ -577,10 +587,14 @@ function openFlatItem(it, idx){ currentFlatIndex = idx; if(it.kind === 'fragment
 
 function updateNavButtons(){
   const hasPrev = currentFlatIndex > 0;
-  const hasNext = currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1;
-  if(prevBtn) prevBtn.disabled = !hasPrev;
-  if(nextBtn) nextBtn.disabled = !hasNext;
+  const hasNext =
+    (currentFlatIndex === -1 && FLAT.length > 0) ||
+    (currentFlatIndex >= 0 && currentFlatIndex < FLAT.length - 1);
+
+  prevBtn.disabled = !hasPrev;
+  nextBtn.disabled = !hasNext;
 }
+
 
 /* last-read helpers & scroll savers */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
