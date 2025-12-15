@@ -1,50 +1,42 @@
 <style>
-  :root{
-    --container-w:780px;
-    --num-col:48px;        /* number column width */
-    --gutter:12px;         /* gap between number and content */
-    --marker-col: 3.5ch;   /* match number column for vertical alignment */
-    --font-body: "Times New Roman", Georgia, serif;
-    --base-font-size: 15px;
-  }
+:root{
+  --container-w:780px;
+  --num-col:48px;
+  --marker-col:3.5ch;
+  --gutter:12px;
+  --font-body:"Times New Roman", Georgia, serif;
+  --base-font-size:15px;
+}
 
-  html{ font-size: calc(var(--base-font-size) + 0.02vw); }
-  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
+html{ font-size:calc(var(--base-font-size) + 0.02vw); }
+body{ margin:0; background:#fff; color:#0b1726; }
 
-  .chapter-container{
-    max-width:var(--container-w);
-    margin:0 auto;
-    font-family:var(--font-body);
-    line-height:1.45;
-    font-size:1rem;
-    padding:22px 20px;
-    box-sizing:border-box;
-  }
+.chapter-container{
+  max-width:var(--container-w);
+  margin:0 auto;
+  padding:22px 20px;
+  font-family:var(--font-body);
+  line-height:1.45;
+}
 
-  .chapter-title{ text-align:center; margin-bottom:10px; }
-  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
-  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
+.chapter-title{ text-align:center; margin-bottom:10px; }
+.chapter-title h2,
+.chapter-title h3{ margin:0; font-weight:800; }
 
-  .rule{
-    display:grid;
-    grid-template-columns: var(--num-col) 1fr;
-    column-gap: var(--gutter);
-    align-items:start;
-    margin:8px 0 14px;
-  }
+.rule{
+  display:grid;
+  grid-template-columns:var(--num-col) 1fr;
+  column-gap:var(--gutter);
+  margin:10px 0 16px;
+}
 
-  .rule .num{
-    font-weight:800;
-    color:#061229;
-    font-size:1rem;
-    padding-left:6px;
-  }
+.rule .num{ font-weight:800; padding-left:6px; }
+.rule .content{ font-weight:800; }
 
-  .rule .content{
-    font-size:1rem;
-    font-weight:800;
-    color:#1b2b3a;
-  }
+.heading-row{
+  padding-left:calc(var(--marker-col) + var(--gutter));
+}
+.heading{ font-weight:800; }
 
 .hanging-list{
   list-style:none;
@@ -54,140 +46,56 @@
 
 .hanging-list li{
   display:grid;
-  grid-template-columns: var(--marker-col) 1fr;
-  column-gap: var(--gutter);
-  margin:0 0 8px 0;
+  grid-template-columns:var(--marker-col) 1fr;
+  column-gap:var(--gutter);
+  margin:0 0 8px;
+}
+
+.marker{
+  text-align:right;
+  white-space:nowrap;
   font-weight:800;
 }
 
-.hanging-list li .marker{
-  text-align:right;
-  white-space:nowrap;
+.termdef{
+  line-height:1.6;
+  text-align:justify;
 }
 
-.heading-row{
-  padding-left: calc(var(--marker-col) + var(--gutter));
-}
-  .termdef{
-    font-size:1rem;
-    line-height:1.6;
-    color:#1b2b3a;
-    font-weight:800;
-    text-align:justify;
-    text-justify:inter-word;
-  }
-
-  .sr-note{
-    font-size:1.05rem;
-    line-height:1.6;
-    font-weight:400;
-    color:#1b2b3a;
-    margin:10px 0 12px;
-    text-align:justify;
-    text-justify:inter-word;
-  }
-
-  /* ===============================
-   MOBILE — CANONICAL FIX
-   =============================== */
-@media (max-width:640px){
-
-  :root{
-    --num-col:56px;
-    --marker-col:42px;   /* single constant marker width */
-    --gutter:6px;
-    --container-w:100%;
-  }
-
-  .chapter-container{
-    padding:12px 10px;
-  }
-
-  /* RULE header number */
-  .rule .num{
-    padding-left:6px;
-  }
-
-  /* ALL hanging lists — ALL DEPTHS */
-  .hanging-list,
-  .hanging-list ol,
-  .hanging-list ul{
-    margin:0;
-    padding:0;
-  }
-
-  .hanging-list li{
-    display:grid;
-    grid-template-columns: var(--marker-col) 1fr;
-    column-gap: var(--gutter);
-    align-items:flex-start;
-    margin-bottom:8px;
-  }
-
-  .hanging-list li .marker{
-    text-align:right;
-    white-space:nowrap;
-    font-weight:700;
-    padding-right:2px;
-  }
-
-  .hanging-list li .termdef{
-    line-height:1.65;
-    text-align:left;
-    min-width:0;          /* 🔑 prevents right-edge squeeze */
-    word-break:normal;
-    hyphens:auto;
-  }
-}
-
-/* EXTRA SMALL SCREENS */
-@media (max-width:420px){
-  :root{
-    --num-col:46px;
-    --marker-col:36px;
-  }
-
-  .hanging-list li{
-    font-size:0.96rem;
-  }
-
-  .heading{
-    font-size:0.98rem;
-  }
-}
-
-  @media print{
-    :root{ --container-w:720px; --base-font-size:12.5px; }
-    .chapter-container{ line-height:1.4; padding:12mm; }
-  }
-
-  /* ensure no unintended left offset on direct children */
-  .rule .content > * { margin-left:0; padding-left:0; }
-  /* Offset anchor scroll for fixed header in parent */
-[id]{
-  scroll-margin-top: 80px; /* header height + spacing */
-}
-  mark{
-  background:#fff59d;
-  padding:0 2px;
-  border-radius:2px;
+.sr-note{
+  margin:10px 0 14px;
+  font-weight:400;
+  line-height:1.6;
 }
 
 .inline-sub{
   display:block;
   padding-left: 2.4ch;   /* width of "(a) " */
-  text-indent: -2.4ch;
+  text-indent: -2.4ch;   /* pull first line back */
 }
 
+
+/* hierarchy */
+.hanging-list li.subclause{ margin-left:18px; }
+.hanging-list li.level-a{  margin-left:36px; }
+.hanging-list li.level-i{  margin-left:54px; }
+
+/* mobile */
 @media (max-width:640px){
-  .inline-sub{
-    padding-left: 2.2ch;
-    text-indent: -2.2ch;
+  :root{
+    --num-col:56px;
+    --marker-col:3.2ch;
+    --gutter:6px;
+    --container-w:100%;
   }
+  .chapter-container{ padding:12px 10px; }
+  .termdef{ text-align:left; hyphens:auto; }
 }
+</style>
 
 
-</style>     check for any error, repeat css
+
+
 <article class="chapter-container" aria-labelledby="chapter-heading">
   <div class="chapter-title" id="chapter-heading">
     <h2>CHAPTER I</h2>
