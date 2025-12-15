@@ -1,180 +1,3 @@
-
-<style>
-  :root{
-    --container-w:780px;
-    --num-col:48px;        /* number column width */
-    --gutter:12px;         /* gap between number and content */
-    --marker-col: 3.5ch;   /* match number column for vertical alignment */
-    --font-body: "Times New Roman", Georgia, serif;
-    --base-font-size: 15px;
-  }
-
-  html{ font-size: calc(var(--base-font-size) + 0.02vw); }
-  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
-
-  .chapter-container{
-    max-width:var(--container-w);
-    margin:0 auto;
-    font-family:var(--font-body);
-    line-height:1.45;
-    font-size:1rem;
-    padding:22px 20px;
-    box-sizing:border-box;
-  }
-
-  .chapter-title{ text-align:center; margin-bottom:10px; }
-  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
-  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
-
-  .rule{
-    display:grid;
-    grid-template-columns: var(--num-col) 1fr;
-    column-gap: var(--gutter);
-    align-items:start;
-    margin:8px 0 14px;
-  }
-
-  .rule .num{
-    font-weight:800;
-    color:#061229;
-    font-size:1rem;
-    padding-left:6px;
-  }
-
-  .rule .content{
-    font-size:1rem;
-    font-weight:800;
-    color:#1b2b3a;
-  }
-
-.hanging-list{
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-
-.hanging-list li{
-  display:grid;
-  grid-template-columns: var(--marker-col) 1fr;
-  column-gap: var(--gutter);
-  margin:0 0 8px 0;
-  font-weight:800;
-}
-
-.hanging-list li .marker{
-  text-align:right;
-  white-space:nowrap;
-}
-
-.heading-row{
-  padding-left: calc(var(--marker-col) + var(--gutter));
-}
-  .termdef{
-    font-size:1rem;
-    line-height:1.6;
-    color:#1b2b3a;
-    font-weight:800;
-    text-align:justify;
-    text-justify:inter-word;
-  }
-
-  .sr-note{
-    font-size:1.05rem;
-    line-height:1.6;
-    font-weight:400;
-    color:#1b2b3a;
-    margin:10px 0 12px;
-    text-align:justify;
-    text-justify:inter-word;
-  }
-
-  /* ===============================
-   MOBILE — CANONICAL FIX
-   =============================== */
-@media (max-width:640px){
-
-  :root{
-    --num-col:56px;
-    --marker-col:42px;   /* single constant marker width */
-    --gutter:6px;
-    --container-w:100%;
-  }
-
-  .chapter-container{
-    padding:12px 10px;
-  }
-
-  /* RULE header number */
-  .rule .num{
-    padding-left:6px;
-  }
-
-  /* ALL hanging lists — ALL DEPTHS */
-  .hanging-list,
-  .hanging-list ol,
-  .hanging-list ul{
-    margin:0;
-    padding:0;
-  }
-
-  .hanging-list li{
-    display:grid;
-    grid-template-columns: var(--marker-col) 1fr;
-    column-gap: var(--gutter);
-    align-items:flex-start;
-    margin-bottom:8px;
-  }
-
-  .hanging-list li .marker{
-    text-align:right;
-    white-space:nowrap;
-    font-weight:700;
-    padding-right:2px;
-  }
-
-  .hanging-list li .termdef{
-    line-height:1.65;
-    text-align:left;
-    min-width:0;          /* 🔑 prevents right-edge squeeze */
-    word-break:normal;
-    hyphens:auto;
-  }
-}
-
-/* EXTRA SMALL SCREENS */
-@media (max-width:420px){
-  :root{
-    --num-col:46px;
-    --marker-col:36px;
-  }
-
-  .hanging-list li{
-    font-size:0.96rem;
-  }
-
-  .heading{
-    font-size:0.98rem;
-  }
-}
-
-  @media print{
-    :root{ --container-w:720px; --base-font-size:12.5px; }
-    .chapter-container{ line-height:1.4; padding:12mm; }
-  }
-
-  /* ensure no unintended left offset on direct children */
-  .rule .content > * { margin-left:0; padding-left:0; }
-  /* Offset anchor scroll for fixed header in parent */
-[id]{
-  scroll-margin-top: 80px; /* header height + spacing */
-}
-  mark{
-  background:#fff59d;
-  padding:0 2px;
-  border-radius:2px;
-}
-
-
 <style>
 :root{
   --container-w:780px;
@@ -186,7 +9,7 @@
 }
 
 html{ font-size:calc(var(--base-font-size) + 0.02vw); }
-body{ margin:0; background:#fff; color:#0b1726; }
+body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
 .chapter-container{
   max-width:var(--container-w);
@@ -215,6 +38,7 @@ body{ margin:0; background:#fff; color:#0b1726; }
 }
 .heading{ font-weight:800; }
 
+/* HANGING LIST */
 .hanging-list{
   list-style:none;
   margin:0;
@@ -239,15 +63,18 @@ body{ margin:0; background:#fff; color:#0b1726; }
   text-align:justify;
 }
 
+/* SR NOTE */
 .sr-note{
   margin:10px 0 14px;
   font-weight:400;
   line-height:1.6;
 }
 
+/* CORRECT hanging indent for (a), (b) */
 .inline-sub{
   display:block;
-  margin-left:0.2rem;
+  padding-left:2.4ch;     /* width of "(a) " */
+  text-indent:-2.4ch;
 }
 
 /* hierarchy */
@@ -255,7 +82,7 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .hanging-list li.level-a{  margin-left:36px; }
 .hanging-list li.level-i{  margin-left:54px; }
 
-/* mobile */
+/* MOBILE */
 @media (max-width:640px){
   :root{
     --num-col:56px;
@@ -265,6 +92,12 @@ body{ margin:0; background:#fff; color:#0b1726; }
   }
   .chapter-container{ padding:12px 10px; }
   .termdef{ text-align:left; hyphens:auto; }
+}
+
+/* PRINT */
+@media print{
+  :root{ --container-w:720px; --base-font-size:12.5px; }
+  .chapter-container{ padding:12mm; line-height:1.4; }
 }
 </style>
 
