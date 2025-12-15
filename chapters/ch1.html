@@ -42,6 +42,11 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .heading-row{
   padding-left: 0;   /* move SHORT left */
 }
+.rule .heading{
+  display:grid;
+  grid-template-columns: var(--marker-col) 1fr;
+  column-gap: var(--gutter);
+}
 
 
 .heading{ font-weight:800; }
