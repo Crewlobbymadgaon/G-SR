@@ -34,12 +34,12 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .rule .content{ font-weight:800; }
 
 .heading-row{
-  padding-left: calc(var(--marker-col) + var(--gutter));
-
+  display:grid;
+  grid-template-columns: var(--marker-col) 1fr;
+  column-gap: var(--gutter);
 }
-
-.heading-row{
-  outline: 2px solid red;
+.heading-row::before{
+  content:"";   /* empty marker column */
 }
 
 .heading{ font-weight:800; }
