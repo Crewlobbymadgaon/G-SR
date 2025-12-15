@@ -39,9 +39,13 @@ body{ margin:0; background:#fff; color:#0b1726; }
 
 .rule .content{ font-weight:800; }
 
-.heading-row{
-  margin-left: calc(var(--marker-col) + var(--gutter));
+.heading::before{
+  content:"";
+  display:inline-block;
+  width: var(--marker-col);
+  margin-right: var(--gutter);
 }
+
 
 .rule .heading{
   
