@@ -39,12 +39,12 @@ body{ margin:0; background:#fff; color:#0b1726; }
 
 .rule .content{ font-weight:800; }
 
-.heading::before{
-  content:"";
-  display:inline-block;
-  width: var(--marker-col);
-  margin-right: var(--gutter);
+.heading-row{
+  display:grid;
+  grid-template-columns: var(--marker-col) 1fr;
+  column-gap: var(--gutter);
 }
+
 
 
 
@@ -121,10 +121,10 @@ body{ margin:0; background:#fff; color:#0b1726; }
   <div class="num">1.01</div>
   <div class="content">
 
-    <div class="heading-row">
+   <div class="heading-row">
+  <div class="marker"></div>
   <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
 </div>
-
 
     <ol class="hanging-list">
       <li>
