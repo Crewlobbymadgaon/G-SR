@@ -34,13 +34,9 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .rule .content{ font-weight:800; }
 
 .heading-row{
-  display:grid;
-  grid-template-columns: var(--marker-col) 1fr;
-  column-gap: var(--gutter);
+  padding-left: 0;   /* move SHORT left */
 }
-.heading-row::before{
-  content:"";   /* empty marker column */
-}
+
 
 .heading{ font-weight:800; }
 
