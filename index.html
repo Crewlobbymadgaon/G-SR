@@ -879,8 +879,8 @@ searchClear.addEventListener('click', ()=> clearSearch());
 
 searchBackdrop.addEventListener('click', () => {
   closeSearchPanel();
-  clearIframeHighlights();
 });
+
 
 searchInput.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeSearchPanel(); return; } if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }});
 searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.value, 160); });
