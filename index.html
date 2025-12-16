@@ -762,7 +762,6 @@ function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTi
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippet; const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const re = new RegExp(esc, 'ig'); return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`); }
 
-/* renderSearchResults (safe: snippet is plain text) */
 function renderSearchResults(list){
   lastResults = list || [];
   try{
@@ -792,17 +791,19 @@ function renderSearchResults(list){
     div.onclick = async () => {
       const query = q || searchInput.value;
 
-      // ✅ MARK THIS RESULT AS SELECTED
+      // mark selected result
       searchResults
         .querySelectorAll('.search-item.selected')
         .forEach(el => el.classList.remove('selected'));
-
       div.classList.add('selected');
 
       await openFragmentOrChapter(r.id);
 
-      const iframe = getActiveFrame();
+      // ✅ close search UI
+      closeSearchPanel();
+      clearIframeHighlights();
 
+      const iframe = getActiveFrame();
       iframe.onload = () => {
         highlightInIframe(iframe, query);
 
@@ -822,13 +823,12 @@ function renderSearchResults(list){
         doc.addEventListener('touchstart', removeOnInteract, true);
         doc.addEventListener('click', removeOnInteract, true);
       };
-
-      // 🚫 DO NOT close search panel here
     };
 
     searchResults.appendChild(div);
   });
 }
+
 
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
