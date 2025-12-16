@@ -1087,28 +1087,38 @@ window.addEventListener('resize', ()=>{
 }
 
   function installGlobalSearchAutoClose(){
-
   const handler = (e) => {
     if (searchPanel.style.display !== 'flex') return;
 
-    // ignore clicks inside search panel or search button
-    if (e.target.closest &&
-        (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))
-    ) return;
+    const panelRect = searchPanel.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
 
+    // tap/click INSIDE panel → do nothing
+    if (
+      x >= panelRect.left &&
+      x <= panelRect.right &&
+      y >= panelRect.top &&
+      y <= panelRect.bottom
+    ) {
+      return;
+    }
+
+    // tap on search button → toggle handles it
+    if (e.target.closest && e.target.closest('#btnSearch')) {
+      return;
+    }
+
+    // otherwise → close
     closeSearchPanel();
-    clearIframeHighlights();   // 🔥 also remove highlight
+    clearIframeHighlights();
   };
 
-  // pointer events (modern browsers)
+  // capture phase = reliable on mobile
   document.addEventListener('pointerdown', handler, true);
-
-  // fallback for older mobile browsers
   document.addEventListener('touchstart', handler, true);
 }
-
 installGlobalSearchAutoClose();
-
 
 
 </script>
