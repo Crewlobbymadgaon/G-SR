@@ -729,15 +729,17 @@ function renderSearchResults(list){
 
         // 2️⃣ remove highlight on ANY interaction
         const removeOnInteract = () => {
-          clearIframeHighlights(iframe);
+          clearIframeHighlights();
           doc.removeEventListener('scroll', removeOnInteract, true);
           doc.removeEventListener('touchstart', removeOnInteract, true);
           doc.removeEventListener('click', removeOnInteract, true);
         };
 
         doc.addEventListener('scroll', removeOnInteract, true);
-        doc.addEventListener('touchstart', removeOnInteract, true);
-        doc.addEventListener('click', removeOnInteract, true);
+doc.addEventListener('pointerdown', removeOnInteract, true);
+doc.addEventListener('touchstart', removeOnInteract, true);
+doc.addEventListener('click', removeOnInteract, true);
+
 
         // 3️⃣ safety auto-timeout
         setTimeout(removeOnInteract, 2500);
