@@ -464,25 +464,7 @@ updateNavButtons();
 
   }
 
-function renderHtml(html, highlight=null){
-  cover.style.display = 'none';
-  reader.style.display = 'block';
 
-  const isDesk = isDesktop();
-  pageShell.style.display = isDesk ? 'flex' : 'none';
-  mobileReader.style.display = isDesk ? 'none' : 'block';
-
-  const iframe = isDesk
-    ? document.getElementById('chapterFrame')
-    : document.getElementById('mobileChapterFrame');
-
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  iframe.src = url;
-
-  // cleanup old blob
-  iframe.onload = () => URL.revokeObjectURL(url);
-}
 
 
 function removeExistingHighlights(){
