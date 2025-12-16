@@ -689,37 +689,80 @@ function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippe
 /* renderSearchResults (safe: snippet is plain text) */
 function renderSearchResults(list){
   lastResults = list || [];
-  try{ localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults)); }catch(e){}
+  try{
+    localStorage.setItem(SEARCH_R_KEY, JSON.stringify(lastResults));
+  }catch(e){}
+
   if(!list || list.length === 0){
     searchResults.innerHTML = '<div class="small-muted">No results</div>';
     return;
   }
+
   const q = (searchInput.value || lastQuery || '').trim();
   searchResults.innerHTML = '';
 
   list.forEach(r=>{
     const div = document.createElement('div');
     div.className = 'search-item';
+
     const escaped = escapeHtml(String(r.snippet || ''));
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
-    div.innerHTML = `<div style="font-weight:700">${escapeHtml(r.id)}</div><div class="search-snippet">${highlighted}</div>`;
+
+    div.innerHTML = `
+      <div style="font-weight:700">${escapeHtml(r.id)}</div>
+      <div class="search-snippet">${highlighted}</div>
+    `;
+
     div.onclick = async () => {
-  const query = q || searchInput.value;
+      const query = q || searchInput.value;
 
-  await openFragmentOrChapter(r.id);
+      await openFragmentOrChapter(r.id);
 
-  const iframe = getActiveFrame();
+      const iframe = getActiveFrame();
 
-  iframe.onload = () => {
-    highlightInIframe(iframe, query);
-  };
+      iframe.onload = () => {
+        // 1️⃣ highlight searched text
+        highlightInIframe(iframe, query);
 
-  closeSearchPanel();
-};
+        const doc = iframe.contentDocument;
+        if(!doc) return;
 
+        // 2️⃣ remove highlight on ANY interaction
+        const removeOnInteract = () => {
+          clearIframeHighlights(iframe);
+          doc.removeEventListener('scroll', removeOnInteract, true);
+          doc.removeEventListener('touchstart', removeOnInteract, true);
+          doc.removeEventListener('click', removeOnInteract, true);
+        };
+
+        doc.addEventListener('scroll', removeOnInteract, true);
+        doc.addEventListener('touchstart', removeOnInteract, true);
+        doc.addEventListener('click', removeOnInteract, true);
+
+        // 3️⃣ safety auto-timeout
+        setTimeout(removeOnInteract, 2500);
+      };
+
+      // 4️⃣ close search panel immediately
+      closeSearchPanel();
+    };
 
     searchResults.appendChild(div);
   });
+}
+
+function clearIframeHighlights(iframe){
+  try{
+    const doc = iframe?.contentDocument;
+    if(!doc) return;
+
+    const marks = doc.querySelectorAll('mark');
+    marks.forEach(m=>{
+      const t = doc.createTextNode(m.textContent);
+      m.replaceWith(t);
+    });
+    doc.body.normalize();
+  }catch(e){}
 }
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
@@ -1034,6 +1077,30 @@ window.addEventListener('resize', ()=>{
     }
   }
 }
+
+  function installGlobalSearchAutoClose(){
+
+  const handler = (e) => {
+    if (searchPanel.style.display !== 'flex') return;
+
+    // ignore clicks inside search panel or search button
+    if (e.target.closest &&
+        (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))
+    ) return;
+
+    closeSearchPanel();
+    clearIframeHighlights();   // 🔥 also remove highlight
+  };
+
+  // pointer events (modern browsers)
+  document.addEventListener('pointerdown', handler, true);
+
+  // fallback for older mobile browsers
+  document.addEventListener('touchstart', handler, true);
+}
+
+installGlobalSearchAutoClose();
+
 
 
 </script>
