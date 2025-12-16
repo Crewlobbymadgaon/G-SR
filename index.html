@@ -421,7 +421,7 @@ async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter
 }
 
 async function openFragment(id){
-  clearIframeHighlights(); 
+  
   const iframe = getActiveFrame();
 
   cover.style.display = 'none';
@@ -439,7 +439,7 @@ async function openFragment(id){
 
 
 async function openChapter(chId, anchor = null){
-  clearIframeHighlights(); 
+   
   const iframe = getActiveFrame();
 
   cover.style.display = 'none';
@@ -674,7 +674,7 @@ function closeSearchPanel(){
   searchPanel.style.display = 'none';
   searchPanel.setAttribute('aria-hidden','true');
 
-  clearIframeHighlights();   // ✅ ADD THIS
+ 
 
   window.__gkr_search_resize_lock = false;
 }
@@ -751,19 +751,6 @@ function renderSearchResults(list){
   });
 }
 
-function clearIframeHighlights(iframe){
-  try{
-    const doc = iframe?.contentDocument;
-    if(!doc) return;
-
-    const marks = doc.querySelectorAll('mark');
-    marks.forEach(m=>{
-      const t = doc.createTextNode(m.textContent);
-      m.replaceWith(t);
-    });
-    doc.body.normalize();
-  }catch(e){}
-}
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
@@ -983,26 +970,6 @@ window.addEventListener('resize', ()=>{
   }, 180);
 });
 
-
-
-/* UX: close search panel when clicking anywhere outside it (desktop & mobile) */
-(function installGlobalClickToCloseSearch(){
-  document.addEventListener('click', function (e) {
-    try {
-      if (!searchPanel || searchPanel.style.display !== 'flex') return;
-      if (e.target.closest && (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))) return;
-      closeSearchPanel();
-    } catch (err) {}
-  }, { passive: true, capture: false });
-
-  document.addEventListener('touchstart', function (e) {
-    try {
-      if (!searchPanel || searchPanel.style.display !== 'flex') return;
-      if (e.target.closest && (e.target.closest('#searchPanel') || e.target.closest('#btnSearch'))) return;
-      closeSearchPanel();
-    } catch (err) {}
-  }, { passive: true, capture: false });
-})();
 
   function highlightInIframe(iframe, query){
   if(!query) return;
