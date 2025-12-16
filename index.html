@@ -207,6 +207,12 @@ header .prev, header .next, header .header-nav, header .nav-small, header .heade
 .search-item.selected .search-highlight{
   background:#ffe58a;
 }
+#searchBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.0); /* transparent */
+  z-index:1390; /* below searchPanel (1400) */
+}
 
 </style>
 </head>
@@ -230,6 +236,7 @@ header .prev, header .next, header .header-nav, header .nav-small, header .heade
       </button>
     </div>
   </header>
+<div id="searchBackdrop" hidden></div>
 
   <div id="searchPanel" role="search" aria-hidden="true">
     <div class="panel-row">
@@ -714,15 +721,38 @@ function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(S
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
 
 /* SEARCH (clean snippets + safe rendering) */
-function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420);  window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
+function openSearchPanel(){
+  window.__gkr_search_open = true;
+
+  document.getElementById('searchBackdrop').hidden = false;
+  searchPanel.style.display = 'flex';
+  searchPanel.setAttribute('aria-hidden','false');
+
+  const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || '';
+  searchInput.value = q;
+
+  if(q){
+    if(lastResults && lastResults.length) renderSearchResults(lastResults);
+    debouncePerformSearch(q, 0);
+  } else {
+    searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
+  }
+
+  setTimeout(()=>{
+    try{
+      searchInput.focus();
+      const v = searchInput.value;
+      searchInput.setSelectionRange(v.length, v.length);
+    }catch(e){}
+  }, 120);
+}
+
 function closeSearchPanel(){
   window.__gkr_search_open = false;
+
+  document.getElementById('searchBackdrop').hidden = true;
   searchPanel.style.display = 'none';
   searchPanel.setAttribute('aria-hidden','true');
-
- 
-
-  window.__gkr_search_resize_lock = false;
 }
 
 function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){} }
@@ -848,6 +878,13 @@ async function openFragmentOrChapter(id){
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
 searchClear.addEventListener('click', ()=> clearSearch());
+  const searchBackdrop = document.getElementById('searchBackdrop');
+
+searchBackdrop.addEventListener('click', () => {
+  closeSearchPanel();
+  clearIframeHighlights();
+});
+
 searchInput.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeSearchPanel(); return; } if(e.key === 'Enter'){ e.preventDefault(); performSearch(searchInput.value); }});
 searchInput.addEventListener('input', ()=> { debouncePerformSearch(searchInput.value, 160); });
 
@@ -1094,42 +1131,7 @@ window.addEventListener('resize', ()=>{
   }
 }
 
-  function installGlobalSearchAutoClose(){
-  const handler = (e) => {
-    if (searchPanel.style.display !== 'flex') return;
 
-    let x, y;
-    if (e.touches && e.touches.length) {
-      x = e.touches[0].clientX;
-      y = e.touches[0].clientY;
-    } else {
-      x = e.clientX;
-      y = e.clientY;
-    }
-
-    const panelRect = searchPanel.getBoundingClientRect();
-
-    // inside panel → ignore
-    if (
-      x >= panelRect.left &&
-      x <= panelRect.right &&
-      y >= panelRect.top &&
-      y <= panelRect.bottom
-    ) {
-      return;
-    }
-
-    // tap search button → let toggle handle it
-    if (e.target.closest && e.target.closest('#btnSearch')) return;
-
-    closeSearchPanel();
-    clearIframeHighlights();
-  };
-
-  document.addEventListener('pointerdown', handler, true);
-  document.addEventListener('touchstart', handler, true);
-}
-installGlobalSearchAutoClose();
 
 </script>
 </body>
