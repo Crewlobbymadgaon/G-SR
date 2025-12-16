@@ -799,9 +799,12 @@ function renderSearchResults(list){
 
       await openFragmentOrChapter(r.id);
 
-      // ✅ close search UI
-      closeSearchPanel();
-      clearIframeHighlights();
+// allow selected highlight to render
+requestAnimationFrame(() => {
+  closeSearchPanel();
+  clearIframeHighlights();
+});
+
 
       const iframe = getActiveFrame();
       iframe.onload = () => {
