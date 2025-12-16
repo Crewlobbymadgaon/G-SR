@@ -316,6 +316,26 @@ let lastHtml = null;
 let bgTimer = null;
 let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
 let lastResults = [];
+  
+const DB_NAME = 'gsr-reader-db';
+const DB_VER  = 1;
+const STORE   = 'chapters';
+
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        const s = db.createObjectStore(STORE, { keyPath:'id' });
+        s.createIndex('updatedAt','updatedAt');
+      }
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+
 
 function buildTOC(){
   tocList.innerHTML = '';
@@ -385,11 +405,24 @@ async function fetchChapterRaw(id, bypass=false){
   return null;
 }
 async function getHtml(id){
-  if(cache[id]) return cache[id];
-  const t = await fetchChapterRaw(id, false);
-  if(t){ cache[id] = t; return t; }
-  return `<article class="chapter-content"><h2 style="margin-top:0">${id}</h2><p style="color:var(--muted)">Missing file: chapters/${id}.html — upload this file to show content.</p></article>`;
+  // 1️⃣ IndexedDB first (offline-first)
+  const stored = await idbGet(id);
+  if(stored && stored.html) return stored.html;
+
+  // 2️⃣ Network fetch
+  const html = await fetchChapterRaw(id, false);
+  if(html){
+    idbSet(id, html);
+    return html;
+  }
+
+  // 3️⃣ Offline fallback
+  return `<article class="chapter-content">
+    <h2>${id}</h2>
+    <p style="color:#6b7280">Offline — chapter not downloaded yet.</p>
+  </article>`;
 }
+
 
 async function openFromTOC(item){
   tocDrawer.classList.remove('open'); btnMenu.classList.remove('open');
@@ -610,6 +643,36 @@ function updateNavButtons(){
   nextBtn.disabled = !hasNext;
 }
 
+  async function idbGet(id){
+  const db = await openDB();
+  const tx = db.transaction(STORE,'readonly');
+  return new Promise(res=>{
+    const r = tx.objectStore(STORE).get(id);
+    r.onsuccess = ()=> res(r.result || null);
+  });
+}
+
+async function idbSet(id, html){
+  const db = await openDB();
+  const tx = db.transaction(STORE,'readwrite');
+  tx.objectStore(STORE).put({
+    id,
+    html,
+    text: extractText(html),
+    updatedAt: Date.now()
+  });
+}
+
+function extractText(html){
+  try{
+    const doc = new DOMParser().parseFromString(html,'text/html');
+    const c = doc.querySelector('.chapter-content') || doc.body;
+    return (c.textContent || '').replace(/\s+/g,' ').trim();
+  }catch(e){
+    return '';
+  }
+}
+
 
 
 
@@ -629,7 +692,18 @@ function detachWindowSaver(){ try{ if(winSaver.handler) window.removeEventListen
 function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
-async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
+async function updateAllBackground(){
+  const ids = collectChapterIds();
+  if(!ids.length || !navigator.onLine) return;
+
+  for(const id of ids){
+    try{
+      const html = await fetchChapterRaw(id, true);
+      if(html) await idbSet(id, html);
+    }catch(e){}
+  }
+}
+
 function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
 /* SEARCH (clean snippets + safe rendering) */
