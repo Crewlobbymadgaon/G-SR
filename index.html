@@ -751,47 +751,43 @@ function renderSearchResults(list){
     `;
 
     div.onclick = async () => {
-      const query = q || searchInput.value;
+  const query = q || searchInput.value;
 
-      await openFragmentOrChapter(r.id);
+  await openFragmentOrChapter(r.id);
 
-      const iframe = getActiveFrame();
+  const iframe = getActiveFrame();
 
-      iframe.onload = () => {
-        highlightInIframe(iframe, query);
+  iframe.onload = () => {
+    highlightInIframe(iframe, query);
 
-        const doc = iframe.contentDocument;
-        if(!doc) return;
+    const doc = iframe.contentDocument;
+    if(!doc) return;
 
-        let faded = false;
+    let cleared = false;
 
-        const removeOnInteract = () => {
-          if(!faded){
-            doc.querySelectorAll('mark').forEach(m=>{
-              m.style.transition = 'background 350ms ease';
-              m.style.background = 'transparent';
-            });
-            faded = true;
-            return;
-          }
+    const removeOnInteract = () => {
+      if (cleared) return;
+      cleared = true;
+      clearIframeHighlights();
 
-          clearIframeHighlights();
-          doc.removeEventListener('scroll', removeOnInteract, true);
-          doc.removeEventListener('pointerdown', removeOnInteract, true);
-          doc.removeEventListener('touchstart', removeOnInteract, true);
-          doc.removeEventListener('click', removeOnInteract, true);
-        };
-
-        doc.addEventListener('scroll', removeOnInteract, true);
-        doc.addEventListener('pointerdown', removeOnInteract, true);
-        doc.addEventListener('touchstart', removeOnInteract, true);
-        doc.addEventListener('click', removeOnInteract, true);
-
-        setTimeout(removeOnInteract, 2800);
-      };
-
-      closeSearchPanel();
+      doc.removeEventListener('scroll', removeOnInteract, true);
+      doc.removeEventListener('pointerdown', removeOnInteract, true);
+      doc.removeEventListener('touchstart', removeOnInteract, true);
+      doc.removeEventListener('click', removeOnInteract, true);
     };
+
+    doc.addEventListener('scroll', removeOnInteract, true);
+    doc.addEventListener('pointerdown', removeOnInteract, true);
+    doc.addEventListener('touchstart', removeOnInteract, true);
+    doc.addEventListener('click', removeOnInteract, true);
+
+    setTimeout(removeOnInteract, 2800);
+  };
+
+  // ⏱ allow snippet highlight to register visually
+  setTimeout(closeSearchPanel, 120);
+};
+
 
     searchResults.appendChild(div);
   });
