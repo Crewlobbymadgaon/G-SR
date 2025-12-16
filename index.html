@@ -199,6 +199,15 @@ footer{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#fff;displ
 header .prev, header .next, header .header-nav, header .nav-small, header .header-forward, header .header-back {
   display: none !important;
 }
+  .search-item.selected{
+  border-color:#0b63d6;
+  background:#f0f6ff;
+}
+
+.search-item.selected .search-highlight{
+  background:#ffe58a;
+}
+
 </style>
 </head>
 <body>
@@ -751,47 +760,46 @@ function renderSearchResults(list){
     `;
 
     div.onclick = async () => {
-  const query = q || searchInput.value;
+      const query = q || searchInput.value;
 
-  await openFragmentOrChapter(r.id);
+      // ✅ MARK THIS RESULT AS SELECTED
+      searchResults
+        .querySelectorAll('.search-item.selected')
+        .forEach(el => el.classList.remove('selected'));
 
-  const iframe = getActiveFrame();
+      div.classList.add('selected');
 
-  iframe.onload = () => {
-    highlightInIframe(iframe, query);
+      await openFragmentOrChapter(r.id);
 
-    const doc = iframe.contentDocument;
-    if(!doc) return;
+      const iframe = getActiveFrame();
 
-    let cleared = false;
+      iframe.onload = () => {
+        highlightInIframe(iframe, query);
 
-    const removeOnInteract = () => {
-      if (cleared) return;
-      cleared = true;
-      clearIframeHighlights();
+        const doc = iframe.contentDocument;
+        if(!doc) return;
 
-      doc.removeEventListener('scroll', removeOnInteract, true);
-      doc.removeEventListener('pointerdown', removeOnInteract, true);
-      doc.removeEventListener('touchstart', removeOnInteract, true);
-      doc.removeEventListener('click', removeOnInteract, true);
+        const removeOnInteract = () => {
+          clearIframeHighlights();
+          doc.removeEventListener('scroll', removeOnInteract, true);
+          doc.removeEventListener('pointerdown', removeOnInteract, true);
+          doc.removeEventListener('touchstart', removeOnInteract, true);
+          doc.removeEventListener('click', removeOnInteract, true);
+        };
+
+        doc.addEventListener('scroll', removeOnInteract, true);
+        doc.addEventListener('pointerdown', removeOnInteract, true);
+        doc.addEventListener('touchstart', removeOnInteract, true);
+        doc.addEventListener('click', removeOnInteract, true);
+      };
+
+      // 🚫 DO NOT close search panel here
     };
-
-    doc.addEventListener('scroll', removeOnInteract, true);
-    doc.addEventListener('pointerdown', removeOnInteract, true);
-    doc.addEventListener('touchstart', removeOnInteract, true);
-    doc.addEventListener('click', removeOnInteract, true);
-
-    setTimeout(removeOnInteract, 2800);
-  };
-
-  // ⏱ allow snippet highlight to register visually
-  setTimeout(closeSearchPanel, 120);
-};
-
 
     searchResults.appendChild(div);
   });
 }
+
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
@@ -1090,11 +1098,18 @@ window.addEventListener('resize', ()=>{
   const handler = (e) => {
     if (searchPanel.style.display !== 'flex') return;
 
-    const panelRect = searchPanel.getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
+    let x, y;
+    if (e.touches && e.touches.length) {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else {
+      x = e.clientX;
+      y = e.clientY;
+    }
 
-    // tap/click INSIDE panel → do nothing
+    const panelRect = searchPanel.getBoundingClientRect();
+
+    // inside panel → ignore
     if (
       x >= panelRect.left &&
       x <= panelRect.right &&
@@ -1104,22 +1119,17 @@ window.addEventListener('resize', ()=>{
       return;
     }
 
-    // tap on search button → toggle handles it
-    if (e.target.closest && e.target.closest('#btnSearch')) {
-      return;
-    }
+    // tap search button → let toggle handle it
+    if (e.target.closest && e.target.closest('#btnSearch')) return;
 
-    // otherwise → close
     closeSearchPanel();
     clearIframeHighlights();
   };
 
-  // capture phase = reliable on mobile
   document.addEventListener('pointerdown', handler, true);
   document.addEventListener('touchstart', handler, true);
 }
 installGlobalSearchAutoClose();
-
 
 </script>
 </body>
