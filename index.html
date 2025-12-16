@@ -91,12 +91,49 @@ main{padding:calc(var(--header-h) + 12px) 16px calc(var(--footer-h) + 16px);max-
 
 #searchInput{ flex:1; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; font-size:16px; width:100%; }
 #searchResults{ max-height:50vh; overflow:auto; width:360px; border-left:1px solid #eef2ff; padding-left:12px; }
-.search-item{ padding:8px; border-radius:8px; cursor:pointer; border:1px solid transparent; margin-bottom:6px; }
-.search-item:hover{ background:#f7fbff; border-color:#e6f0ff; }
-.search-snippet{ color:#475569; font-size:0.95rem; margin-top:6px; }
+.search-item{
+  padding:12px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid #eef2ff;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition: background .15s ease, border-color .15s ease, transform .12s ease;
+}
+.search-item:hover{
+  background:#f8fafc;
+  border-color:#dbeafe;
+  transform: translateY(-1px);
+}
+
+
+.search-item:active{
+  transform: translateY(0);
+}
+.search-title{
+  font-size:0.85rem;
+  font-weight:600;
+  color:#0b63d6;
+  letter-spacing:0.04em;
+}
+
+.search-snippet{
+  margin-top:6px;
+  font-size:0.95rem;
+  line-height:1.45;
+  color:#334155;
+}
 
 /* highlight */
-.search-highlight { background: var(--highlight-color); padding:0 2px; border-radius:2px; box-shadow:0 0 0 4px rgba(255,245,157,0.12) inset; animation: highlight-pulse 1400ms ease; }
+.search-highlight{
+  background:#fff3b0;
+  padding:0 1px;
+  border-radius:2px;
+  box-shadow:none;
+  animation:none;
+}
+
+
 @keyframes highlight-pulse { 0%{ box-shadow:0 0 0 6px rgba(255,245,157,0.18) inset; } 100%{ box-shadow:0 0 0 0 rgba(255,245,157,0.0) inset; } }
 
 .chapter-content{ text-align:justify; text-justify:inter-word; hyphens:auto; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-size:var(--base-font-size); line-height:1.6; font-family:var(--base-font-family); color:#1b2b3a; }
@@ -709,7 +746,7 @@ function renderSearchResults(list){
     const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
 
     div.innerHTML = `
-      <div style="font-weight:700">${escapeHtml(r.id)}</div>
+      <div class="search-title">${escapeHtml(r.id.toUpperCase())}</div>
       <div class="search-snippet">${highlighted}</div>
     `;
 
@@ -721,38 +758,44 @@ function renderSearchResults(list){
       const iframe = getActiveFrame();
 
       iframe.onload = () => {
-        // 1️⃣ highlight searched text
         highlightInIframe(iframe, query);
 
         const doc = iframe.contentDocument;
         if(!doc) return;
 
-        // 2️⃣ remove highlight on ANY interaction
+        let faded = false;
+
         const removeOnInteract = () => {
+          if(!faded){
+            doc.querySelectorAll('mark').forEach(m=>{
+              m.style.transition = 'background 350ms ease';
+              m.style.background = 'transparent';
+            });
+            faded = true;
+            return;
+          }
+
           clearIframeHighlights();
           doc.removeEventListener('scroll', removeOnInteract, true);
+          doc.removeEventListener('pointerdown', removeOnInteract, true);
           doc.removeEventListener('touchstart', removeOnInteract, true);
           doc.removeEventListener('click', removeOnInteract, true);
         };
 
         doc.addEventListener('scroll', removeOnInteract, true);
-doc.addEventListener('pointerdown', removeOnInteract, true);
-doc.addEventListener('touchstart', removeOnInteract, true);
-doc.addEventListener('click', removeOnInteract, true);
+        doc.addEventListener('pointerdown', removeOnInteract, true);
+        doc.addEventListener('touchstart', removeOnInteract, true);
+        doc.addEventListener('click', removeOnInteract, true);
 
-
-        // 3️⃣ safety auto-timeout
-        setTimeout(removeOnInteract, 2500);
+        setTimeout(removeOnInteract, 2800);
       };
 
-      // 4️⃣ close search panel immediately
       closeSearchPanel();
     };
 
     searchResults.appendChild(div);
   });
 }
-
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
