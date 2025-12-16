@@ -788,49 +788,43 @@ function renderSearchResults(list){
       <div class="search-snippet">${highlighted}</div>
     `;
 
-    div.onclick = async () => {
-      const query = q || searchInput.value;
+   div.onclick = async () => {
+  const query = q || searchInput.value;
 
-      // mark selected result
-      searchResults
-        .querySelectorAll('.search-item.selected')
-        .forEach(el => el.classList.remove('selected'));
-      div.classList.add('selected');
+  // mark selected result
+  searchResults
+    .querySelectorAll('.search-item.selected')
+    .forEach(el => el.classList.remove('selected'));
+  div.classList.add('selected');
 
-      await openFragmentOrChapter(r.id);
+  await openFragmentOrChapter(r.id);
 
-// allow selected highlight to render
-requestAnimationFrame(() => {
+  // close search UI ONLY (do NOT clear highlights)
   closeSearchPanel();
-  clearIframeHighlights();
-});
 
+  const iframe = getActiveFrame();
+  iframe.onload = () => {
+    highlightInIframe(iframe, query);
 
-      const iframe = getActiveFrame();
-      iframe.onload = () => {
-        highlightInIframe(iframe, query);
+    const doc = iframe.contentDocument;
+    if(!doc) return;
 
-        const doc = iframe.contentDocument;
-        if(!doc) return;
-
-        const removeOnInteract = () => {
-          clearIframeHighlights();
-          doc.removeEventListener('scroll', removeOnInteract, true);
-          doc.removeEventListener('pointerdown', removeOnInteract, true);
-          doc.removeEventListener('touchstart', removeOnInteract, true);
-          doc.removeEventListener('click', removeOnInteract, true);
-        };
-
-        doc.addEventListener('scroll', removeOnInteract, true);
-        doc.addEventListener('pointerdown', removeOnInteract, true);
-        doc.addEventListener('touchstart', removeOnInteract, true);
-        doc.addEventListener('click', removeOnInteract, true);
-      };
+    // remove highlight ONLY after user interaction
+    const removeOnInteract = () => {
+      clearIframeHighlights();
+      doc.removeEventListener('scroll', removeOnInteract, true);
+      doc.removeEventListener('pointerdown', removeOnInteract, true);
+      doc.removeEventListener('touchstart', removeOnInteract, true);
+      doc.removeEventListener('click', removeOnInteract, true);
     };
 
-    searchResults.appendChild(div);
-  });
-}
+    doc.addEventListener('scroll', removeOnInteract, true);
+    doc.addEventListener('pointerdown', removeOnInteract, true);
+    doc.addEventListener('touchstart', removeOnInteract, true);
+    doc.addEventListener('click', removeOnInteract, true);
+  };
+};
+
 
 
 
