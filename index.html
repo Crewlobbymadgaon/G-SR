@@ -312,7 +312,7 @@ const searchClear = document.getElementById('searchClear');
 
 
 let currentFlatIndex = -1;
-let lastHtml = null;
+
 let bgTimer = null;
 let lastQuery = localStorage.getItem(SEARCH_Q_KEY) || '';
 let lastResults = [];
@@ -404,24 +404,7 @@ async function fetchChapterRaw(id, bypass=false){
   }catch(e){ /* ignore */ }
   return null;
 }
-async function getHtml(id){
-  // 1️⃣ IndexedDB first (offline-first)
-  const stored = await idbGet(id);
-  if(stored && stored.html) return stored.html;
 
-  // 2️⃣ Network fetch
-  const html = await fetchChapterRaw(id, false);
-  if(html){
-    idbSet(id, html);
-    return html;
-  }
-
-  // 3️⃣ Offline fallback
-  return `<article class="chapter-content">
-    <h2>${id}</h2>
-    <p style="color:#6b7280">Offline — chapter not downloaded yet.</p>
-  </article>`;
-}
 
 
 async function openFromTOC(item){
@@ -452,27 +435,7 @@ async function openFragment(id){
   saveLastRead({ kind:'fragment', id });
   updateNavButtons();
 }
-function syncFlatIndex(kind, chId, anchor = null){
-  for(let i = 0; i < FLAT.length; i++){
-    const it = FLAT[i];
 
-    if(kind === 'fragment' && it.kind === 'fragment' && it.id === chId){
-      currentFlatIndex = i;
-      return;
-    }
-
-    if(kind === 'chapter' && !anchor && it.kind === 'chapter' && it.id === chId){
-      currentFlatIndex = i;
-      return;
-    }
-
-    if(kind === 'chapter' && anchor && it.kind === 'anchor'
-        && it.chapter === chId && it.anchor === anchor){
-      currentFlatIndex = i;
-      return;
-    }
-  }
-}
 
 async function openChapter(chId, anchor = null){
   const iframe = getActiveFrame();
@@ -686,7 +649,7 @@ function extractText(html){
 
 /* last-read helpers & scroll savers */
 function saveLastRead(obj){ try{ localStorage.setItem(LAST_READ_KEY, JSON.stringify(Object.assign({}, obj, { ts: Date.now() }))); }catch(e){} }
-function loadLastRead(){ try{ const raw = localStorage.getItem(LAST_READ_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+
 function markStarted(){ try{ localStorage.setItem(VISITED_FLAG, '1'); }catch(e){} }
 
 let pageSaver = { timer:null, lastSaved:0, id:null, handler:null };
@@ -700,19 +663,6 @@ function detachWindowSaver(){ try{ if(winSaver.handler) window.removeEventListen
 function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(SCROLL_PREFIX + chId); const n = raw ? Number(raw)||0 : 0; setTimeout(()=> window.scrollTo({ top: n, behavior:'auto' }), 80); }catch(e){} }
 
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
-async function updateAllBackground(){
-  const ids = collectChapterIds();
-  if(!ids.length || !navigator.onLine) return;
-
-  for(const id of ids){
-    try{
-      const html = await fetchChapterRaw(id, true);
-      if(html) await idbSet(id, html);
-    }catch(e){}
-  }
-}
-
-function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> { updateAllBackground().catch(()=>{}); }); }
 
 /* SEARCH (clean snippets + safe rendering) */
 function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420); searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true }); searchPanel.addEventListener('click', stopTouchBubble, { passive:true }); window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
@@ -802,65 +752,7 @@ async function openFragmentOrChapter(id){
     await openFragment(id);
   }
 }
-function highlightInIframe(iframe, query){
-  if(!query) return;
 
-  try{
-    const doc = iframe.contentDocument;
-    if(!doc) return;
-
-    const esc = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const re = new RegExp(esc, 'gi');
-
-    const walker = doc.createTreeWalker(
-      doc.body,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode(node){
-          if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-          const p = node.parentElement;
-          if(!p) return NodeFilter.FILTER_REJECT;
-          if(['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-          return NodeFilter.FILTER_ACCEPT;
-        }
-      }
-    );
-
-    const nodes = [];
-    let n;
-    while(n = walker.nextNode()) nodes.push(n);
-
-    nodes.forEach(textNode=>{
-      const text = textNode.nodeValue;
-      if(!re.test(text)) return;
-      re.lastIndex = 0;
-
-      const frag = doc.createDocumentFragment();
-      let last = 0, m;
-
-      while((m = re.exec(text))){
-        if(m.index > last){
-          frag.appendChild(doc.createTextNode(text.slice(last, m.index)));
-        }
-        const mark = doc.createElement('mark');
-        mark.textContent = m[0];
-        frag.appendChild(mark);
-        last = m.index + m[0].length;
-      }
-
-      if(last < text.length){
-        frag.appendChild(doc.createTextNode(text.slice(last)));
-      }
-
-      textNode.parentNode.replaceChild(frag, textNode);
-    });
-
-    const first = doc.querySelector('mark');
-    if(first){
-      first.scrollIntoView({ block:'center', behavior:'smooth' });
-    }
-  }catch(e){}
-}
 
 btnSearch.addEventListener('click', ()=> { if(searchPanel.style.display === 'flex') closeSearchPanel(); else openSearchPanel(); });
 searchClose.addEventListener('click', ()=> closeSearchPanel());
@@ -1032,7 +924,7 @@ window.addEventListener('resize', ()=>{
   _rt = setTimeout(()=> {
     if(window.__gkr_search_open) return;
     if(window.__gkr_search_resize_lock) return;
-    if(reader.style.display !== 'none' && lastHtml) renderHtml(lastHtml);
+    
   }, 180);
 });
 
