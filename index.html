@@ -310,7 +310,7 @@ const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 const searchClear = document.getElementById('searchClear');
 
-let cache = {};
+
 let currentFlatIndex = -1;
 let lastHtml = null;
 let bgTimer = null;
@@ -643,25 +643,33 @@ function updateNavButtons(){
   nextBtn.disabled = !hasNext;
 }
 
-  async function idbGet(id){
+ async function idbGetAll(){
   const db = await openDB();
   const tx = db.transaction(STORE,'readonly');
+  const store = tx.objectStore(STORE);
+
   return new Promise(res=>{
-    const r = tx.objectStore(STORE).get(id);
-    r.onsuccess = ()=> res(r.result || null);
+    const out = [];
+    store.openCursor().onsuccess = e=>{
+      const c = e.target.result;
+      if(!c){ res(out); return; }
+      out.push(c.value);
+      c.continue();
+    };
   });
 }
+
 
 async function idbSet(id, html){
   const db = await openDB();
   const tx = db.transaction(STORE,'readwrite');
   tx.objectStore(STORE).put({
     id,
-    html,
     text: extractText(html),
     updatedAt: Date.now()
   });
 }
+
 
 function extractText(html){
   try{
@@ -754,45 +762,28 @@ function renderSearchResults(list){
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
-  q = (q||'').trim();
+  q = q.trim().toLowerCase();
   lastQuery = q;
-  try{ localStorage.setItem(SEARCH_Q_KEY, q); }catch(e){}
-  if(!q){ searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; lastResults = []; try{ localStorage.removeItem(SEARCH_R_KEY); }catch(e){}; return; }
+
+  if(!q){
+    searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
+    return;
+  }
+
   searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
 
-  const needle = q.toLowerCase();
-  const ids = collectChapterIds();
+  const rows = await idbGetAll();
   const results = [];
 
-  for(const id of ids){
-    if(!cache[id]){
-      const t = await fetchChapterRaw(id, false);
-      if(t) cache[id] = t;
-      else cache[id] = '';
-    }
-    const html = cache[id] || '';
-
-    let text = '';
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const scripts = doc.querySelectorAll('script, style, noscript');
-      scripts.forEach(n => n.remove());
-      const container = doc.querySelector('.chapter-content') || doc.body;
-      text = container.textContent || '';
-    } catch(e){
-      text = html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<\/?[^>]+(>|$)/g, ' ');
-    }
-    text = text.replace(/\s+/g, ' ').trim();
-    const lower = text.toLowerCase();
-    const idx = lower.indexOf(needle);
+  for(const row of rows){
+    const text = row.text || '';
+    const idx = text.toLowerCase().indexOf(q);
     if(idx !== -1){
-      const start = Math.max(0, idx - 80);
-      const end = Math.min(text.length, idx + 180);
-      let snippet = text.substring(start, end).trim();
-      if(start > 0) snippet = '…' + snippet;
-      if(end < text.length) snippet = snippet + '…';
-      results.push({ id, snippet });
+      const snippet = text.substring(
+        Math.max(0, idx - 80),
+        Math.min(text.length, idx + 180)
+      );
+      results.push({ id: row.id, snippet });
     }
   }
 
@@ -892,8 +883,45 @@ function showCover(){
   updateNavButtons();
 }
 
-async function startBackgroundUpdater(){ if(navigator.onLine) updateAllBackground().catch(()=>{}); if(bgTimer) clearInterval(bgTimer); bgTimer = setInterval(()=> { if(navigator.onLine) updateAllBackground().catch(()=>{}); }, UPDATE_INTERVAL_MS); window.addEventListener('online', ()=> updateAllBackground().catch(()=>{})); }
-async function updateAllBackground(){ const ids = collectChapterIds(); if(!ids.length) return; for(const id of ids){ try{ const t = await fetchChapterRaw(id, true); if(t) cache[id] = t; }catch(e){} } try{ localStorage.setItem(UPDATE_TS_KEY, String(Date.now())); }catch(e){} }
+async function startBackgroundUpdater(){
+  if(bgTimer) clearInterval(bgTimer);
+
+  if(navigator.onLine){
+    updateAllBackground().catch(()=>{});
+  }
+
+  bgTimer = setInterval(()=>{
+    if(navigator.onLine){
+      updateAllBackground().catch(()=>{});
+    }
+  }, UPDATE_INTERVAL_MS);
+
+  window.addEventListener('online', ()=>{
+    updateAllBackground().catch(()=>{});
+  });
+}
+
+async function updateAllBackground(){
+  const ids = collectChapterIds();
+  if(!ids.length || !navigator.onLine) return;
+
+  for(const id of ids){
+    try{
+      // 1️⃣ Fetch chapter (SW will cache HTML)
+      const html = await fetchChapterRaw(id, true);
+      if(!html) continue;
+
+      // 2️⃣ Store extracted TEXT in IndexedDB
+      await idbSet(id, html);
+
+    }catch(e){}
+  }
+
+  try{
+    localStorage.setItem(UPDATE_TS_KEY, String(Date.now()));
+  }catch(e){}
+}
+
 
 window.addEventListener('load', async ()=>{
   startBackgroundUpdater();
