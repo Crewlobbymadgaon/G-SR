@@ -761,7 +761,6 @@ let _debT = null;
 function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function highlightSnippetEscaped(escapedSnippet, q){ if(!q) return escapedSnippet; const esc = String(q).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'); const re = new RegExp(esc, 'ig'); return escapedSnippet.replace(re, match => `<mark class="search-highlight">${match}</mark>`); }
-
 function renderSearchResults(list){
   lastResults = list || [];
   try{
@@ -803,31 +802,45 @@ function renderSearchResults(list){
       closeSearchPanel();
 
       const iframe = getActiveFrame();
-      iframe.onload = () => {
-        highlightInIframe(iframe, query);
 
-        const doc = iframe.contentDocument;
-        if(!doc) return;
+      iframe.addEventListener(
+        'load',
+        () => {
+          // wait for paint (critical for mobile/tablet)
+          requestAnimationFrame(() => {
+            highlightInIframe(iframe, query);
 
-        // remove highlight ONLY after user interaction
-        const removeOnInteract = () => {
-          clearIframeHighlights();
-          doc.removeEventListener('scroll', removeOnInteract, true);
-          doc.removeEventListener('pointerdown', removeOnInteract, true);
-          doc.removeEventListener('touchstart', removeOnInteract, true);
-          doc.removeEventListener('click', removeOnInteract, true);
-        };
+            const doc = iframe.contentDocument;
+            if(!doc) return;
 
-        doc.addEventListener('scroll', removeOnInteract, true);
-        doc.addEventListener('pointerdown', removeOnInteract, true);
-        doc.addEventListener('touchstart', removeOnInteract, true);
-        doc.addEventListener('click', removeOnInteract, true);
-      };
+            // allow highlight to be visible first
+            let armed = false;
+            setTimeout(() => { armed = true; }, 300);
+
+            const removeOnInteract = () => {
+              if(!armed) return;
+              clearIframeHighlights();
+              doc.removeEventListener('scroll', removeOnInteract, true);
+              doc.removeEventListener('pointerdown', removeOnInteract, true);
+              doc.removeEventListener('touchstart', removeOnInteract, true);
+              doc.removeEventListener('click', removeOnInteract, true);
+            };
+
+            doc.addEventListener('scroll', removeOnInteract, true);
+            doc.addEventListener('pointerdown', removeOnInteract, true);
+            doc.addEventListener('touchstart', removeOnInteract, true);
+            doc.addEventListener('click', removeOnInteract, true);
+          });
+        },
+        { once: true } // ✅ correct position
+      );
     };
 
     searchResults.appendChild(div);
-  }); // ✅ closes forEach
-}     // ✅ closes function
+  });
+}
+
+
 
 
 
