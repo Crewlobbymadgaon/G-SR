@@ -421,6 +421,7 @@ async function openAnchor(chapterId, anchorId){ markStarted(); await openChapter
 }
 
 async function openFragment(id){
+  clearIframeHighlights(); 
   const iframe = getActiveFrame();
 
   cover.style.display = 'none';
@@ -438,6 +439,7 @@ async function openFragment(id){
 
 
 async function openChapter(chId, anchor = null){
+  clearIframeHighlights(); 
   const iframe = getActiveFrame();
 
   cover.style.display = 'none';
@@ -464,6 +466,25 @@ updateNavButtons();
 
   }
 
+function clearIframeHighlights(){
+  const iframe = getActiveFrame();
+  if(!iframe) return;
+
+  try{
+    const doc = iframe.contentDocument;
+    if(!doc) return;
+
+    const marks = doc.querySelectorAll('mark');
+    marks.forEach(m=>{
+      const txt = m.textContent;
+      const parent = m.parentNode;
+      if(parent){
+        parent.replaceChild(doc.createTextNode(txt), m);
+        parent.normalize();
+      }
+    });
+  }catch(e){}
+}
 
 
 
@@ -647,10 +668,19 @@ function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(S
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
 
 /* SEARCH (clean snippets + safe rendering) */
-function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420); searchPanel.addEventListener('touchstart', stopTouchBubble, { passive:true }); searchPanel.addEventListener('click', stopTouchBubble, { passive:true }); window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
-function closeSearchPanel(){ window.__gkr_search_open = false; searchPanel.style.display = 'none'; searchPanel.setAttribute('aria-hidden','true'); searchPanel.removeEventListener('touchstart', stopTouchBubble); searchPanel.removeEventListener('click', stopTouchBubble); window.__gkr_search_resize_lock = false; }
+function openSearchPanel(){ window.__gkr_search_open = true; searchPanel.style.display = 'flex'; searchPanel.setAttribute('aria-hidden','false'); const q = localStorage.getItem(SEARCH_Q_KEY) || lastQuery || ''; searchInput.value = q; if(q){ if(lastResults && lastResults.length) renderSearchResults(lastResults); debouncePerformSearch(q, 0); } else { searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; } setTimeout(()=> { try{ searchInput.focus(); const val = searchInput.value; searchInput.setSelectionRange(val.length, val.length);}catch(e){} }, 420);  window.__gkr_search_resize_lock = true; setTimeout(()=> { window.__gkr_search_resize_lock = false; }, 900); }
+function closeSearchPanel(){
+  window.__gkr_search_open = false;
+  searchPanel.style.display = 'none';
+  searchPanel.setAttribute('aria-hidden','true');
+
+  clearIframeHighlights();   // ✅ ADD THIS
+
+  window.__gkr_search_resize_lock = false;
+}
+
 function clearSearch(){ searchInput.value = ''; lastQuery = ''; lastResults = []; try{ localStorage.removeItem(SEARCH_Q_KEY); localStorage.removeItem(SEARCH_R_KEY); }catch(e){} searchResults.innerHTML = '<div class="small-muted">Type to search</div>'; removeExistingHighlights(); try{ const it = (currentFlatIndex >=0 && currentFlatIndex < FLAT.length) ? FLAT[currentFlatIndex] : null; if(it && it.kind === 'chapter'){ if(isDesktop()) restorePageScrollIfAny(it.id); else restoreWindowScrollIfAny(it.id); } }catch(e){} try{ searchInput.focus(); const v = searchInput.value || ''; searchInput.setSelectionRange(v.length, v.length);}catch(e){} }
-function stopTouchBubble(e){ e.stopPropagation(); }
+
 let _debT = null;
 function debouncePerformSearch(q, delay=220){ clearTimeout(_debT); _debT = setTimeout(()=> performSearch(q), delay); }
 function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
