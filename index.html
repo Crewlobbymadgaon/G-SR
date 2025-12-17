@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -720,6 +721,7 @@ function restoreWindowScrollIfAny(chId){ try{ const raw = localStorage.getItem(S
 
 function collectChapterIds(){ const s = new Set(); TOC.forEach(it=>{ if(it.type==='fragment') s.add(it.id); else if(it.type==='chapter') s.add(it.id); }); return Array.from(s); }
 
+let committedSearchQuery = '';
 /* SEARCH (clean snippets + safe rendering) */
 function openSearchPanel(){
   window.__gkr_search_open = true;
@@ -772,7 +774,7 @@ function renderSearchResults(list){
     return;
   }
 
-  const q = (searchInput.value || lastQuery || '').trim();
+  const q = committedSearchQuery || lastQuery || '';
   searchResults.innerHTML = '';
 
   list.forEach(r => {
@@ -788,7 +790,7 @@ function renderSearchResults(list){
     `;
 
     div.onclick = async () => {
-      const query = q || searchInput.value;
+      const query = committedSearchQuery;
 
       // mark selected result
       searchResults
@@ -847,22 +849,25 @@ function renderSearchResults(list){
 
 /* performSearch (parse HTML -> textContent to avoid returning raw HTML) */
 async function performSearch(q){
-  q = q.trim().toLowerCase();
-  lastQuery = q;
-
+  q = q.trim();
   if(!q){
     searchResults.innerHTML = '<div class="small-muted">Type to search</div>';
     return;
   }
+
+  committedSearchQuery = q;     // ✅ COMMIT HERE
+  lastQuery = q;
 
   searchResults.innerHTML = '<div class="small-muted">Searching…</div>';
 
   const rows = await idbGetAll();
   const results = [];
 
+  const qLower = q.toLowerCase();
+
   for(const row of rows){
     const text = row.text || '';
-    const idx = text.toLowerCase().indexOf(q);
+    const idx = text.toLowerCase().indexOf(qLower);
     if(idx !== -1){
       const snippet = text.substring(
         Math.max(0, idx - 80),
