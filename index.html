@@ -781,10 +781,11 @@ function renderSearchResults(list){
     const div = document.createElement('div');
     div.className = 'search-item';
 
-    const escaped = escapeHtml(String(r.snippet || ''));
-    const highlighted = q
-  ? highlight(escapedText, q)
-  : escapedText;
+   const escaped = escapeHtml(String(r.snippet || ''));
+const highlighted = q
+  ? highlightSnippetEscaped(escaped, q)
+  : escaped;
+
 
 
     div.innerHTML = `
@@ -1152,22 +1153,7 @@ window.addEventListener('resize', ()=>{
     }
   }
 }
-let isComposing = false;
 
-searchInput.addEventListener('compositionstart', () => {
-  isComposing = true;
-});
-
-searchInput.addEventListener('compositionend', () => {
-  isComposing = false;
-  delayedSearch();
-});
-
-searchInput.addEventListener('input', () => {
-  if (!isComposing) {
-    delayedSearch();
-  }
-});
 
 function triggerSearch(){
   const q = searchInput.value.trim();
