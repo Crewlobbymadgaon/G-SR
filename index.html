@@ -1149,6 +1149,34 @@ window.addEventListener('resize', ()=>{
     }
   }
 }
+let isComposing = false;
+
+searchInput.addEventListener('compositionstart', () => {
+  isComposing = true;
+});
+
+searchInput.addEventListener('compositionend', () => {
+  isComposing = false;
+  triggerSearch(); // run AFTER mobile commits text
+});
+
+searchInput.addEventListener('input', () => {
+  if (!isComposing) {
+    triggerSearch();
+  }
+});
+function triggerSearch(){
+  const q = searchInput.value.trim();
+  renderSearchResults(filterResults(q));
+}
+function highlight(text, query){
+  if (!query) return text;
+
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+
+  return text.replace(regex, '<mark>$1</mark>');
+}
 
 
 
