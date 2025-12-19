@@ -782,7 +782,10 @@ function renderSearchResults(list){
     div.className = 'search-item';
 
     const escaped = escapeHtml(String(r.snippet || ''));
-    const highlighted = q ? highlightSnippetEscaped(escaped, q) : escaped;
+    const highlighted = q
+  ? highlight(escapedText, q)
+  : escapedText;
+
 
     div.innerHTML = `
       <div class="search-title">${escapeHtml(r.id.toUpperCase())}</div>
@@ -1157,14 +1160,15 @@ searchInput.addEventListener('compositionstart', () => {
 
 searchInput.addEventListener('compositionend', () => {
   isComposing = false;
-  triggerSearch(); // run AFTER mobile commits text
+  delayedSearch();
 });
 
 searchInput.addEventListener('input', () => {
   if (!isComposing) {
-    triggerSearch();
+    delayedSearch();
   }
 });
+
 function triggerSearch(){
   const q = searchInput.value.trim();
   renderSearchResults(filterResults(q));
@@ -1172,10 +1176,21 @@ function triggerSearch(){
 function highlight(text, query){
   if (!query) return text;
 
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${escaped})`, 'gi');
+  const safeQuery = query
+    .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
-  return text.replace(regex, '<mark>$1</mark>');
+  return text.replace(
+    new RegExp(safeQuery, 'gi'),
+    match => `<mark>${match}</mark>`
+  );
+}
+
+function delayedSearch(){
+  // Mobile-safe delay
+  requestAnimationFrame(() => {
+    const q = searchInput.value.trim();
+    renderSearchResults(filterResults(q));
+  });
 }
 
 
