@@ -1155,30 +1155,6 @@ window.addEventListener('resize', ()=>{
 }
 
 
-function triggerSearch(){
-  const q = searchInput.value.trim();
-  renderSearchResults(filterResults(q));
-}
-function highlight(text, query){
-  if (!query) return text;
-
-  const safeQuery = query
-    .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-
-  return text.replace(
-    new RegExp(safeQuery, 'gi'),
-    match => `<mark>${match}</mark>`
-  );
-}
-
-function delayedSearch(){
-  // Mobile-safe delay
-  requestAnimationFrame(() => {
-    const q = searchInput.value.trim();
-    renderSearchResults(filterResults(q));
-  });
-}
-
 
 
 </script>
