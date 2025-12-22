@@ -122,17 +122,21 @@
   margin-left: calc(-1 * var(--marker-col));
 }
 
-/* SR note normal alignment (same as clauses) */
+/* SR note — aligned with clauses + tight spacing */
 .sr-note{
-  margin-left: calc(-1 * var(--marker-col));
+  margin-left: calc(-1 * var(--marker-col)); /* align with (1), (2) */
   padding-left: 0;
+  margin: 8px 0 10px;  /* vertical spacing */
+  line-height: 1.6;
 }
 
-/* Slight outdent for SR heading only */
+/* SR heading — slight outdent only */
 .sr-note > strong{
   display:block;
-  margin-left: -2.2ch;  /* fine-tune: -2ch to -2.5ch */
+  margin-bottom: 4px;   /* gap below SR heading */
+  margin-left: -2.2ch; /* slight left outdent */
 }
+
 
 
 
@@ -171,7 +175,7 @@
         <li><div class="marker">(5)</div><div class="termdef">“authorized officer” means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div></li>
       </ol>
 
-      <div class="sr-note"><strong>S.R.1.02(5)(1)</strong><br/>The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.</div>
+      <div class="sr-note"><strong>S.R.1.02(5)(1)</strong>The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.</div>
 
       <ol class="hanging-list" start="6">
         <li><div class="marker">(6)</div><div class="termdef">“authority to proceed” means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</div></li>
@@ -196,7 +200,7 @@
         <li><div class="marker">(22)</div><div class="termdef">“fixed signal” means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</div></li>
       </ol>
 
-      <div class="sr-note"><strong>S.R.1.02(22)(1)</strong><br/>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</div>
+      <div class="sr-note"><strong>S.R.1.02(22)(1)</strong>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</div>
 
       <ol class="hanging-list" start="23">
         <li><div class="marker">(23)</div><div class="termdef">“fouling mark” means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</div></li>
