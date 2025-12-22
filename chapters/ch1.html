@@ -1,155 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CHAPTER I — Preliminary (mobile aligned)</title>
 <style>
   :root{
-  --container-w:780px;
-  --num-col:34px;
-  --marker-col:3.5ch;
-  --gutter:8px;
-  --font-body:"Times New Roman", Georgia, serif;
-  --base-font-size:15px;
-}
-
-html{ font-size:calc(var(--base-font-size) + 0.02vw); }
-body{ margin:0; background:#fff; color:#0b1726; }
-
-.chapter-container{
-  max-width:var(--container-w);
-  margin:0 auto;
-  padding:22px 20px;
-  font-family:var(--font-body);
-  line-height:1.45;
-}
-
-.chapter-title{ text-align:center; margin-bottom:10px; }
-.chapter-title h2,
-.chapter-title h3{ margin:0; font-weight:800; }
-
-.rule{
-  display:grid;
-  grid-template-columns:var(--num-col) 1fr;
-  column-gap:var(--gutter);
-  margin:10px 0 16px;
-}
-
-.rule .num{
-  font-weight:800;
-  text-align:right;
-  padding-right:4px;
-}
-
-.rule .content{ font-weight:800; }
-
-.heading-row{
-  display:grid;
-  grid-template-columns: var(--marker-col) 1fr;
-  column-gap: var(--gutter);
-}
-
-.heading{ font-weight:800; }
-
-.hanging-list{
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-
-.hanging-list li{
-  display:grid;
-  grid-template-columns:var(--marker-col) 1fr;
-  column-gap:var(--gutter);
-  margin:0 0 8px;
-}
-
-.marker{
-  text-align:right;
-  white-space:nowrap;
-  font-weight:800;
-}
-
-.termdef{
-  line-height:1.6;
-  text-align:justify;
-  word-break:normal;
-  overflow-wrap:break-word;
-}
-
-.sr-note{
-  margin:10px 0 14px;
-  font-weight:400;
-  line-height:1.6;
-}
-
-.inline-sub{
-  display:block;
-  padding-left:2.4ch;
-  text-indent:-2.4ch;
-}
-
-/* hierarchy */
-.hanging-list li.subclause{ margin-left:18px; }
-.hanging-list li.level-a{ margin-left:36px; }
-.hanging-list li.level-i{ margin-left:54px; }
-
-/* ===============================
-   MOBILE OPTIMIZATION
-   =============================== */
-@media (max-width:640px){
-
-  :root{
-    --num-col:48px;
-    --marker-col:3.2ch;
-    --gutter:6px;
-    --container-w:100%;
+    --container-w:780px;
+    --num-col:48px;        /* number column width */
+    --gutter:12px;         /* gap between number and content */
+    --marker-col:48px;     /* match number column for vertical alignment */
+    --font-body: "Times New Roman", Georgia, serif;
+    --base-font-size: 15px;
   }
 
-  body{
-    font-size:17px;
-    line-height:1.65;
-  }
+  html{ font-size: calc(var(--base-font-size) + 0.02vw); }
+  body{ margin:0; background:#fff; color:#0b1726; -webkit-font-smoothing:antialiased; }
 
   .chapter-container{
-    padding:12px 10px;
+    max-width:var(--container-w);
+    margin:0 auto;
+    font-family:var(--font-body);
+    line-height:1.45;
+    font-size:1rem;
+    padding:22px 20px;
+    box-sizing:border-box;
   }
 
-  .termdef{
-    text-align:left;
-    hyphens:auto;
-  }
+  .chapter-title{ text-align:center; margin-bottom:10px; }
+  .chapter-title h2{ margin:0; font-size:1.12rem; font-weight:800; }
+  .chapter-title h3{ margin:6px 0 0; font-size:1.02rem; font-weight:800; }
 
-  .marker{
-    font-weight:700;
-    opacity:0.9;
-  }
-
-  .heading{
-    font-size:1.02rem;
-  }
-
-  .sr-note{
-    padding:10px 12px;
-    background:#f7f7f7;
-    border-left:4px solid #bbb;
-    border-radius:4px;
-  }
-}
-
-/* ===============================
-   VERY SMALL SCREENS
-   =============================== */
-@media (max-width:420px){
   .rule{
-    grid-template-columns:1fr;
+    display:grid;
+    grid-template-columns: var(--num-col) 1fr;
+    column-gap: var(--gutter);
+    align-items:start;
+    margin:8px 0 14px;
   }
 
   .rule .num{
-    text-align:left;
-    padding-bottom:4px;
+    font-weight:800;
+    color:#061229;
+    font-size:1rem;
+    padding-left:6px;
   }
-}
 
+  .rule .content{
+    font-size:1rem;
+    font-weight:800;
+    color:#1b2b3a;
+  }
 
+  .heading-row{ margin:0 0 6px 0; }
+  .heading{ font-weight:800; font-size:1rem; margin:0; }
+
+  /* lists */
+  .hanging-list{ list-style:none; margin:0; padding:0; }
+  .hanging-list li{
+    display:grid;
+    grid-template-columns: var(--marker-col) 1fr; /* matches number column */
+    column-gap: var(--gutter);
+    margin:0 0 8px 0;
+    font-weight:800;
+  }
+  .hanging-list li .marker{
+    text-align:right;
+    padding-right:4px; /* marker shifted slightly left */
+    white-space:nowrap;
+  }
+  .termdef{
+    font-size:1rem;
+    line-height:1.6;
+    color:#1b2b3a;
+    font-weight:800;
+    text-align:justify;
+    text-justify:inter-word;
+  }
+
+  .sr-note{
+    font-size:1.06rem;
+    line-height:1.6;
+    font-weight:400;
+    color:#1b2b3a;
+    margin:10px 0 12px;
+    text-align:justify;
+    text-justify:inter-word;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width:640px){
+    :root{
+      --num-col:56px;
+      --marker-col:56px;
+      --gutter:2px;
+      --container-w:100%;
+    }
+    .chapter-container{ padding:12px 10px; }
+    .rule .num{ padding-left:6px; }
+    .heading-row{ margin-bottom:4px; }
+    .hanging-list li{ grid-template-columns: var(--marker-col) 1fr; column-gap:var(--gutter); }
+    .hanging-list li .marker{ padding-right:1px; }
+  }
+
+  @media (max-width:420px){
+    :root{ --num-col:48px; --marker-col:48px; }
+    .heading{ font-size:0.98rem; }
+    .hanging-list li{ font-size:0.96rem; }
+  }
+
+  @media print{
+    :root{ --container-w:720px; --base-font-size:12.5px; }
+    .chapter-container{ line-height:1.4; padding:12mm; }
+  }
+
+  /* ensure no unintended left offset on direct children */
+  .rule .content > * { margin-left:0; padding-left:0; }
 </style>
-
-
+</head>
+<body>
 <article class="chapter-container" aria-labelledby="chapter-heading">
   <div class="chapter-title" id="chapter-heading">
     <h2>CHAPTER I</h2>
@@ -158,189 +127,72 @@ body{ margin:0; background:#fff; color:#0b1726; }
 
   <!-- RULE 1.01 -->
   <div class="rule" id="s101">
-  <div class="num">1.01</div>
-  <div class="content">
-
-   <div class="heading-row">
-  <div class="marker"></div>
-  <div class="heading">SHORT TITLE AND COMMENCEMENT</div>
-</div>
-
-    <ol class="hanging-list">
-      <li>
-        <div class="marker">(1)</div>
-        <div class="termdef">
-          These rules may be called the Indian Railways (Open Lines) General
-          (Third Amendment) Rules, 2024.
-        </div>
-      </li>
-
-      <li>
-        <div class="marker">(2)</div>
-        <div class="termdef">
-          They shall come into force on the date of their publication
-          in the Official Gazette.
-        </div>
-      </li>
-    </ol>
-
+    <div class="num">1.01</div>
+    <div class="content">
+      <div class="heading-row"><div class="heading">SHORT TITLE AND COMMENCEMENT</div></div>
+      <ol class="hanging-list">
+        <li><div class="marker">(1)</div><div class="termdef">These rules may be called the Indian Railways (Open Lines) General (Third Amendment) Rules, 2024.</div></li>
+        <li><div class="marker">(2)</div><div class="termdef">They shall come into force on the date of their publication in the Official Gazette.</div></li>
+      </ol>
+    </div>
   </div>
-</div>
-    
-<div class="rule" id="s102">
-  <div class="num">1.02</div>
-  <div class="content">
 
-    <div class="heading-row">
-      <div class="heading">
-        Definitions:- In these rules, unless the context otherwise requires:-
-      </div>
+  <!-- RULE 1.02 -->
+  <div class="rule" id="s102">
+    <div class="num">1.02</div>
+    <div class="content">
+      <div class="heading-row"><div class="heading">DEFINITIONS — In these rules, unless the context otherwise requires —</div></div>
+
+      <ol class="hanging-list">
+        <li><div class="marker">(1)</div><div class="termdef">“Act” means The Railways Act, 1989 (24 of 1989);</div></li>
+        <li><div class="marker">(2)</div><div class="termdef">“Adequate distance” means the distance sufficient to ensure safety;</div></li>
+        <li><div class="marker">(3)</div><div class="termdef">“approach lighting” means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div></li>
+        <li><div class="marker">(4)</div><div class="termdef">“approved special instructions” means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div></li>
+        <li><div class="marker">(5)</div><div class="termdef">“authorized officer” means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div></li>
+      </ol>
+
+      <div class="sr-note"><strong>S.R.1.02(5)(1)</strong><br/>The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.</div>
+
+      <ol class="hanging-list" start="6">
+        <li><div class="marker">(6)</div><div class="termdef">“authority to proceed” means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</div></li>
+        <li><div class="marker">(7)</div><div class="termdef">“axle counter” means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</div></li>
+        <li><div class="marker">(8)</div><div class="termdef">“block back” means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on the either side on a single line, that the block section is obstructed or is to be obstructed;</div></li>
+        <li><div class="marker">(9)</div><div class="termdef">“block forward” means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</div></li>
+        <li><div class="marker">(10)</div><div class="termdef">“block section” means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</div></li>
+        <li><div class="marker">(11)</div><div class="termdef">“Centralized Traffic Control” means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</div></li>
+        <li><div class="marker">(12)</div><div class="termdef">“Centralized Traffic Control Operator” means the person on duty who may, for the time being, be responsible for the working of trains on the Centralized Traffic Control;</div></li>
+        <li><div class="marker">(13)</div><div class="termdef">“Commissioner of Railway Safety” means an inspector appointed to exercise any functions under the Act, and includes an Additional Commissioner of Railway Safety;</div></li>
+        <li><div class="marker">(14)</div><div class="termdef">“competent railway servant” means a railway servant duly qualified to under take and perform the duties entrusted to him;</div></li>
+        <li><div class="marker">(15)</div><div class="termdef">“connections” when used with reference to a running line, means the points and crossings or other appliances used to connect such line with other lines or to cross it;</div></li>
+        <li><div class="marker">(16)</div><div class="termdef">“Controller” means a railway servant on duty who may for the time being be responsible for regulating the working of traffic on a section of a railway provided with the system of speech communication;</div></li>
+        <li><div class="marker">(17)</div><div class="termdef">“day” means from sunrise to sunset;</div></li>
+        <li><div class="marker">(18)</div><div class="termdef">“direction of traffic” means —<br/>
+          <span style="display:block; margin-left:0.2rem;">(a) on a double line, the direction for which the line is signaled;</span>
+          <span style="display:block; margin-left:0.2rem;">(b) on a single line, the direction for the time being established, under the system of working, to allow trains to move in that direction;</span>
+        </div></li>
+        <li><div class="marker">(19)</div><div class="termdef">“Loco Pilot” means the engine driver or any other competent railway servant for the time being in charge of driving a train;</div></li>
+        <li><div class="marker">(20)</div><div class="termdef">“electrical communication instrument” means either a telephone or a Morse telegraph instrument;</div></li>
+        <li><div class="marker">(21)</div><div class="termdef">“facing and trailing points”: points are facing or trailing in accordance with the direction a train or vehicle moves over them. Points are said to be facing points when by their operation a train approaching them can be directly diverted from the line upon which it is running;</div></li>
+        <li><div class="marker">(22)</div><div class="termdef">“fixed signal” means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</div></li>
+      </ol>
+
+      <div class="sr-note"><strong>S.R.1.02(22)(1)</strong><br/>Colour light signal — A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.</div>
+
+      <ol class="hanging-list" start="23">
+        <li><div class="marker">(23)</div><div class="termdef">“fouling mark” means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</div></li>
+        <li><div class="marker">(24)</div><div class="termdef">“Gangman” means a railway servant employed on permanent way or work connected therewith;</div></li>
+      </ol>
+
+      <div class="sr-note"><strong>S.R.1.02(24)(1)</strong><br/>“Track Maintainer” means a railway servant employed on permanent way or work connected therewith: <br/><em>Note:</em> Henceforth wherever the designation mentioned as “Track Safety Man” shall be read as “Track Maintainer performing the duties of Track safety man”.</div>
+
+      <ol class="hanging-list" start="25">
+        <li><div class="marker">(25)</div><div class="termdef">“Gangmate” means the person in charge of a gang of workmen employed on permanent way or work connected therewith;</div></li>
+        <li><div class="marker">(26)</div><div class="termdef">“Gateman” means a competent railway servant posted at a level crossing for working the gates;</div></li>
+        <li><div class="marker">(27)</div><div class="termdef">“Goods train” means a train (other than a material train) intended solely or mainly for the carriage of animals or goods;</div></li>
+      </ol>
+
     </div>
-
-    <!-- (1) to (5) -->
-    <ol class="hanging-list">
-      <li><div class="marker">(1)</div><div class="termdef">“Act” means The Railways Act, 1989 (24 of 1989);</div></li>
-      <li><div class="marker">(2)</div><div class="termdef">“Adequate distance” means the distance sufficient to ensure safety;</div></li>
-      <li><div class="marker">(3)</div><div class="termdef">“Approach lighting” means an arrangement in which the lighting of signals is controlled automatically by the approach of a train;</div></li>
-      <li><div class="marker">(4)</div><div class="termdef">“Approved special instructions” means special instructions approved of or prescribed by the Commissioner of Railway Safety.</div></li>
-      <li><div class="marker">(5)</div><div class="termdef">“Authorized officer” means the person who is duly empowered by general or special order of the Railway Administration, either by name or by virtue of his office, to issue instructions or to do any other things,</div></li>
-    </ol>
-
-    <div class="sr-note">
-      <strong>S.R.1.02(5)(1)</strong><br/>
-      The Chief Operating Manager is the “Authorized Officer” for the Konkan Railway Corporation.
-    </div>
-
-    <!-- (6) to (22) -->
-    <ol class="hanging-list">
-      <li><div class="marker">(6)</div><div class="termdef">“Authority to proceed” means the authority given to the Loco Pilot of a train, under the system of working, to enter the block section with his train.</div></li>
-      <li><div class="marker">(7)</div><div class="termdef">“Axle counter” means an electrical device which, when provided at two given points on the track, proves by counting axles in and counting axles out, whether the section of the track between the said two points is clear or occupied;</div></li>
-      <li><div class="marker">(8)</div><div class="termdef">“Block back” means to despatch a message from a block station intimating to the block station immediately in rear on a double line, or to the next block station on either side on a single line, that the block section is obstructed or is to be obstructed;</div></li>
-      <li><div class="marker">(9)</div><div class="termdef">“Block forward” means to despatch a message from a block station on a double line intimating to the block station immediately in advance the fact that the block section in advance is obstructed or is to be obstructed.</div></li>
-      <li><div class="marker">(10)</div><div class="termdef">“Block section” means that portion of the running line between two block stations on to which no running train may enter until Line Clear has been received from the block station at the other end of the block section;</div></li>
-      <li><div class="marker">(11)</div><div class="termdef">“Centralized Traffic Control” means a system by which the working of trains over a route, to which the system applies, is governed by fixed signals remotely controlled from a designated place;</div></li>
-      <li><div class="marker">(12)</div><div class="termdef">“Centralized Traffic Control Operator” means the person on duty who may, for the time being, be responsible for the working of trains on the Centralized Traffic Control;</div></li>
-      <li><div class="marker">(13)</div><div class="termdef">“Commissioner of Railway Safety” means an inspector appointed to exercise any functions under the Act, and includes an Additional Commissioner of Railway Safety;</div></li>
-      <li><div class="marker">(14)</div><div class="termdef">“Competent railway servant” means a railway servant duly qualified to undertake and perform the duties entrusted to him;</div></li>
-      <li><div class="marker">(15)</div><div class="termdef">“Connections” when used with reference to a running line, means the points and crossings or other appliances used to connect such line with other lines or to cross it;</div></li>
-      <li><div class="marker">(16)</div><div class="termdef">“Controller” means a railway servant on duty who may for the time being be responsible for regulating the working of traffic on a section of a railway provided with the system of speech communication;</div></li>
-      <li><div class="marker">(17)</div><div class="termdef">“Day” means from sunrise to sunset;</div></li>
-
-      <li>
-        <div class="marker">(18)</div>
-        <div class="termdef">
-          “Direction of traffic” means –
-          <span class="inline-sub">(a) on a double line, the direction for which the line is signaled;</span>
-          <span class="inline-sub">(b) on a single line, the direction for the time being established, under the system of working, to allow trains to move in that direction;</span>
-        </div>
-      </li>
-
-      <li><div class="marker">(19)</div><div class="termdef">“Loco Pilot” means the engine driver or any other competent railway servant for the time being in charge of driving a train;</div></li>
-      <li><div class="marker">(20)</div><div class="termdef">“Electrical communication instrument” means either a telephone or a Morse telegraph instrument;</div></li>
-      <li><div class="marker">(21)</div><div class="termdef">“Facing and trailing points”: points are facing or trailing in accordance with the direction a train or vehicle moves over them.</div></li>
-      <li><div class="marker">(22)</div><div class="termdef">“Fixed signal” means a signal of fixed location indicating a condition affecting the movement of a train and includes a semaphore arm or disc or fixed light for use by day and fixed light for use by night;</div></li>
-    </ol>
-
-    <div class="sr-note">
-      <strong>S.R.1.02(22)(1)</strong><br/>
-      Colour light signal – A colour light signal is also a fixed signal. A colour light signal is a signal which shows coloured light (or lights) both by day and night.
-    </div>
-
-    <!-- (23) to (36) -->
-    <ol class="hanging-list">
-      <li><div class="marker">(23)</div><div class="termdef">“Fouling mark” means the mark at which the infringement of fixed Standard Dimensions occurs, where two lines cross or join one another;</div></li>
-      <li><div class="marker">(24)</div><div class="termdef">“Gangman” means a railway servant employed on permanent way or work connected therewith;</div></li>
-    </ol>
-
-    <div class="sr-note">
-      <strong>S.R.1.02(24)(1)</strong><br/>
-      “Track Maintainer” means a railway servant employed on permanent way or work connected therewith.<br/>
-      <em>Note:</em> Henceforth wherever the designation mentioned as “Track Safety Man” shall be read as
-      “Track Maintainer performing the duties of Track Safety Man”.
-    </div>
-
-    <ol class="hanging-list">
-      <li><div class="marker">(25)</div><div class="termdef">“Gangmate” means the person in charge of a gang of workmen employed on permanent way or work connected therewith;</div></li>
-      <li><div class="marker">(26)</div><div class="termdef">“Gateman” means a competent railway servant posted at a level crossing for working the gates;</div></li>
-      <li><div class="marker">(27)</div><div class="termdef">“Goods train” means a train (other than a material train) intended solely or mainly for the carriage of animals or goods;</div></li>
-      <li><div class="marker">(28)</div><div class="termdef">“Train Manager” means the railway servant in charge of a train and includes a Brakesman or any other railway servant who may for the time being be performing the duties of a Train Manager;</div></li>
-      <li><div class="marker">(28A)</div><div class="termdef">“Indian Railway Automatic Train Protection System (IR-ATP) (Kavach)” means a radio communication-based control system provided as an additional aid to Loco Pilots of functional Kavach-fitted locomotives.</div></li>
-      <li><div class="marker">(29)</div><div class="termdef">“Inspector of Way or Works” means any Inspector or Assistant Inspector responsible for the construction or maintenance of permanent way, points and signals, bridges or other works connected therewith;</div></li>
-      <li><div class="marker">(30)</div><div class="termdef">“Interlocking” means an arrangement of signals, points and other appliances so interconnected that their operation must take place in proper sequence to ensure safety;</div></li>
-      <li><div class="marker">(31)</div><div class="termdef">“Intermediate Block Post” means a class ‘C’ station on a single line or double line or multiple line remotely controlled from the block station in rear;</div></li>
-      <li><div class="marker">(32)</div><div class="termdef">“Intermediate Block Signalling” means an arrangement of signalling in which a long block section is split into two portions each constituting a separate block section;</div></li>
-      <li><div class="marker">(33)</div><div class="termdef">“Isolation” means an arrangement secured by the setting of points or other approved means;</div></li>
-      <li><div class="marker">(34)</div><div class="termdef">“Last Stop Signal” means the fixed Stop signal of a station controlling the entry of trains into the next block section;</div></li>
-      <li><div class="marker">(35)</div><div class="termdef">“Level crossing” means the intersection of road with railway track at the same level;</div></li>
-      <li><div class="marker">(36)</div><div class="termdef">“Level crossing gate” means any form of movable barrier including a chain but not a wicket or turnstile.</div></li>
-    </ol>
-
-
-<div class="sr-note">
-  <strong>S.R.1.02(36)</strong>
-  <span class="inline-sub">
-    (a) Level crossing gates located within Home signals in Multiple Aspect
-    Signalling territory on single line sections are traffic gates controlled
-    by the Operating Department.
-  </span>
-  <span class="inline-sub">
-    (b) Level crossing gates other than traffic gates are Engineering gates.
-  </span>
-</div>
-
-<ol class="hanging-list">
-  <li><div class="marker">(37)</div><div class="termdef">“Line Clear” means the permission given from a block station to a block station in rear …</div></li>
-  <li><div class="marker">(38)</div><div class="termdef">“Main line” means the line ordinarily used for running trains through and between stations;</div></li>
-  <li><div class="marker">(39)</div><div class="termdef">“Material train” means a departmental train …</div></li>
-  <li><div class="marker">(40)</div><div class="termdef">“Mixed train” means a train intended for the carriage of passengers and goods;</div></li>
-  <li><div class="marker">(41)</div><div class="termdef">“Multiple-aspect signalling” means a signalling arrangement …</div></li>
-  <li><div class="marker">(42)</div><div class="termdef">“Night” means from sunset to sunrise;</div></li>
-  <li><div class="marker">(43)</div><div class="termdef">“Obstruction” and its cognate expressions include …</div></li>
-  <li><div class="marker">(44)</div><div class="termdef">“Overhead equipment” means the electrical conductors …</div></li>
-  <li><div class="marker">(45)</div><div class="termdef">“Passenger train” means a train intended solely or mainly for passengers;</div></li>
-  <li><div class="marker">(46)</div><div class="termdef">“Point and trap indicators” are not signals;</div></li>
-  <li><div class="marker">(47)</div><div class="termdef">“Running line” means the line governed by one or more signals;</div></li>
-  <li><div class="marker">(48)</div><div class="termdef">“Running train” means a train which has started …</div></li>
-  <li><div class="marker">(49)</div><div class="termdef">“Shunting” means the movement of vehicles …</div></li>
-  <li><div class="marker">(50)</div><div class="termdef">“Special instructions” means instructions issued …</div></li>
-  <li><div class="marker">(51)</div><div class="termdef">“Station” means any place on a line of railway …</div></li>
-  <li><div class="marker">(52)</div><div class="termdef">“Station limits” means the portion of railway …</div></li>
-  <li><div class="marker">(53)</div><div class="termdef">“Station Master” means the person on duty …</div></li>
-</ol>
-<ol class="hanging-list">
-  <li>
-    <div class="marker">(54)</div>
-    <div class="termdef">“station section” means —</div>
-
-    <ol class="hanging-list">
-      <li class="subclause">
-        <div class="marker">(1)</div>
-        <div class="termdef">at a class ‘B’ station provided with two-aspect signals —</div>
-
-        <ol class="hanging-list">
-          <li class="level-a">
-            <div class="marker">(a)</div>
-            <div class="termdef">on a double line, between the Home signal and the last Stop signal;</div>
-
-            <ol class="hanging-list">
-              <li class="level-i">
-                <div class="marker">(i)</div>
-                <div class="termdef">between the Shunting Limit Boards or Advanced Starters;</div>
-              </li>
-              <li class="level-i">
-                <div class="marker">(ii)</div>
-                <div class="termdef">between the Home signals, if there are no Shunting Limit Boards;</div>
-              </li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-    </ol>
-  </li>
-</ol>
-</div></div>
-
-
-
-    
+  </div>
 </article>
+</body>
+</html>
