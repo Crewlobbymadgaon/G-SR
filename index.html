@@ -363,7 +363,7 @@ const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 const searchClear = document.getElementById('searchClear');
-const last = loadLastRead();
+
 
 let suppressAutoScrollClear = false;
 
@@ -1006,60 +1006,8 @@ window.addEventListener('load', async ()=>{
 });
 
 
-function setFlatIndexFromLast(last){
-  for(let i = 0; i < FLAT.length; i++){
-    const it = FLAT[i];
 
-    // ✅ MOST SPECIFIC FIRST (anchor)
-    if(
-      last.kind === 'chapter' &&
-      last.anchor &&
-      it.kind === 'anchor' &&
-      it.chapter === last.id &&
-      it.anchor === last.anchor
-    ){
-      currentFlatIndex = i;
-      updateNavButtons();
-      return;
-    }
 
-    // chapter without anchor
-    if(
-      last.kind === 'chapter' &&
-      !last.anchor &&
-      it.kind === 'chapter' &&
-      it.id === last.id
-    ){
-      currentFlatIndex = i;
-      updateNavButtons();
-      return;
-    }
-
-    // fragment
-    if(
-      last.kind === 'fragment' &&
-      it.kind === 'fragment' &&
-      it.id === last.id
-    ){
-      currentFlatIndex = i;
-      updateNavButtons();
-      return;
-    }
-  }
-
-  // fallback safety
-  currentFlatIndex = -1;
-  updateNavButtons();
-}
-
-function loadLastRead(){
-  try{
-    const raw = localStorage.getItem(LAST_READ_KEY);
-    return raw ? JSON.parse(raw) : null;
-  }catch(e){
-    return null;
-  }
-}
 
 window.addEventListener('popstate', (ev)=>{ if(!ev.state){ showCover(); return; } const s = ev.state; if(s.kind === 'fragment') openFragment(s.id); else if(s.kind === 'chapter') openChapter(s.id, s.anchor || null); });
 
