@@ -783,12 +783,10 @@ function renderSearchResults(list){
     const div = document.createElement('div');
     div.className = 'search-item';
 
-   const escaped = escapeHtml(String(r.snippet || ''));
-const highlighted = q
-  ? highlightSnippetEscaped(escaped, q)
-  : escaped;
-
-
+    const escaped = escapeHtml(String(r.snippet || ''));
+    const highlighted = q
+      ? highlightSnippetEscaped(escaped, q)
+      : escaped;
 
     div.innerHTML = `
       <div class="search-title">${escapeHtml(r.id.toUpperCase())}</div>
@@ -798,49 +796,45 @@ const highlighted = q
     div.onclick = async () => {
       const query = committedSearchQuery;
 
-      // mark selected result
       searchResults
         .querySelectorAll('.search-item.selected')
         .forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
 
       await openFragmentOrChapter(r.id);
-
-      // close search UI (DO NOT clear highlights)
       closeSearchPanel();
 
       const iframe = getActiveFrame();
 
-     iframe.addEventListener(
-  'load',
-  () => {
-    // wait for paint (critical for mobile/tablet)
-    setTimeout(() => {
-      highlightInIframe(iframe, query);
-    }, 120);
+      iframe.addEventListener(
+        'load',
+        () => {
+          setTimeout(() => {
+            highlightInIframe(iframe, query);
+          }, 120);
 
-    const doc = iframe.contentDocument;
-    if (!doc) return;
+          const doc = iframe.contentDocument;
+          if (!doc) return;
 
-    // allow highlight to be visible first
-    const clearOnUserAction = () => {
-      if (suppressAutoScrollClear) return;
+          const clearOnUserAction = () => {
+            if (suppressAutoScrollClear) return;
 
-      clearIframeHighlights();
-      doc.removeEventListener('pointerdown', clearOnUserAction, true);
-      doc.removeEventListener('keydown', clearOnUserAction, true);
+            clearIframeHighlights();
+            doc.removeEventListener('pointerdown', clearOnUserAction, true);
+            doc.removeEventListener('keydown', clearOnUserAction, true);
+          };
+
+          doc.addEventListener('pointerdown', clearOnUserAction, true);
+          doc.addEventListener('keydown', clearOnUserAction, true);
+        },
+        { once: true }
+      );
     };
 
-    doc.addEventListener('pointerdown', clearOnUserAction, true);
-    doc.addEventListener('keydown', clearOnUserAction, true);
-  },
-  { once: true }
-);
-
-
     searchResults.appendChild(div);
-  };
+  });
 }
+
 
 
 
