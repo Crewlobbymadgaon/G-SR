@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -812,35 +811,32 @@ const highlighted = q
 
       const iframe = getActiveFrame();
 
-      iframe.addEventListener(
-        'load',
-        () => {
-          // wait for paint (critical for mobile/tablet)
-         setTimeout(() => {
-  highlightInIframe(iframe, query);
-}, 120);
+     iframe.addEventListener(
+  'load',
+  () => {
+    // wait for paint (critical for mobile/tablet)
+    setTimeout(() => {
+      highlightInIframe(iframe, query);
+    }, 120);
 
+    const doc = iframe.contentDocument;
+    if (!doc) return;
 
-            const doc = iframe.contentDocument;
-            if(!doc) return;
+    // allow highlight to be visible first
+    const clearOnUserAction = () => {
+      if (suppressAutoScrollClear) return;
 
-            // allow highlight to be visible first
-            const clearOnUserAction = () => {
-  if (suppressAutoScrollClear) return;
-
-  clearIframeHighlights();
-  doc.removeEventListener('pointerdown', clearOnUserAction, true);
-  doc.removeEventListener('keydown', clearOnUserAction, true);
-};
-
-doc.addEventListener('pointerdown', clearOnUserAction, true);
-doc.addEventListener('keydown', clearOnUserAction, true);
-
-          });
-        },
-        { once: true } // ✅ correct position
-      );
+      clearIframeHighlights();
+      doc.removeEventListener('pointerdown', clearOnUserAction, true);
+      doc.removeEventListener('keydown', clearOnUserAction, true);
     };
+
+    doc.addEventListener('pointerdown', clearOnUserAction, true);
+    doc.addEventListener('keydown', clearOnUserAction, true);
+  },
+  { once: true }
+);
+
 
     searchResults.appendChild(div);
   });
