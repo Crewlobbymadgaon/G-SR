@@ -51,12 +51,24 @@ const CHAPTERS = [
    =============================== */
 self.addEventListener('install', event => {
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS)),
-      caches.open(CHAPTER_CACHE).then(cache => cache.addAll(CHAPTERS))
-    ]).then(() => self.skipWaiting())
+    (async () => {
+      const staticCache = await caches.open(STATIC_CACHE);
+      await staticCache.addAll(STATIC_ASSETS);
+
+      const chapterCache = await caches.open(CHAPTER_CACHE);
+      for (const ch of CHAPTERS) {
+        try {
+          await chapterCache.add(ch);
+        } catch (e) {
+          console.warn('Chapter not cached:', ch);
+        }
+      }
+
+      self.skipWaiting();
+    })()
   );
 });
+
 
 /* ===============================
    ACTIVATE — CLEAN OLD CACHES
@@ -86,8 +98,8 @@ self.addEventListener('fetch', event => {
      1️⃣ CHAPTER FILES (iframe-safe)
      cache-first
      ------------------------------- */
-  if (url.pathname.startsWith('/chapters/')) {
-    event.respondWith(
+  if (url.pathname.includes('/chapters/')) {
+  event.respondWith(
       caches.open(CHAPTER_CACHE).then(async cache => {
         const cached = await cache.match(url.pathname);
         if (cached) return cached;
