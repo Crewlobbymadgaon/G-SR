@@ -116,6 +116,12 @@
 
   /* ensure no unintended left offset on direct children */
   .rule .content > * { margin-left:0; padding-left:0; }
+
+  /* Align clause list directly under the heading text */
+.rule .content > .hanging-list{
+  margin-left: calc(-1 * var(--marker-col));
+}
+
 </style>
 </head>
 <body>
