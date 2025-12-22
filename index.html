@@ -363,6 +363,7 @@ const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 const searchClear = document.getElementById('searchClear');
+const last = loadLastRead();
 
 let suppressAutoScrollClear = false;
 
@@ -526,8 +527,9 @@ function clearIframeHighlights(){
   if(!iframe) return;
 
   try{
-    const doc = iframe.contentDocument;
-    if(!doc) return;
+   const doc = iframe.contentDocument;
+if(!doc || !doc.body) return;
+
 
     const marks = doc.querySelectorAll('mark');
     marks.forEach(m=>{
@@ -1155,6 +1157,48 @@ setTimeout(() => {
     }
   }catch(e){}
 }
+
+  function setFlatIndexFromLast(last){
+  for(let i = 0; i < FLAT.length; i++){
+    const it = FLAT[i];
+
+    // anchor
+    if(
+      last.kind === 'chapter' &&
+      last.anchor &&
+      it.kind === 'anchor' &&
+      it.chapter === last.id &&
+      it.anchor === last.anchor
+    ){
+      currentFlatIndex = i;
+      return;
+    }
+
+    // chapter
+    if(
+      last.kind === 'chapter' &&
+      !last.anchor &&
+      it.kind === 'chapter' &&
+      it.id === last.id
+    ){
+      currentFlatIndex = i;
+      return;
+    }
+
+    // fragment
+    if(
+      last.kind === 'fragment' &&
+      it.kind === 'fragment' &&
+      it.id === last.id
+    ){
+      currentFlatIndex = i;
+      return;
+    }
+  }
+
+  currentFlatIndex = -1;
+}
+
   function syncFlatIndex(kind, chId, anchor = null){
   for(let i = 0; i < FLAT.length; i++){
     const it = FLAT[i];
@@ -1168,6 +1212,14 @@ setTimeout(() => {
         && it.chapter === chId && it.anchor === anchor){
       currentFlatIndex = i; return;
     }
+  }
+}
+function loadLastRead(){
+  try{
+    const raw = localStorage.getItem(LAST_READ_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){
+    return null;
   }
 }
 
