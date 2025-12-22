@@ -364,6 +364,7 @@ const searchResults = document.getElementById('searchResults');
 const searchClose = document.getElementById('searchClose');
 const searchClear = document.getElementById('searchClear');
 
+let suppressAutoScrollClear = false;
 
 let currentFlatIndex = -1;
 
@@ -822,22 +823,17 @@ const highlighted = q
             if(!doc) return;
 
             // allow highlight to be visible first
-            let armed = false;
-            setTimeout(() => { armed = true; }, 300);
+            const clearOnUserAction = () => {
+  if (suppressAutoScrollClear) return;
 
-            const removeOnInteract = () => {
-              if(!armed) return;
-              clearIframeHighlights();
-              doc.removeEventListener('scroll', removeOnInteract, true);
-              doc.removeEventListener('pointerdown', removeOnInteract, true);
-              doc.removeEventListener('touchstart', removeOnInteract, true);
-              doc.removeEventListener('click', removeOnInteract, true);
-            };
+  clearIframeHighlights();
+  doc.removeEventListener('pointerdown', clearOnUserAction, true);
+  doc.removeEventListener('keydown', clearOnUserAction, true);
+};
 
-            doc.addEventListener('scroll', removeOnInteract, true);
-            doc.addEventListener('pointerdown', removeOnInteract, true);
-            doc.addEventListener('touchstart', removeOnInteract, true);
-            doc.addEventListener('click', removeOnInteract, true);
+doc.addEventListener('pointerdown', clearOnUserAction, true);
+doc.addEventListener('keydown', clearOnUserAction, true);
+
           });
         },
         { once: true } // ✅ correct position
@@ -1145,7 +1141,17 @@ mark.style.display = 'inline';
 
     const first = doc.querySelector('mark');
     if(first){
-      first.scrollIntoView({ block:'center', behavior:'smooth' });
+      suppressAutoScrollClear = true;
+
+first.scrollIntoView({
+  block: 'center',
+  behavior: 'smooth'
+});
+
+setTimeout(() => {
+  suppressAutoScrollClear = false;
+}, 500); // enough for scroll to finish
+
     }
   }catch(e){}
 }
