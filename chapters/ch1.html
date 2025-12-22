@@ -1,4 +1,3 @@
-<style>
 :root{
   --container-w:780px;
   --num-col:34px;
@@ -33,8 +32,7 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .rule .num{
   font-weight:800;
   text-align:right;
-  padding-left:0;
-  padding-right:4px;   /* tiny breathing space */
+  padding-right:4px;
 }
 
 .rule .content{ font-weight:800; }
@@ -44,11 +42,6 @@ body{ margin:0; background:#fff; color:#0b1726; }
   grid-template-columns: var(--marker-col) 1fr;
   column-gap: var(--gutter);
 }
-
-
-
-
-
 
 .heading{ font-weight:800; }
 
@@ -74,6 +67,8 @@ body{ margin:0; background:#fff; color:#0b1726; }
 .termdef{
   line-height:1.6;
   text-align:justify;
+  word-break:normal;
+  overflow-wrap:break-word;
 }
 
 .sr-note{
@@ -84,28 +79,72 @@ body{ margin:0; background:#fff; color:#0b1726; }
 
 .inline-sub{
   display:block;
-  padding-left: 2.4ch;   /* width of "(a) " */
-  text-indent: -2.4ch;   /* pull first line back */
+  padding-left:2.4ch;
+  text-indent:-2.4ch;
 }
-
 
 /* hierarchy */
 .hanging-list li.subclause{ margin-left:18px; }
-.hanging-list li.level-a{  margin-left:36px; }
-.hanging-list li.level-i{  margin-left:54px; }
+.hanging-list li.level-a{ margin-left:36px; }
+.hanging-list li.level-i{ margin-left:54px; }
 
-/* mobile */
+/* ===============================
+   MOBILE OPTIMIZATION
+   =============================== */
 @media (max-width:640px){
+
   :root{
-    --num-col:56px;
+    --num-col:48px;
     --marker-col:3.2ch;
     --gutter:6px;
     --container-w:100%;
   }
-  .chapter-container{ padding:12px 10px; }
-  .termdef{ text-align:left; hyphens:auto; }
+
+  body{
+    font-size:17px;
+    line-height:1.65;
+  }
+
+  .chapter-container{
+    padding:12px 10px;
+  }
+
+  .termdef{
+    text-align:left;
+    hyphens:auto;
+  }
+
+  .marker{
+    font-weight:700;
+    opacity:0.9;
+  }
+
+  .heading{
+    font-size:1.02rem;
+  }
+
+  .sr-note{
+    padding:10px 12px;
+    background:#f7f7f7;
+    border-left:4px solid #bbb;
+    border-radius:4px;
+  }
 }
-</style>
+
+/* ===============================
+   VERY SMALL SCREENS
+   =============================== */
+@media (max-width:420px){
+  .rule{
+    grid-template-columns:1fr;
+  }
+
+  .rule .num{
+    text-align:left;
+    padding-bottom:4px;
+  }
+}
+
 
 
 
