@@ -1,59 +1,70 @@
-// sw.js — FULL OFFLINE-FIRST READER (GitHub Pages SAFE)
+// sw.js — OFFLINE-FIRST READER (GitHub Pages SAFE)
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC_CACHE = `gkr-static-${VERSION}`;
 const CHAPTER_CACHE = `gkr-chapters-${VERSION}`;
 
 /* ===============================
-   STATIC APP SHELL
+   FILE LISTS
    =============================== */
+
+/* App shell ONLY (must exist) */
 const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './assets/icon-192.png',
-  './assets/icon-512.png',
-  './assets/icon-512-maskable.png',
-  './assets/cover-1600.webp'
+  'index.html',
+  'manifest.json',
+  'assets/icon-192.png',
+  'assets/icon-512.png',
+  'assets/icon-512-maskable.png',
+  'assets/cover-1600.webp'
 ];
 
-/* ===============================
-   📘 CHAPTERS
-   =============================== */
+/* Chapters that EXIST TODAY (optional) */
 const CHAPTERS = [
-  './chapters/notification.html',
-  './chapters/resolution.html',
-  './chapters/documents_accompanying.html',
-  './chapters/ch1.html',
-  './chapters/ch2.html'
-  
+  'chapters/notification.html',
+  'chapters/resolution.html',
+  'chapters/documents_accompanying.html',
+  'chapters/ch1.html',
+  'chapters/ch2.html'
 ];
 
 /* ===============================
-   INSTALL
+   INSTALL — SAFE CACHING
    =============================== */
 self.addEventListener('install', event => {
-  event.waitUntil(
-    (async () => {
-      const staticCache = await caches.open(STATIC_CACHE);
-      await staticCache.addAll(STATIC_ASSETS);
+  event.waitUntil((async () => {
 
-      const chapterCache = await caches.open(CHAPTER_CACHE);
-      for (const ch of CHAPTERS) {
-        try {
-          await chapterCache.add(ch);
-        } catch (e) {
-          console.warn('Chapter not cached:', ch);
+    /* Cache app shell safely (no addAll) */
+    const staticCache = await caches.open(STATIC_CACHE);
+    for (const file of STATIC_ASSETS) {
+      try {
+        const res = await fetch(file);
+        if (res.ok) {
+          await staticCache.put(file, res.clone());
         }
+      } catch (e) {
+        console.warn('[SW] Static skipped:', file);
       }
+    }
 
-      self.skipWaiting();
-    })()
-  );
+    /* Cache only existing chapters (optional) */
+    const chapterCache = await caches.open(CHAPTER_CACHE);
+    for (const ch of CHAPTERS) {
+      try {
+        const res = await fetch(ch);
+        if (res.ok) {
+          await chapterCache.put(ch, res.clone());
+        }
+      } catch (e) {
+        console.warn('[SW] Chapter skipped:', ch);
+      }
+    }
+
+    self.skipWaiting();
+  })());
 });
 
 /* ===============================
-   ACTIVATE
+   ACTIVATE — CLEANUP
    =============================== */
 self.addEventListener('activate', event => {
   event.waitUntil(
@@ -68,64 +79,49 @@ self.addEventListener('activate', event => {
 });
 
 /* ===============================
-   FETCH
+   FETCH — OFFLINE FIRST
    =============================== */
 self.addEventListener('fetch', event => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
+  if (event.request.method !== 'GET') return;
 
-  const url = new URL(req.url);
+  const url = new URL(event.request.url);
 
-  /* 📘 Chapters (cache-first) */
+  /* 📘 Chapters (lazy cache, iframe-safe) */
   if (url.pathname.includes('/chapters/')) {
-    event.respondWith(
-      caches.open(CHAPTER_CACHE).then(async cache => {
-        const cached = await cache.match(req);
-        if (cached) return cached;
+    event.respondWith((async () => {
+      const cache = await caches.open(CHAPTER_CACHE);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
 
-        try {
-          const fresh = await fetch(req);
-          if (fresh && fresh.status === 200) {
-            cache.put(req, fresh.clone());
-          }
-          return fresh;
-        } catch {
-          return new Response(
-            `<h2 style="padding:20px;font-family:serif">
-              Chapter available after first online load
-            </h2>`,
-            { headers: { 'Content-Type': 'text/html' } }
-          );
+      try {
+        const res = await fetch(event.request);
+        if (res.ok) {
+          cache.put(event.request, res.clone());
         }
-      })
-    );
+        return res;
+      } catch {
+        return new Response(
+          `<h3 style="padding:20px;font-family:serif">
+            This chapter is not available offline yet.<br>
+            Please open it once while online.
+          </h3>`,
+          { headers: { 'Content-Type': 'text/html' } }
+        );
+      }
+    })());
     return;
   }
 
-  /* 🌐 Navigation */
-  if (req.mode === 'navigate') {
+  /* 🌐 Navigation (App Shell) */
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
-        .then(resp => {
-          const copy = resp.clone();
-          caches.open(STATIC_CACHE).then(c => c.put('./index.html', copy));
-          return resp;
-        })
-        .catch(() => caches.match('./index.html'))
+      fetch(event.request).catch(() => caches.match('index.html'))
     );
     return;
   }
 
   /* 📦 Other assets */
   event.respondWith(
-    caches.match(req).then(cached =>
-      cached ||
-      fetch(req).then(resp => {
-        if (resp && resp.status === 200) {
-          caches.open(STATIC_CACHE).then(c => c.put(req, resp.clone()));
-        }
-        return resp;
-      })
-    )
+    caches.match(event.request).then(r => r || fetch(event.request))
   );
 });
