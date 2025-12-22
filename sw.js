@@ -59,7 +59,7 @@ self.addEventListener('install', event => {
       }
     }
 
-    self.skipWaiting();
+    
   })());
 });
 
@@ -74,9 +74,10 @@ self.addEventListener('activate', event => {
           .filter(k => ![STATIC_CACHE, CHAPTER_CACHE].includes(k))
           .map(k => caches.delete(k))
       )
-    ).then(() => self.clients.claim())
+    )
   );
 });
+
 
 /* ===============================
    FETCH — OFFLINE FIRST
