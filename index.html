@@ -813,8 +813,10 @@ const highlighted = q
         'load',
         () => {
           // wait for paint (critical for mobile/tablet)
-          requestAnimationFrame(() => {
-            highlightInIframe(iframe, query);
+         setTimeout(() => {
+  highlightInIframe(iframe, query);
+}, 120);
+
 
             const doc = iframe.contentDocument;
             if(!doc) return;
@@ -1108,9 +1110,15 @@ window.addEventListener('resize', ()=>{
     let n;
     while(n = walker.nextNode()) nodes.push(n);
 
-    nodes.forEach(textNode=>{
-      const text = textNode.nodeValue;
-      if(!re.test(text)) return;
+    nodes.forEach(textNode => {
+  if(!textNode.parentNode) return;
+
+  const text = textNode.nodeValue;
+  if(!text) return;
+
+  re.lastIndex = 0;
+  if(!re.test(text)) return;
+
       re.lastIndex = 0;
 
       const frag = doc.createDocumentFragment();
@@ -1121,7 +1129,10 @@ window.addEventListener('resize', ()=>{
         }
         const mark = doc.createElement('mark');
         mark.style.background = '#fff59d';
-        mark.style.padding = '0 2px';
+mark.style.padding = '0';
+mark.style.whiteSpace = 'nowrap';
+mark.style.display = 'inline';
+
         mark.textContent = m[0];
         frag.appendChild(mark);
         last = m.index + m[0].length;
