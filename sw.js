@@ -25,24 +25,8 @@ const CHAPTERS = [
   './chapters/resolution.html',
   './chapters/documents_accompanying.html',
   './chapters/ch1.html',
-  './chapters/ch2.html',
-  './chapters/ch3.html',
-  './chapters/ch4.html',
-  './chapters/ch5.html',
-  './chapters/ch6.html',
-  './chapters/ch7.html',
-  './chapters/ch8.html',
-  './chapters/ch9.html',
-  './chapters/ch10.html',
-  './chapters/ch11.html',
-  './chapters/ch12.html',
-  './chapters/ch13.html',
-  './chapters/ch14.html',
-  './chapters/ch15.html',
-  './chapters/ch16.html',
-  './chapters/ch17.html',
-  './chapters/ch18.html',
-  './chapters/appendix.html'
+  './chapters/ch2.html'
+  
 ];
 
 /* ===============================
