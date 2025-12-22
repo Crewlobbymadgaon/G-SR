@@ -451,12 +451,14 @@ document.addEventListener('click', (e)=>{
   }, { passive: true });
 })();
 
-async function fetchChapterRaw(id, bypass=false){
-  try{
-    const url = bypass ? `chapters/${id}.html?_=${Date.now()}` : `chapters/${id}.html`;
-    const res = await fetch(url, bypass ? { cache:'no-store' } : { cache:'force-cache' });
-    if(res.ok) return await res.text();
-  }catch(e){ /* ignore */ }
+async function fetchChapterRaw(id, bypass = false){
+  try {
+    const url = `chapters/${id}.html`;
+    const res = await fetch(url); // ✅ let SW handle caching
+    if (res.ok) return await res.text();
+  } catch (e) {
+    console.warn('Fetch failed:', id);
+  }
   return null;
 }
 
